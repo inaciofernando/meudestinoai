@@ -411,19 +411,19 @@ export default function GastosViagem() {
 
     console.log("Iniciando análise - isAnalyzingReceipt:", isAnalyzingReceipt);
     setIsAnalyzingReceipt(true);
-    setAnalysisStep("🔍 Preparando imagem...");
+    setAnalysisStep("✈️ Preparando para decolagem...");
     console.log("Estado atualizado - isAnalyzingReceipt:", true);
 
     try {
       // Convert file to base64
       const reader = new FileReader();
       reader.onload = async (e) => {
-        setAnalysisStep("📤 Enviando para análise...");
+        setAnalysisStep("🧳 Fazendo check-in...");
         const base64 = e.target?.result as string;
         const imageBase64 = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
 
         try {
-          setAnalysisStep("🤖 IA analisando o cupom...");
+          setAnalysisStep("🗺️ IA explorando o cupom...");
           
           const { data, error } = await supabase.functions.invoke('analyze-receipt', {
             body: { imageBase64 }
@@ -435,7 +435,7 @@ export default function GastosViagem() {
           }
 
           if (data.success && data.data) {
-            setAnalysisStep("✅ Preenchendo formulário...");
+            setAnalysisStep("📝 Preenchendo diário de viagem...");
             const extractedData = data.data;
             
             // Auto-fill the form with extracted data
@@ -652,8 +652,16 @@ export default function GastosViagem() {
                             console.log("Renderizando botão - isAnalyzingReceipt:", isAnalyzingReceipt, "analysisStep:", analysisStep);
                             return isAnalyzingReceipt ? (
                               <div className="flex items-center justify-center gap-3">
-                                <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                                <span className="text-sm font-medium text-purple-700">{analysisStep || "Processando..."}</span>
+                                <div className="relative">
+                                  {/* Ícone de viagem animado */}
+                                  <Plane className="w-5 h-5 text-purple-600 animate-bounce" />
+                                  {/* Círculo de loading */}
+                                  <div className="absolute -inset-1 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                                </div>
+                                <div className="flex flex-col items-start">
+                                  <span className="text-sm font-medium text-purple-700">Analisando cupom...</span>
+                                  <span className="text-xs text-purple-500">{analysisStep || "Processando..."}</span>
+                                </div>
                               </div>
                             ) : (
                               <>
