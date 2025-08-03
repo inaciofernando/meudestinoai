@@ -136,8 +136,31 @@ export default function GastosViagem() {
           total_budget: (tripData.total_budget || 0).toString(),
           budget_currency: tripData.budget_currency || "BRL"
         });
-        // For now, we'll use mock data for UI development
-        setExpenses([]);
+        
+        // Fetch expenses for this trip
+        const { data: expenseData, error: expenseError } = await supabase
+          .from('budget_items')
+          .select('*')
+          .eq('trip_id', tripData.id)
+          .eq('user_id', user.id)
+          .order('expense_date', { ascending: false });
+
+        if (!expenseError && expenseData) {
+          const formattedExpenses = expenseData.map(item => ({
+            id: item.id,
+            trip_id: item.trip_id,
+            category: item.category || 'miscellaneous',
+            amount: item.actual_amount || 0,
+            currency: item.currency,
+            description: item.title,
+            date: item.expense_date || item.created_at,
+            location: item.location,
+            receipt_url: item.receipt_image_url,
+            created_at: item.created_at
+          }));
+
+          setExpenses(formattedExpenses);
+        }
 
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -169,13 +192,108 @@ export default function GastosViagem() {
     return { status: "on-track", percentage };
   };
 
+  const fetchExpenses = async () => {
+    if (!user || !trip) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('budget_items')
+        .select('*')
+        .eq('trip_id', trip.id)
+        .eq('user_id', user.id)
+        .order('expense_date', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedExpenses = data.map(item => ({
+        id: item.id,
+        trip_id: item.trip_id,
+        category: item.category || 'miscellaneous',
+        amount: item.actual_amount || 0,
+        currency: item.currency,
+        description: item.title,
+        date: item.expense_date || item.created_at,
+        location: item.location,
+        receipt_url: item.receipt_image_url,
+        created_at: item.created_at
+      }));
+
+      setExpenses(formattedExpenses);
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    }
+  };
+
   const handleAddExpense = async () => {
-    // TODO: Implement expense creation when database is ready
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "O sistema de gastos será implementado com IA em breve",
-    });
-    setIsAddingExpense(false);
+    if (!user || !trip) return;
+
+    try {
+      let receiptUrl = null;
+
+      // Upload receipt if provided
+      if (newExpense.receiptFile) {
+        const fileExt = newExpense.receiptFile.name.split('.').pop();
+        const fileName = `${user.id}/${trip.id}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('receipts')
+          .upload(fileName, newExpense.receiptFile);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        receiptUrl = uploadData.path;
+      }
+
+      // Save expense to database
+      const { error } = await supabase
+        .from('budget_items')
+        .insert({
+          trip_id: trip.id,
+          user_id: user.id,
+          title: newExpense.description,
+          category: newExpense.category,
+          actual_amount: parseFloat(newExpense.amount),
+          planned_amount: parseFloat(newExpense.amount),
+          currency: newExpense.currency,
+          expense_date: newExpense.date,
+          location: newExpense.location,
+          receipt_image_url: receiptUrl,
+          is_confirmed: true
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Gasto adicionado!",
+        description: "Seu gasto foi registrado com sucesso.",
+      });
+
+      // Reset form and close dialog
+      setNewExpense({
+        category: "",
+        subcategory: "",
+        amount: "",
+        currency: "BRL",
+        description: "",
+        date: new Date().toISOString().split('T')[0],
+        location: "",
+        receiptFile: null
+      });
+      
+      setIsAddingExpense(false);
+
+      // Refresh expenses
+      fetchExpenses();
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o gasto. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleUpdateBudget = async () => {
