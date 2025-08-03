@@ -508,13 +508,17 @@ export default function DocumentosViagem() {
                                     )}
                                     
                                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                      <div className="flex items-center gap-1">
-                                        <Calendar className="w-3 h-3" />
-                                        {new Date(document.created_at).toLocaleDateString('pt-BR')}
+                                      <div className="flex items-center gap-1 min-w-0">
+                                        <Calendar className="w-3 h-3 flex-shrink-0" />
+                                        <span className="whitespace-nowrap">
+                                          {new Date(document.created_at).toLocaleDateString('pt-BR')}
+                                        </span>
                                       </div>
-                                      <div className="flex items-center gap-1">
-                                        <FileText className="w-3 h-3" />
-                                        {document.file_name}
+                                      <div className="flex items-center gap-1 min-w-0 flex-1">
+                                        <FileText className="w-3 h-3 flex-shrink-0" />
+                                        <span className="truncate" title={document.file_name}>
+                                          {document.file_name}
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
