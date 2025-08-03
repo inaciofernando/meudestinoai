@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, User, Settings, LogOut, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/components/theme-provider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ interface Profile {
 export default function Perfil() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -112,9 +114,12 @@ export default function Perfil() {
     navigate('/');
   };
 
-  const toggleTheme = () => {
+  const toggleTheme = async () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    
+    // Atualizar no perfil local também
     if (profile) {
-      const newTheme = profile.theme_mode === 'light' ? 'dark' : 'light';
       setProfile({ ...profile, theme_mode: newTheme });
     }
   };
@@ -214,7 +219,7 @@ export default function Perfil() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    {profile?.theme_mode === 'dark' ? (
+                    {theme === 'dark' ? (
                       <Moon className="w-5 h-5" />
                     ) : (
                       <Sun className="w-5 h-5" />
@@ -227,7 +232,7 @@ export default function Perfil() {
                     </div>
                   </div>
                   <Switch
-                    checked={profile?.theme_mode === 'dark'}
+                    checked={theme === 'dark'}
                     onCheckedChange={toggleTheme}
                   />
                 </div>
