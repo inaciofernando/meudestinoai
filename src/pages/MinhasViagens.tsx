@@ -1,4 +1,5 @@
 import { PWALayout } from "@/components/layout/PWALayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,8 +62,9 @@ export default function MinhasViagens() {
   };
 
   return (
-    <PWALayout>
-      <div className="space-y-4">
+    <ProtectedRoute>
+      <PWALayout>
+        <div className="space-y-4">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -123,7 +125,8 @@ export default function MinhasViagens() {
             </Card>
           ))}
         </div>
-      </div>
-    </PWALayout>
+        </div>
+      </PWALayout>
+    </ProtectedRoute>
   );
 }

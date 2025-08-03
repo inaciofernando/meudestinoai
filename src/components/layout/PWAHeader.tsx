@@ -1,27 +1,60 @@
-import { Bell, Search, Menu } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser } from "@supabase/supabase-js";
+import { 
+  Bell, 
+  Menu, 
+  Search, 
+  User,
+  MoreHorizontal,
+  Settings,
+  LogOut,
+  Plane
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 export const PWAHeader = () => {
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-16 items-center justify-between px-4">
+        {/* Left side - Mobile menu and logo */}
         <div className="flex items-center gap-4">
-          {/* Menu móvel */}
+          {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
@@ -29,9 +62,6 @@ export const PWAHeader = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80">
-              <SheetHeader>
-                <SheetTitle className="text-left">Menu</SheetTitle>
-              </SheetHeader>
               <div className="mt-6 space-y-4">
                 <Button variant="outline" className="w-full justify-start">
                   Configurações
@@ -48,12 +78,14 @@ export const PWAHeader = () => {
 
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-ocean rounded-lg"></div>
-            <h1 className="text-xl font-bold text-primary hidden sm:block">TravelManager</h1>
+            <div className="w-8 h-8 bg-gradient-ocean rounded-full flex items-center justify-center">
+              <Plane className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <h1 className="text-xl font-bold text-primary hidden sm:block">Travel Manager</h1>
           </div>
         </div>
 
-        {/* Search - Hidden on mobile */}
+        {/* Center - Search (hidden on mobile) */}
         <div className="relative max-w-md hidden md:block">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input 
@@ -62,30 +94,54 @@ export const PWAHeader = () => {
           />
         </div>
 
-        {/* User actions */}
+        {/* Right side - User Actions */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-highlight rounded-full"></span>
-          </Button>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 px-2">
-                <Avatar className="w-8 h-8">
-                  <AvatarFallback className="bg-gradient-ocean text-white text-sm">
-                    U
-                  </AvatarFallback>
-                </Avatar>
-                <span className="hidden md:block font-medium text-sm">Usuário</span>
+          {user ? (
+            <>
+              {/* Notifications */}
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="w-5 h-5" />
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs"
+                >
+                  3
+                </Badge>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Perfil</DropdownMenuItem>
-              <DropdownMenuItem>Configurações</DropdownMenuItem>
-              <DropdownMenuItem>Sair</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 px-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={user.user_metadata?.avatar_url} />
+                      <AvatarFallback>
+                        <User className="w-4 h-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden md:inline text-sm font-medium">
+                      {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                    </span>
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configurações
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <Button onClick={() => navigate("/auth")} variant="outline">
+              Entrar
+            </Button>
+          )}
         </div>
       </div>
     </header>

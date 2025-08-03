@@ -1,11 +1,31 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, Calendar, Wallet, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-travel.jpg";
 
 export const TravelHero = () => {
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
   
   const features = [
     {
@@ -56,9 +76,9 @@ export const TravelHero = () => {
               size="hero" 
               variant="travel" 
               className="shadow-float"
-              onClick={() => navigate('/viagens')}
+              onClick={() => navigate(user ? '/viagens' : '/auth')}
             >
-              Começar Agora
+              {user ? "Acessar Dashboard" : "Começar Agora"}
             </Button>
             <Button size="hero" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">
               Explorar Funcionalidades
