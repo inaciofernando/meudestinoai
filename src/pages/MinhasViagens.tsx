@@ -98,19 +98,21 @@ export default function MinhasViagens() {
   const formatDateRange = (startDate: string | null, endDate: string | null) => {
     if (!startDate) return "Data não definida";
     
-    const start = format(new Date(startDate), "dd MMM", { locale: ptBR });
+    // Parse das datas como UTC para evitar problemas de fuso horário
+    const start = format(new Date(startDate + 'T00:00:00'), "dd MMM", { locale: ptBR });
     
     if (!endDate) return start;
     
-    const end = format(new Date(endDate), "dd MMM yyyy", { locale: ptBR });
+    const end = format(new Date(endDate + 'T00:00:00'), "dd MMM yyyy", { locale: ptBR });
     return `${start} - ${end}`;
   };
 
   const calculateDuration = (startDate: string | null, endDate: string | null) => {
     if (!startDate || !endDate) return "Duração não definida";
     
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // Parse das datas como UTC para evitar problemas de fuso horário
+    const start = new Date(startDate + 'T00:00:00');
+    const end = new Date(endDate + 'T00:00:00');
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
