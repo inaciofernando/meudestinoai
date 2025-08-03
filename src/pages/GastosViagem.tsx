@@ -676,11 +676,48 @@ export default function GastosViagem() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Receipt className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Nenhum gasto registrado ainda</p>
-                      <p className="text-sm">Comece adicionando seus primeiros gastos</p>
-                    </div>
+                    {expenses.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <Receipt className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <p>Nenhum gasto registrado ainda</p>
+                        <p className="text-sm">Comece adicionando seus primeiros gastos</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {expenses.map((expense) => {
+                          const category = EXPENSE_CATEGORIES.find(c => c.id === expense.category) || EXPENSE_CATEGORIES[EXPENSE_CATEGORIES.length - 1];
+                          const CategoryIcon = category.icon;
+                          
+                          return (
+                            <div key={expense.id} className="flex items-center justify-between p-4 border rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-full ${category.color} text-white`}>
+                                  <CategoryIcon className="w-4 h-4" />
+                                </div>
+                                <div>
+                                  <p className="font-medium">{expense.description}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {category.name} • {new Date(expense.date).toLocaleDateString('pt-BR')}
+                                    {expense.location && ` • ${expense.location}`}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-destructive">
+                                  {CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$'} {expense.amount.toFixed(2)}
+                                </p>
+                                {expense.receipt_url && (
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                    <Receipt className="w-3 h-3" />
+                                    <span>Cupom anexado</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
