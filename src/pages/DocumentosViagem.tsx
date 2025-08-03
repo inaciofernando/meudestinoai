@@ -319,7 +319,7 @@ export default function DocumentosViagem() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate(`/viagens/${id}`)}
+                onClick={() => navigate(`/viagem/${id}`)}
                 className="rounded-full"
               >
                 <ArrowLeft className="w-5 h-5" />
