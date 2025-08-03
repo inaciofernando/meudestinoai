@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -29,7 +30,9 @@ import {
   Map,
   Edit,
   Trash2,
-  Save
+  Save,
+  Image as ImageIcon,
+  X
 } from "lucide-react";
 
 interface Trip {
@@ -56,6 +59,7 @@ interface RoteiroPonto {
   location: string;
   category: string;
   order_index: number;
+  images?: string[];
 }
 
 const CATEGORY_CONFIG = {
@@ -87,6 +91,9 @@ export default function RoteiroSimples() {
   const [editingPonto, setEditingPonto] = useState<RoteiroPonto | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [pontoToDelete, setPontoToDelete] = useState<RoteiroPonto | null>(null);
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Form state for new/edit ponto
   const [formData, setFormData] = useState({
@@ -96,7 +103,8 @@ export default function RoteiroSimples() {
     title: "",
     description: "",
     location: "",
-    category: "activity"
+    category: "activity",
+    images: [] as string[]
   });
 
   const getTotalDays = (startDate: string | null, endDate: string | null): number => {
@@ -228,7 +236,8 @@ export default function RoteiroSimples() {
           location: formData.location,
           category: formData.category,
           order_index: pontos.filter(p => p.day_number === formData.day_number).length,
-          user_id: user.id
+          user_id: user.id,
+          images: formData.images
         });
 
       if (error) throw error;
@@ -246,7 +255,8 @@ export default function RoteiroSimples() {
         title: "",
         description: "",
         location: "",
-        category: "activity"
+        category: "activity",
+        images: []
       });
       setIsAddingPonto(false);
       fetchPontos();
@@ -269,7 +279,8 @@ export default function RoteiroSimples() {
       title: ponto.title,
       description: ponto.description || "",
       location: ponto.location,
-      category: ponto.category
+      category: ponto.category,
+      images: ponto.images || []
     });
     setIsEditingPonto(true);
   };
@@ -294,7 +305,8 @@ export default function RoteiroSimples() {
           title: formData.title,
           description: formData.description,
           location: formData.location,
-          category: formData.category
+          category: formData.category,
+          images: formData.images
         })
         .eq('id', editingPonto.id)
         .eq('user_id', user.id);
@@ -367,7 +379,13 @@ export default function RoteiroSimples() {
     }
     acc[ponto.day_number].push(ponto);
     return acc;
-  }, {} as Record<number, RoteiroPonto[]>);
+    }, {} as Record<number, RoteiroPonto[]>);
+
+  const openImageViewer = (images: string[], startIndex: number = 0) => {
+    setSelectedImages(images);
+    setCurrentImageIndex(startIndex);
+    setImageViewerOpen(true);
+  };
 
   if (loading) {
     return (
@@ -479,12 +497,37 @@ export default function RoteiroSimples() {
                                     <span className="truncate">{ponto.location}</span>
                                   </div>
                                   
-                                  {ponto.description && (
-                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                      {ponto.description}
-                                    </p>
-                                  )}
-                                </div>
+                                   {ponto.description && (
+                                     <p className="text-sm text-muted-foreground line-clamp-2">
+                                       {ponto.description}
+                                     </p>
+                                   )}
+                                   
+                                   {ponto.images && ponto.images.length > 0 && (
+                                     <div className="mt-2">
+                                       <div className="flex gap-2 overflow-x-auto pb-1">
+                                         {ponto.images.slice(0, 3).map((image, imgIndex) => (
+                                           <div
+                                             key={imgIndex}
+                                             className="relative flex-shrink-0 cursor-pointer"
+                                             onClick={() => openImageViewer(ponto.images!, imgIndex)}
+                                           >
+                                             <img
+                                               src={image}
+                                               alt={`${ponto.title} ${imgIndex + 1}`}
+                                               className="w-16 h-12 object-cover rounded border"
+                                             />
+                                             {imgIndex === 2 && ponto.images.length > 3 && (
+                                               <div className="absolute inset-0 bg-black/50 rounded flex items-center justify-center text-white text-xs font-medium">
+                                                 +{ponto.images.length - 3}
+                                               </div>
+                                             )}
+                                           </div>
+                                         ))}
+                                       </div>
+                                     </div>
+                                   )}
+                                 </div>
 
                                 <div className="flex flex-col gap-1">
                                   <Button
@@ -610,15 +653,24 @@ export default function RoteiroSimples() {
                 />
               </div>
 
-              <div>
-                <Label>Descrição</Label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  placeholder="Detalhes sobre o local ou atividade"
-                  rows={3}
-                />
-              </div>
+               <div>
+                 <Label>Descrição</Label>
+                 <Textarea
+                   value={formData.description}
+                   onChange={(e) => setFormData({...formData, description: e.target.value})}
+                   placeholder="Detalhes sobre o local ou atividade"
+                   rows={3}
+                 />
+               </div>
+
+               <div>
+                 <Label>Imagens</Label>
+                 <ItineraryImageUpload
+                   images={formData.images}
+                   onImagesChange={(images) => setFormData({...formData, images})}
+                   maxImages={5}
+                 />
+               </div>
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" onClick={() => setIsAddingPonto(false)} className="flex-1">
@@ -710,15 +762,24 @@ export default function RoteiroSimples() {
                 />
               </div>
 
-              <div>
-                <Label>Descrição</Label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  placeholder="Detalhes sobre o local ou atividade"
-                  rows={3}
-                />
-              </div>
+               <div>
+                 <Label>Descrição</Label>
+                 <Textarea
+                   value={formData.description}
+                   onChange={(e) => setFormData({...formData, description: e.target.value})}
+                   placeholder="Detalhes sobre o local ou atividade"
+                   rows={3}
+                 />
+               </div>
+
+               <div>
+                 <Label>Imagens</Label>
+                 <ItineraryImageUpload
+                   images={formData.images}
+                   onImagesChange={(images) => setFormData({...formData, images})}
+                   maxImages={5}
+                 />
+               </div>
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" onClick={() => setIsEditingPonto(false)} className="flex-1">
@@ -757,9 +818,76 @@ export default function RoteiroSimples() {
                 Excluir
               </AlertDialogAction>
             </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </PWALayout>
-    </ProtectedRoute>
-  );
-}
+           </AlertDialogContent>
+         </AlertDialog>
+
+         {/* Image Viewer Dialog */}
+         <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
+           <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+             <div className="relative">
+               <Button
+                 variant="ghost"
+                 size="icon"
+                 className="absolute top-2 right-2 z-10 bg-black/50 text-white hover:bg-black/70"
+                 onClick={() => setImageViewerOpen(false)}
+               >
+                 <X className="w-4 h-4" />
+               </Button>
+               
+               {selectedImages.length > 0 && (
+                 <div className="space-y-4">
+                   <div className="relative">
+                     <img
+                       src={selectedImages[currentImageIndex]}
+                       alt={`Imagem ${currentImageIndex + 1}`}
+                       className="w-full h-[60vh] object-contain bg-black rounded-t-lg"
+                     />
+                     
+                     {selectedImages.length > 1 && (
+                       <>
+                         <Button
+                           variant="ghost"
+                           size="icon"
+                           className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white hover:bg-black/70"
+                           onClick={() => setCurrentImageIndex(Math.max(0, currentImageIndex - 1))}
+                           disabled={currentImageIndex === 0}
+                         >
+                           ←
+                         </Button>
+                         <Button
+                           variant="ghost"
+                           size="icon"
+                           className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white hover:bg-black/70"
+                           onClick={() => setCurrentImageIndex(Math.min(selectedImages.length - 1, currentImageIndex + 1))}
+                           disabled={currentImageIndex === selectedImages.length - 1}
+                         >
+                           →
+                         </Button>
+                       </>
+                     )}
+                   </div>
+                   
+                   {selectedImages.length > 1 && (
+                     <div className="flex gap-2 p-4 overflow-x-auto">
+                       {selectedImages.map((image, index) => (
+                         <img
+                           key={index}
+                           src={image}
+                           alt={`Miniatura ${index + 1}`}
+                           className={`w-16 h-12 object-cover rounded cursor-pointer border-2 ${
+                             index === currentImageIndex ? 'border-primary' : 'border-transparent'
+                           }`}
+                           onClick={() => setCurrentImageIndex(index)}
+                         />
+                       ))}
+                     </div>
+                   )}
+                 </div>
+               )}
+             </div>
+           </DialogContent>
+         </Dialog>
+       </PWALayout>
+     </ProtectedRoute>
+   );
+ }
