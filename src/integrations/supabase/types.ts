@@ -125,6 +125,57 @@ export type Database = {
         }
         Relationships: []
       }
+      hotels: {
+        Row: {
+          check_in_date: string
+          check_out_date: string
+          created_at: string
+          hotel_image_url: string | null
+          hotel_link: string | null
+          hotel_name: string
+          id: string
+          notes: string | null
+          reservation_amount: number | null
+          trip_id: string
+          updated_at: string
+          user_id: string
+          voucher_file_name: string | null
+          voucher_file_url: string | null
+        }
+        Insert: {
+          check_in_date: string
+          check_out_date: string
+          created_at?: string
+          hotel_image_url?: string | null
+          hotel_link?: string | null
+          hotel_name: string
+          id?: string
+          notes?: string | null
+          reservation_amount?: number | null
+          trip_id: string
+          updated_at?: string
+          user_id: string
+          voucher_file_name?: string | null
+          voucher_file_url?: string | null
+        }
+        Update: {
+          check_in_date?: string
+          check_out_date?: string
+          created_at?: string
+          hotel_image_url?: string | null
+          hotel_link?: string | null
+          hotel_name?: string
+          id?: string
+          notes?: string | null
+          reservation_amount?: number | null
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+          voucher_file_name?: string | null
+          voucher_file_url?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

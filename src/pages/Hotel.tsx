@@ -69,7 +69,7 @@ export default function Hotel() {
   const loadHotels = async () => {
     try {
       const { data, error } = await supabase
-        .from('accommodations')
+        .from('hotels')
         .select('*')
         .eq('trip_id', tripId)
         .eq('user_id', user?.id);
@@ -140,7 +140,7 @@ export default function Hotel() {
       if (editingHotel) {
         // Atualizar hotel existente
         const { error } = await supabase
-          .from('accommodations')
+          .from('hotels')
           .update(hotelData)
           .eq('id', editingHotel.id);
 
@@ -149,7 +149,7 @@ export default function Hotel() {
       } else {
         // Criar novo hotel
         const { error } = await supabase
-          .from('accommodations')
+          .from('hotels')
           .insert([hotelData]);
 
         if (error) throw error;
@@ -175,7 +175,7 @@ export default function Hotel() {
   const handleDeleteHotel = async (hotelId: string) => {
     try {
       const { error } = await supabase
-        .from('accommodations')
+        .from('hotels')
         .delete()
         .eq('id', hotelId);
 
