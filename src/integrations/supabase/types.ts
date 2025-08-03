@@ -48,6 +48,7 @@ export type Database = {
           destination: string
           end_date: string | null
           id: string
+          images: string[] | null
           start_date: string | null
           status: string | null
           title: string
@@ -60,6 +61,7 @@ export type Database = {
           destination: string
           end_date?: string | null
           id?: string
+          images?: string[] | null
           start_date?: string | null
           status?: string | null
           title: string
@@ -72,6 +74,7 @@ export type Database = {
           destination?: string
           end_date?: string | null
           id?: string
+          images?: string[] | null
           start_date?: string | null
           status?: string | null
           title?: string
