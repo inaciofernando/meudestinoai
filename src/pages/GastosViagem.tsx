@@ -409,21 +409,29 @@ export default function GastosViagem() {
       return;
     }
 
-    console.log("Iniciando análise - isAnalyzingReceipt:", isAnalyzingReceipt);
+    console.log("🚀 INICIANDO ANÁLISE - Estado atual:", { isAnalyzingReceipt, analysisStep });
     setIsAnalyzingReceipt(true);
     setAnalysisStep("✈️ Preparando para decolagem...");
-    console.log("Estado atualizado - isAnalyzingReceipt:", true);
+    
+    // Forçar re-render
+    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log("✅ Estado atualizado:", { isAnalyzingReceipt: true, analysisStep: "✈️ Preparando para decolagem..." });
 
     try {
       // Convert file to base64
       const reader = new FileReader();
       reader.onload = async (e) => {
+        console.log("📤 Processando imagem...");
         setAnalysisStep("🧳 Fazendo check-in...");
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
         const base64 = e.target?.result as string;
         const imageBase64 = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
 
         try {
+          console.log("🤖 Enviando para IA...");
           setAnalysisStep("🗺️ IA explorando o cupom...");
+          await new Promise(resolve => setTimeout(resolve, 200));
           
           const { data, error } = await supabase.functions.invoke('analyze-receipt', {
             body: { imageBase64 }
@@ -641,36 +649,33 @@ export default function GastosViagem() {
                       <div className="mt-3">
                         <Button 
                           onClick={() => {
-                            console.log("Botão clicado - isAnalyzingReceipt:", isAnalyzingReceipt);
+                            console.log("🎯 BOTÃO CLICADO! Estado antes:", { isAnalyzingReceipt, analysisStep });
                             handleAnalyzeReceipt();
-                          }} 
+                          }}
                           disabled={isAnalyzingReceipt}
                           variant="outline"
                           className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 disabled:opacity-75 disabled:cursor-not-allowed disabled:hover:from-purple-50 disabled:hover:to-blue-50"
-                        >
-                          {(() => {
-                            console.log("Renderizando botão - isAnalyzingReceipt:", isAnalyzingReceipt, "analysisStep:", analysisStep);
-                            return isAnalyzingReceipt ? (
-                              <div className="flex items-center justify-center gap-3">
-                                <div className="relative">
-                                  {/* Ícone de viagem animado */}
-                                  <Plane className="w-5 h-5 text-purple-600 animate-bounce" />
-                                  {/* Círculo de loading */}
-                                  <div className="absolute -inset-1 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
-                                </div>
-                                <div className="flex flex-col items-start">
-                                  <span className="text-sm font-medium text-purple-700">Analisando cupom...</span>
-                                  <span className="text-xs text-purple-500">{analysisStep || "Processando..."}</span>
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                <Bot className="w-4 h-4 mr-2 text-purple-600" />
-                                Analisar com IA
-                              </>
-                            );
-                          })()}
-                        </Button>
+                         >
+                           {isAnalyzingReceipt ? (
+                             <div className="flex items-center justify-center gap-3 py-1">
+                               <div className="relative flex items-center justify-center">
+                                 {/* Ícone de viagem animado */}
+                                 <Plane className="w-5 h-5 text-purple-600 animate-bounce z-10" />
+                                 {/* Círculo de loading */}
+                                 <div className="absolute inset-0 w-7 h-7 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                               </div>
+                               <div className="flex flex-col items-start">
+                                 <span className="text-sm font-medium text-purple-700">Analisando cupom...</span>
+                                 <span className="text-xs text-purple-500">{analysisStep || "Processando..."}</span>
+                               </div>
+                             </div>
+                           ) : (
+                             <>
+                               <Bot className="w-4 h-4 mr-2 text-purple-600" />
+                               Analisar com IA
+                             </>
+                           )}
+                         </Button>
                       </div>
                     )}
                   </div>
