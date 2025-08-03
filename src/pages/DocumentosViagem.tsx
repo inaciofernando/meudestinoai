@@ -97,6 +97,7 @@ export default function DocumentosViagem() {
   const [isAddingDocument, setIsAddingDocument] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<keyof typeof DOCUMENT_CATEGORIES | 'all'>('all');
   const [uploading, setUploading] = useState(false);
+  const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
 
   // Form states
   const [newDocuments, setNewDocuments] = useState({
@@ -580,14 +581,14 @@ export default function DocumentosViagem() {
                                     </div>
                                   </div>
                                   
-                                  <div className="flex gap-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => window.open(document.file_url, '_blank')}
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </Button>
+                                   <div className="flex gap-1">
+                                     <Button
+                                       variant="ghost"
+                                       size="sm"
+                                       onClick={() => setViewingDocument(document)}
+                                     >
+                                       <Eye className="w-4 h-4" />
+                                     </Button>
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -675,6 +676,146 @@ export default function DocumentosViagem() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Modal de Visualização de Documento */}
+          {viewingDocument && (
+            <Dialog open={!!viewingDocument} onOpenChange={() => setViewingDocument(null)}>
+              <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+                <DialogHeader className="p-4 border-b">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setViewingDocument(null)}
+                        className="rounded-full"
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </Button>
+                      <div>
+                        <DialogTitle className="text-left">{viewingDocument.title}</DialogTitle>
+                        <p className="text-sm text-muted-foreground">{viewingDocument.file_name}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            // Mesmo código de download que já funciona
+                            const urlParts = viewingDocument.file_url.split('/');
+                            const bucketIndex = urlParts.findIndex(part => part === 'trip-documents');
+                            const filePath = urlParts.slice(bucketIndex + 1).join('/');
+                            
+                            const { data, error } = await supabase.storage
+                              .from('trip-documents')
+                              .download(filePath);
+
+                            if (error) {
+                              console.error('Erro no download:', error);
+                              toast({
+                                title: "Erro no download",
+                                description: "Não foi possível baixar o arquivo. Tente novamente.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+
+                            const url = URL.createObjectURL(data);
+                            const link = window.document.createElement('a');
+                            link.href = url;
+                            link.download = viewingDocument.file_name;
+                            window.document.body.appendChild(link);
+                            link.click();
+                            window.document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                          } catch (error) {
+                            console.error('Erro no download:', error);
+                            toast({
+                              title: "Erro no download",
+                              description: "Não foi possível baixar o arquivo. Tente novamente.",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Baixar
+                      </Button>
+                    </div>
+                  </div>
+                </DialogHeader>
+                <div className="flex-1 p-4">
+                  <div className="w-full h-[70vh] bg-muted rounded-lg flex items-center justify-center">
+                    {viewingDocument.file_type.startsWith('image/') ? (
+                      <img 
+                        src={viewingDocument.file_url} 
+                        alt={viewingDocument.title}
+                        className="max-w-full max-h-full object-contain rounded-lg"
+                      />
+                    ) : viewingDocument.file_type === 'application/pdf' ? (
+                      <iframe 
+                        src={viewingDocument.file_url} 
+                        className="w-full h-full rounded-lg"
+                        title={viewingDocument.title}
+                      />
+                    ) : (
+                      <div className="text-center">
+                        <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                        <p className="text-lg font-medium mb-2">Prévia não disponível</p>
+                        <p className="text-muted-foreground mb-4">
+                          Tipo de arquivo: {viewingDocument.file_type}
+                        </p>
+                        <Button
+                          onClick={async () => {
+                            try {
+                              const urlParts = viewingDocument.file_url.split('/');
+                              const bucketIndex = urlParts.findIndex(part => part === 'trip-documents');
+                              const filePath = urlParts.slice(bucketIndex + 1).join('/');
+                              
+                              const { data, error } = await supabase.storage
+                                .from('trip-documents')
+                                .download(filePath);
+
+                              if (error) {
+                                console.error('Erro no download:', error);
+                                toast({
+                                  title: "Erro no download",
+                                  description: "Não foi possível baixar o arquivo. Tente novamente.",
+                                  variant: "destructive"
+                                });
+                                return;
+                              }
+
+                              const url = URL.createObjectURL(data);
+                              const link = window.document.createElement('a');
+                              link.href = url;
+                              link.download = viewingDocument.file_name;
+                              window.document.body.appendChild(link);
+                              link.click();
+                              window.document.body.removeChild(link);
+                              URL.revokeObjectURL(url);
+                            } catch (error) {
+                              console.error('Erro no download:', error);
+                              toast({
+                                title: "Erro no download",
+                                description: "Não foi possível baixar o arquivo. Tente novamente.",
+                                variant: "destructive"
+                              });
+                            }
+                          }}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Baixar Arquivo
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </ProtectedRoute>
     </PWALayout>
