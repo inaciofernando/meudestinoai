@@ -630,25 +630,6 @@ export default function Roteiro() {
                                         <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{ponto.description}</p>
                                       )}
                                       
-                                      {ponto.images && ponto.images.length > 1 && (
-                                        <div className="flex gap-2 mt-3">
-                                          <span className="text-xs text-muted-foreground font-medium mr-1">+{ponto.images.length - 1} foto{ponto.images.length > 2 ? 's' : ''}</span>
-                                          {ponto.images.slice(1, 4).map((image, imgIndex) => (
-                                            <div key={imgIndex} className="w-10 h-10 rounded-lg overflow-hidden border border-border/50">
-                                              <img
-                                                src={image}
-                                                alt={`${ponto.title} ${imgIndex + 2}`}
-                                                className="w-full h-full object-cover"
-                                              />
-                                            </div>
-                                          ))}
-                                          {ponto.images.length > 4 && (
-                                            <div className="w-10 h-10 bg-muted rounded-lg border border-border/50 flex items-center justify-center text-xs text-muted-foreground font-medium">
-                                              +{ponto.images.length - 4}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
                                     </div>
                                   </div>
                                 </div>
