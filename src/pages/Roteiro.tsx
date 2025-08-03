@@ -166,6 +166,10 @@ export default function Roteiro() {
         setRoteiro(roteiroData);
 
         // Fetch roteiro pontos
+        console.log("🔍 Buscando pontos do roteiro:");
+        console.log("- User ID:", user.id);
+        console.log("- Roteiro ID:", roteiroData.id);
+        
         const { data: pontosData, error: pontosError } = await supabase
           .from("roteiro_pontos")
           .select("*")
@@ -174,10 +178,16 @@ export default function Roteiro() {
           .order("day_number", { ascending: true })
           .order("order_index", { ascending: true });
 
+        console.log("📊 Resultado da query:");
+        console.log("- Pontos encontrados:", pontosData);
+        console.log("- Erro:", pontosError);
+        console.log("- Total de pontos:", pontosData?.length || 0);
+
         if (pontosError) {
           console.error("Erro ao buscar pontos do roteiro:", pontosError);
         } else {
           setPontos((pontosData || []) as RoteiroPonto[]);
+          console.log("✅ Pontos carregados no estado");
         }
         
       } catch (error) {
@@ -208,9 +218,14 @@ export default function Roteiro() {
   };
 
   const getDayPontos = (day: number) => {
-    return pontos
-      .filter(ponto => ponto.day_number === day)
-      .sort((a, b) => a.order_index - b.order_index);
+    const filteredPontos = pontos.filter(ponto => ponto.day_number === day);
+    console.log(`🗓️ getDayPontos(${day}):`, {
+      totalPontos: pontos.length,
+      pontosAll: pontos,
+      filteredPontos,
+      dayRequested: day
+    });
+    return filteredPontos.sort((a, b) => a.order_index - b.order_index);
   };
 
   const handleAddPonto = async () => {
