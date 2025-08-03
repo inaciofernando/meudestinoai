@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, Camera } from "lucide-react";
+import { Calendar, MapPin, Camera, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -185,224 +185,250 @@ export function ExpenseForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] p-0 gap-0 fixed bottom-0 left-0 right-0 top-auto rounded-t-xl border-t sm:relative sm:top-auto sm:bottom-auto sm:left-auto sm:right-auto sm:rounded-lg sm:border data-[state=open]:slide-in-from-bottom-80 data-[state=open]:sm:slide-in-from-bottom-0 data-[state=closed]:slide-out-to-bottom-80 data-[state=closed]:sm:slide-out-to-bottom-0 max-h-[85vh] sm:max-h-[90vh]">
-        <div className="flex flex-col max-h-full">
-          <DialogHeader className="p-6 pb-4 flex-shrink-0 border-b bg-background/95 backdrop-blur-sm">
-            <div className="w-12 h-1 bg-muted rounded-full mx-auto mb-4 sm:hidden"></div>
-            <DialogTitle className="text-xl font-semibold">
-              {editingItem ? "Editar Gasto" : "Adicionar Novo Gasto"}
-            </DialogTitle>
-          </DialogHeader>
+      <DialogContent className="w-full max-w-md mx-auto p-0 gap-0 fixed bottom-0 left-1/2 -translate-x-1/2 rounded-t-3xl border-t shadow-2xl max-h-[90vh] sm:relative sm:bottom-auto sm:left-auto sm:transform-none sm:rounded-xl sm:border data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-full data-[state=open]:sm:slide-in-from-bottom-0 data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-full">
+        
+        {/* Header */}
+        <div className="relative p-6 pb-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-t-3xl sm:rounded-t-xl border-b">
+          <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4 sm:hidden"></div>
           
-          <div className="flex-1 overflow-y-auto p-6 pt-4">
-            <div className="space-y-5">
-              {/* Status Toggle */}
-              <div className="flex items-center justify-center p-4 bg-muted/30 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <span className={`text-sm font-medium ${!isConfirmed ? 'text-primary' : 'text-muted-foreground'}`}>
-                    Planejado
-                  </span>
-                  <Switch
-                    checked={isConfirmed}
-                    onCheckedChange={setIsConfirmed}
-                    className="data-[state=checked]:bg-green-600"
-                  />
-                  <span className={`text-sm font-medium ${isConfirmed ? 'text-green-600' : 'text-muted-foreground'}`}>
-                    Realizado
-                  </span>
-                </div>
-              </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-foreground">
+                {editingItem ? "Editar Gasto" : "Novo Gasto"}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {editingItem ? "Atualize as informações do gasto" : "Adicione um novo item ao seu orçamento"}
+              </p>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onClose}
+              className="h-8 w-8 p-0 rounded-full hover:bg-muted"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
 
-              {/* Receipt Upload */}
-              <div>
-                <Label className="text-base font-medium">Comprovante</Label>
-                <div className="mt-2 border-2 border-dashed border-muted rounded-lg p-4 text-center bg-muted/10">
-                  {receiptImageUrl ? (
-                    <div className="space-y-3">
+        {/* Content */}
+        <div className="max-h-[calc(90vh-140px)] overflow-y-auto">
+          <div className="p-6 space-y-6">
+            
+            {/* Status Toggle */}
+            <div className="flex items-center justify-center p-4 bg-muted/30 rounded-xl">
+              <div className="flex items-center space-x-4">
+                <span className={`text-sm font-medium transition-colors ${!isConfirmed ? 'text-primary' : 'text-muted-foreground'}`}>
+                  Planejado
+                </span>
+                <Switch
+                  checked={isConfirmed}
+                  onCheckedChange={setIsConfirmed}
+                  className="data-[state=checked]:bg-green-500"
+                />
+                <span className={`text-sm font-medium transition-colors ${isConfirmed ? 'text-green-600' : 'text-muted-foreground'}`}>
+                  Realizado
+                </span>
+              </div>
+            </div>
+
+            {/* Receipt Upload */}
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Comprovante</Label>
+              <div className="border-2 border-dashed border-muted rounded-xl p-6 text-center bg-muted/20 hover:bg-muted/30 transition-colors">
+                {receiptImageUrl ? (
+                  <div className="space-y-3">
+                    <div className="relative inline-block">
                       <img 
                         src={receiptImageUrl} 
                         alt="Comprovante" 
-                        className="max-h-40 mx-auto rounded-lg shadow-sm"
+                        className="max-h-32 rounded-lg shadow-md"
                       />
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="destructive"
                         size="sm"
                         onClick={() => setReceiptImageUrl("")}
+                        className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
                       >
-                        Remover
+                        <X className="h-3 w-3" />
                       </Button>
                     </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <Camera className="h-10 w-10 mx-auto text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        Adicione uma foto do comprovante
-                      </p>
-                      <ImageUpload
-                        images={[]}
-                        onImagesChange={(images) => setReceiptImageUrl(images[0] || "")}
-                        maxImages={1}
-                      />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                      <Camera className="h-6 w-6 text-primary" />
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <Label htmlFor="title" className="text-base font-medium">Título *</Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Ex: Passagem aérea"
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="category" className="text-base font-medium">Categoria *</Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Location and Date */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="location" className="text-base font-medium">Local</Label>
-                  <div className="relative mt-1">
-                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="location"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      placeholder="Ex: Universal CityWalk, Orlando"
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="expense-date" className="text-base font-medium">Data</Label>
-                  <div className="relative mt-1">
-                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="expense-date"
-                      type="date"
-                      value={expenseDate}
-                      onChange={(e) => setExpenseDate(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment and Values */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="payment-method" className="text-base font-medium">Método de Pagamento</Label>
-                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Selecione o método de pagamento" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAYMENT_METHODS.map(method => (
-                        <SelectItem key={method} value={method}>{method}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="planned-amount" className="text-base font-medium">Valor Planejado (R$) *</Label>
-                    <Input
-                      id="planned-amount"
-                      type="number"
-                      step="0.01"
-                      value={plannedAmount}
-                      onChange={(e) => setPlannedAmount(e.target.value)}
-                      placeholder="0.00"
-                      className="mt-1"
-                    />
-                  </div>
-
-                  {isConfirmed && (
                     <div>
-                      <Label htmlFor="actual-amount" className="text-base font-medium">Valor Gasto (R$)</Label>
-                      <Input
-                        id="actual-amount"
-                        type="number"
-                        step="0.01"
-                        value={actualAmount}
-                        onChange={(e) => setActualAmount(e.target.value)}
-                        placeholder="0.00"
-                        className="mt-1"
-                      />
+                      <p className="text-sm font-medium text-foreground mb-1">
+                        Adicionar comprovante
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Tire uma foto ou selecione uma imagem
+                      </p>
                     </div>
-                  )}
+                    <ImageUpload
+                      images={[]}
+                      onImagesChange={(images) => setReceiptImageUrl(images[0] || "")}
+                      maxImages={1}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Basic Info */}
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-sm font-semibold">Título *</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Ex: Passagem aérea"
+                  className="h-11 rounded-xl border-2 focus:border-primary"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-sm font-semibold">Categoria *</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="h-11 rounded-xl border-2 bg-background">
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {CATEGORIES.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Location and Date */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="location" className="text-sm font-semibold">Local</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Ex: Universal CityWalk, Orlando"
+                    className="h-11 pl-10 rounded-xl border-2 focus:border-primary"
+                  />
                 </div>
               </div>
 
-              {/* Description and Notes */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="description" className="text-base font-medium">Descrição</Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Detalhes sobre o gasto..."
-                    className="mt-1"
-                    rows={2}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="notes" className="text-base font-medium">Notas</Label>
-                  <Textarea
-                    id="notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Observações adicionais..."
-                    className="mt-1"
-                    rows={2}
+              <div className="space-y-2">
+                <Label htmlFor="expense-date" className="text-sm font-semibold">Data</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="expense-date"
+                    type="date"
+                    value={expenseDate}
+                    onChange={(e) => setExpenseDate(e.target.value)}
+                    className="h-11 pl-10 rounded-xl border-2 focus:border-primary"
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Payment Method */}
+            <div className="space-y-2">
+              <Label htmlFor="payment-method" className="text-sm font-semibold">Método de Pagamento</Label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger className="h-11 rounded-xl border-2 bg-background">
+                  <SelectValue placeholder="Selecione o método de pagamento" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {PAYMENT_METHODS.map(method => (
+                    <SelectItem key={method} value={method}>{method}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Values */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="planned-amount" className="text-sm font-semibold">Valor Planejado (R$) *</Label>
+                <Input
+                  id="planned-amount"
+                  type="number"
+                  step="0.01"
+                  value={plannedAmount}
+                  onChange={(e) => setPlannedAmount(e.target.value)}
+                  placeholder="0,00"
+                  className="h-11 rounded-xl border-2 focus:border-primary text-lg font-semibold"
+                />
+              </div>
+
+              {isConfirmed && (
+                <div className="space-y-2">
+                  <Label htmlFor="actual-amount" className="text-sm font-semibold">Valor Gasto (R$)</Label>
+                  <Input
+                    id="actual-amount"
+                    type="number"
+                    step="0.01"
+                    value={actualAmount}
+                    onChange={(e) => setActualAmount(e.target.value)}
+                    placeholder="0,00"
+                    className="h-11 rounded-xl border-2 focus:border-primary text-lg font-semibold"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-semibold">Descrição</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Detalhes sobre o gasto..."
+                className="rounded-xl border-2 focus:border-primary resize-none"
+                rows={3}
+              />
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="text-sm font-semibold">Notas</Label>
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Observações adicionais..."
+                className="rounded-xl border-2 focus:border-primary resize-none"
+                rows={2}
+              />
             </div>
           </div>
+        </div>
 
-          {/* Footer Actions */}
-          <div className="flex-shrink-0 p-6 pt-4 border-t bg-background/95 backdrop-blur-sm">
-            <div className="flex gap-3">
-              <Button 
-                onClick={handleSubmit} 
-                className="flex-1"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Salvando..." : (editingItem ? "Atualizar" : "Adicionar")}
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={onClose}
-                className="flex-1"
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-            </div>
+        {/* Footer */}
+        <div className="p-6 pt-4 bg-background border-t rounded-b-3xl sm:rounded-b-xl">
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={onClose}
+              className="flex-1 h-12 rounded-xl font-semibold"
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              className="flex-1 h-12 rounded-xl font-semibold bg-primary hover:bg-primary/90"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Salvando..." : (editingItem ? "Atualizar" : "Adicionar")}
+            </Button>
           </div>
         </div>
       </DialogContent>
