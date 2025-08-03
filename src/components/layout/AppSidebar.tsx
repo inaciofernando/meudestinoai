@@ -27,7 +27,7 @@ const navigation = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Minhas Viagens", url: "/viagens", icon: Map },
   { title: "Planejamento", url: "/planejamento", icon: Calendar },
-  { title: "Orçamento", url: "/orcamento", icon: Wallet },
+  
   { title: "Documentos", url: "/documentos", icon: FileText },
   { title: "Pontos de Interesse", url: "/pontos", icon: MapPin },
 ];

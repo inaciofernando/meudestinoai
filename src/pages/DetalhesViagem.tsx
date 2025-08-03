@@ -35,12 +35,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Move,
-  Settings,
-  DollarSign
+  Settings
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
-import { BudgetManager } from "@/components/BudgetManager";
+
 
 interface Trip {
   id: string;
@@ -54,8 +53,6 @@ interface Trip {
   updated_at: string;
   user_id: string;
   images: string[] | null;
-  total_budget?: number;
-  budget_currency?: string;
 }
 
 const formSchema = z.object({
@@ -494,30 +491,6 @@ export default function DetalhesViagem() {
                 </>
               ) : (
                 <>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="text-green-600 hover:text-green-600"
-                      >
-                        <DollarSign className="w-4 h-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                          <DollarSign className="w-5 h-5 text-green-600" />
-                          Orçamento da Viagem
-                        </DialogTitle>
-                      </DialogHeader>
-                      <BudgetManager 
-                        tripId={trip.id} 
-                        totalBudget={trip.total_budget || 0}
-                        budgetCurrency={trip.budget_currency || "BRL"}
-                      />
-                    </DialogContent>
-                  </Dialog>
                   <Button 
                     variant="outline" 
                     size="sm"

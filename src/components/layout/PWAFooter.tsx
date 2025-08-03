@@ -12,7 +12,7 @@ const navigation = [
   { title: "Início", url: "/viagens", icon: Home, key: "home" },
   { title: "Viagens", url: "/minhas-viagens", icon: Map, key: "trips" },
   { title: "Planos", url: "/planejamento", icon: Calendar, key: "planning" },
-  { title: "Gastos", url: "/orcamento", icon: Wallet, key: "budget" },
+  
   { title: "Pontos", url: "/pontos", icon: MapPin, key: "places" },
 ];
 
