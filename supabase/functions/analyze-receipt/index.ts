@@ -67,7 +67,7 @@ serve(async (req) => {
           role: 'system',
           content: `Você é um assistente especializado em análise de cupons fiscais e gastos de viagem, funcionando como um concierge inteligente de despesas em português brasileiro.
 
-SUA MISSÃO: Analisar cupons fiscais e categorizá-los com precisão para controle de gastos de viagem.
+⚠️ IMPORTANTE: Você DEVE preencher OBRIGATORIAMENTE os campos "category" E "subcategory".
 
 CATEGORIAS E SUBCATEGORIAS DISPONÍVEIS:
 1. "transport" (Transporte): ["Voo", "Táxi", "Uber", "Ônibus", "Trem", "Aluguel de Carro"]
@@ -79,34 +79,30 @@ CATEGORIAS E SUBCATEGORIAS DISPONÍVEIS:
 7. "entertainment" (Entretenimento): ["Cinema", "Teatro", "Balada", "Eventos", "Jogos"]
 8. "miscellaneous" (Diversos): ["Medicamentos", "Comunicação", "Seguro", "Emergência"]
 
-INSTRUÇÕES DE ANÁLISE:
-1. Analise o ESTABELECIMENTO (nome, tipo de negócio)
-2. Analise os PRODUTOS/SERVIÇOS listados no cupom
-3. Considere o CONTEXTO de viagem
-4. Escolha a categoria mais adequada
-5. Escolha a subcategoria específica dentro da categoria
-6. Crie uma descrição concisa mas informativa
+REGRAS OBRIGATÓRIAS:
+✅ SEMPRE preencha "category" com um dos IDs: transport, accommodation, food, transport_local, shopping, attractions, entertainment, miscellaneous
+✅ SEMPRE preencha "subcategory" com uma das opções da lista da categoria escolhida
+✅ Se não conseguir identificar com certeza, use "miscellaneous" + "Emergência"
 
-REGRAS DE CATEGORIZAÇÃO:
-- Restaurantes/Bares/Cafés → "food" + subcategoria específica
-- Postos de gasolina → "transport_local" + "Combustível"  
-- Pedágios → "transport_local" + "Pedágio"
-- Hotéis/Pousadas → "accommodation" + tipo específico
-- Supermercados → "food" + "Supermercado" (mesmo que compre outros itens)
-- Farmácias → "miscellaneous" + "Medicamentos"
-- Táxi/Uber/Apps → "transport" + tipo específico
+EXEMPLOS OBRIGATÓRIOS:
+- Posto de gasolina → "category": "transport_local", "subcategory": "Combustível"
+- Restaurante → "category": "food", "subcategory": "Restaurante"  
+- Pedágio → "category": "transport_local", "subcategory": "Pedágio"
+- Hotel → "category": "accommodation", "subcategory": "Hotel"
+- Supermercado → "category": "food", "subcategory": "Supermercado"
+- Táxi/Uber → "category": "transport", "subcategory": "Táxi" ou "Uber"
 
-Extraia e retorne APENAS um objeto JSON válido com as chaves: amount, date, location, category, subcategory, description.
-
-EXEMPLO DE RESPOSTA:
+FORMATO DE RESPOSTA OBRIGATÓRIO:
 {
-  "amount": 45.90,
-  "date": "2024-01-15", 
-  "location": "Posto Shell BR-101",
-  "category": "transport_local",
-  "subcategory": "Combustível",
-  "description": "Abastecimento - Gasolina comum"
-}`
+  "amount": [número],
+  "date": "YYYY-MM-DD",
+  "location": "[nome do estabelecimento]",
+  "category": "[um dos 8 IDs obrigatórios]",
+  "subcategory": "[uma subcategoria da lista]",
+  "description": "[descrição concisa]"
+}
+
+⚠️ CRÍTICO: NÃO retorne o JSON sem preencher category E subcategory. São campos OBRIGATÓRIOS.`
         },
         {
           role: 'user',
@@ -169,9 +165,12 @@ EXEMPLO DE RESPOSTA:
       extractedData = JSON.parse(cleanedResponse);
       
       // Validate required fields
-      if (!extractedData.amount || !extractedData.category) {
-        console.log('Missing required fields, extracted data:', extractedData);
+      if (!extractedData.category || !extractedData.subcategory) {
+        console.error('IA falhou ao preencher campos obrigatórios:', extractedData);
+        throw new Error('IA não preencheu categoria ou subcategoria. Dados incompletos.');
       }
+      
+      console.log('✅ Validação passou: category e subcategory preenchidos corretamente');
       
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', aiResponse);

@@ -467,8 +467,8 @@ export default function GastosViagem() {
             });
 
             toast({
-              title: "Análise concluída! 🎯",
-              description: `Categorizado como "${extractedData.subcategory || extractedData.category}" de forma inteligente.`,
+              title: "Concierge de Gastos ativado! 🎯",
+              description: `Categorizado: ${extractedData.subcategory} (${EXPENSE_CATEGORIES.find(c => c.id === extractedData.category)?.name}). Todos os campos preenchidos automaticamente!`,
             });
           } else {
             console.error('Resposta inválida da IA:', data);
