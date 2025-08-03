@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      budget_items: {
+        Row: {
+          actual_amount: number | null
+          category: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          is_confirmed: boolean
+          planned_amount: number
+          title: string
+          trip_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_amount?: number | null
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_confirmed?: boolean
+          planned_amount: number
+          title: string
+          trip_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_amount?: number | null
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_confirmed?: boolean
+          planned_amount?: number
+          title?: string
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -43,6 +88,7 @@ export type Database = {
       }
       trips: {
         Row: {
+          budget_currency: string | null
           created_at: string
           description: string | null
           destination: string
@@ -52,10 +98,12 @@ export type Database = {
           start_date: string | null
           status: string | null
           title: string
+          total_budget: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          budget_currency?: string | null
           created_at?: string
           description?: string | null
           destination: string
@@ -65,10 +113,12 @@ export type Database = {
           start_date?: string | null
           status?: string | null
           title: string
+          total_budget?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          budget_currency?: string | null
           created_at?: string
           description?: string | null
           destination?: string
@@ -78,6 +128,7 @@ export type Database = {
           start_date?: string | null
           status?: string | null
           title?: string
+          total_budget?: number | null
           updated_at?: string
           user_id?: string
         }
