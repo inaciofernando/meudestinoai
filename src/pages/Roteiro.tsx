@@ -141,18 +141,59 @@ export default function Roteiro() {
 
         setTrip(tripData);
 
-        // TODO: Fetch roteiro and pontos when database is ready
-        // For now, create a mock roteiro
-        const mockRoteiro: Roteiro = {
-          id: "mock-roteiro",
-          trip_id: tripData.id,
-          title: `Roteiro ${tripData.title}`,
-          description: `Planejamento detalhado para ${tripData.destination}`,
-          total_days: getTotalDays(tripData.start_date, tripData.end_date),
-          created_at: new Date().toISOString()
-        };
+        // Fetch or create roteiro for this trip
+        let { data: roteiroData, error: roteiroError } = await supabase
+          .from("roteiros")
+          .select("*")
+          .eq("trip_id", tripData.id)
+          .eq("user_id", user.id)
+          .single();
+
+        if (roteiroError && roteiroError.code !== 'PGRST116') {
+          console.error("Erro ao buscar roteiro:", roteiroError);
+          navigate("/viagens");
+          return;
+        }
+
+        // Create roteiro if it doesn't exist
+        if (!roteiroData) {
+          const { data: newRoteiro, error: createError } = await supabase
+            .from("roteiros")
+            .insert({
+              trip_id: tripData.id,
+              title: `Roteiro ${tripData.title}`,
+              description: `Planejamento detalhado para ${tripData.destination}`,
+              total_days: getTotalDays(tripData.start_date, tripData.end_date),
+              user_id: user.id
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            console.error("Erro ao criar roteiro:", createError);
+            navigate("/viagens");
+            return;
+          }
+
+          roteiroData = newRoteiro;
+        }
         
-        setRoteiro(mockRoteiro);
+        setRoteiro(roteiroData);
+
+        // Fetch roteiro pontos
+        const { data: pontosData, error: pontosError } = await supabase
+          .from("roteiro_pontos")
+          .select("*")
+          .eq("roteiro_id", roteiroData.id)
+          .eq("user_id", user.id)
+          .order("day_number", { ascending: true })
+          .order("order_index", { ascending: true });
+
+        if (pontosError) {
+          console.error("Erro ao buscar pontos do roteiro:", pontosError);
+        } else {
+          setPontos((pontosData || []) as RoteiroPonto[]);
+        }
         
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
@@ -197,47 +238,70 @@ export default function Roteiro() {
       return;
     }
 
-    // For now, add to local state (will need database implementation later)
-    const newPontoData: RoteiroPonto = {
-      id: `ponto-${Date.now()}`,
-      roteiro_id: roteiro.id,
-      day_number: newPonto.day_number,
-      time_start: newPonto.time_start,
-      time_end: newPonto.time_end,
-      title: newPonto.title,
-      description: newPonto.description,
-      location: newPonto.location,
-      category: newPonto.category,
-      priority: newPonto.priority,
-      estimated_cost: newPonto.estimated_cost ? parseFloat(newPonto.estimated_cost) : undefined,
-      notes: newPonto.notes,
-      order_index: getDayPontos(newPonto.day_number).length,
-      created_at: new Date().toISOString()
-    };
+    try {
+      // Insert ponto into database
+      const { data: newPontoData, error } = await supabase
+        .from("roteiro_pontos")
+        .insert({
+          roteiro_id: roteiro.id,
+          day_number: newPonto.day_number,
+          time_start: newPonto.time_start,
+          time_end: newPonto.time_end || null,
+          title: newPonto.title,
+          description: newPonto.description,
+          location: newPonto.location,
+          category: newPonto.category,
+          priority: newPonto.priority,
+          estimated_cost: newPonto.estimated_cost ? parseFloat(newPonto.estimated_cost) : null,
+          notes: newPonto.notes,
+          order_index: getDayPontos(newPonto.day_number).length,
+          user_id: user!.id
+        })
+        .select()
+        .single();
 
-    setPontos(prev => [...prev, newPontoData]);
-    
-    // Reset form
-    setNewPonto({
-      day_number: selectedDay,
-      time_start: "09:00",
-      time_end: "10:00",
-      title: "",
-      description: "",
-      location: "",
-      category: "attraction",
-      priority: "medium",
-      estimated_cost: "",
-      notes: ""
-    });
-    setPontoImages([]);
-    
-    setIsAddingPonto(false);
+      if (error) {
+        console.error("Erro ao salvar ponto:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível salvar o ponto. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
 
-    toast({
-      title: "Ponto adicionado! 📍",
-      description: `${newPontoData.title} foi adicionado ao roteiro do dia ${newPonto.day_number}.`,
-    });
+      // Add to local state
+      setPontos(prev => [...prev, newPontoData as RoteiroPonto]);
+      
+      // Reset form
+      setNewPonto({
+        day_number: selectedDay,
+        time_start: "09:00",
+        time_end: "10:00",
+        title: "",
+        description: "",
+        location: "",
+        category: "attraction",
+        priority: "medium",
+        estimated_cost: "",
+        notes: ""
+      });
+      setPontoImages([]);
+      
+      setIsAddingPonto(false);
+
+      toast({
+        title: "Ponto adicionado! 📍",
+        description: `${newPontoData.title} foi adicionado ao roteiro do dia ${newPonto.day_number}.`,
+      });
+    } catch (error) {
+      console.error("Erro ao adicionar ponto:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o ponto. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (loading) {

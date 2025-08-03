@@ -101,6 +101,96 @@ export type Database = {
         }
         Relationships: []
       }
+      roteiro_pontos: {
+        Row: {
+          category: string
+          created_at: string
+          day_number: number
+          description: string | null
+          estimated_cost: number | null
+          id: string
+          location: string
+          notes: string | null
+          order_index: number
+          priority: string
+          roteiro_id: string
+          time_end: string | null
+          time_start: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          day_number: number
+          description?: string | null
+          estimated_cost?: number | null
+          id?: string
+          location: string
+          notes?: string | null
+          order_index?: number
+          priority?: string
+          roteiro_id: string
+          time_end?: string | null
+          time_start: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          day_number?: number
+          description?: string | null
+          estimated_cost?: number | null
+          id?: string
+          location?: string
+          notes?: string | null
+          order_index?: number
+          priority?: string
+          roteiro_id?: string
+          time_end?: string | null
+          time_start?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      roteiros: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          title: string
+          total_days: number
+          trip_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title: string
+          total_days?: number
+          trip_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+          total_days?: number
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       trips: {
         Row: {
           budget_currency: string | null
