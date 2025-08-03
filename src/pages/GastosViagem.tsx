@@ -105,6 +105,7 @@ export default function GastosViagem() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
+  const [swipedExpense, setSwipedExpense] = useState<string | null>(null);
 
   // Form states for budget editing
   const [budgetForm, setBudgetForm] = useState({
@@ -1142,6 +1143,17 @@ export default function GastosViagem() {
                         Cancelar
                       </Button>
                       <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setIsEditingExpense(false);
+                          confirmDeleteExpense(editingExpense);
+                        }}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Excluir
+                      </Button>
+                      <Button 
                         onClick={handleUpdateExpense} 
                         className="flex-1"
                       >
@@ -1263,58 +1275,90 @@ export default function GastosViagem() {
                         {expenses.map((expense) => {
                           const category = EXPENSE_CATEGORIES.find(c => c.id === expense.category) || EXPENSE_CATEGORIES[EXPENSE_CATEGORIES.length - 1];
                           const CategoryIcon = category.icon;
+                          const isSwipedOpen = swipedExpense === expense.id;
                           
                           return (
                             <div 
                               key={expense.id} 
-                              className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                              className="relative overflow-hidden border rounded-lg"
                             >
-                              <div 
-                                className="flex items-center gap-3 flex-1 cursor-pointer"
-                                onClick={() => handleEditExpense(expense)}
-                              >
-                                <div className={`p-2 rounded-full ${category.color} text-white`}>
-                                  <CategoryIcon className="w-4 h-4" />
-                                </div>
-                                <div>
-                                  <p className="font-medium">{expense.location || 'Local não informado'}</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {category.name} • {new Date(expense.date).toLocaleDateString('pt-BR')}
-                                  </p>
-                                </div>
+                              {/* Background delete button - only visible when swiped */}
+                              <div className="absolute inset-0 bg-destructive flex items-center justify-end pr-4">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSwipedExpense(null);
+                                    confirmDeleteExpense(expense);
+                                  }}
+                                  className="text-white hover:bg-white/20"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Excluir
+                                </Button>
                               </div>
-                              <div className="flex items-center gap-3">
-                                <div className="text-right">
-                                  <p className="font-bold text-destructive">
-                                    {CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$'} {expense.amount.toFixed(2)}
-                                  </p>
-                                  {expense.receipt_url && (
-                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                                      <Receipt className="w-3 h-3" />
-                                      <span>Cupom anexado</span>
+                              
+                              {/* Main content - swipeable */}
+                              <div 
+                                className={`relative bg-background transition-transform duration-300 ease-out ${
+                                  isSwipedOpen ? '-translate-x-24' : 'translate-x-0'
+                                } hover:bg-muted/50 cursor-pointer`}
+                                onTouchStart={(e) => {
+                                  const touch = e.touches[0];
+                                  const startX = touch.clientX;
+                                  
+                                  const handleTouchMove = (e: TouchEvent) => {
+                                    const touch = e.touches[0];
+                                    const deltaX = startX - touch.clientX;
+                                    
+                                    if (deltaX > 50) {
+                                      setSwipedExpense(expense.id);
+                                    } else if (deltaX < -20) {
+                                      setSwipedExpense(null);
+                                    }
+                                  };
+                                  
+                                  const handleTouchEnd = () => {
+                                    document.removeEventListener('touchmove', handleTouchMove);
+                                    document.removeEventListener('touchend', handleTouchEnd);
+                                  };
+                                  
+                                  document.addEventListener('touchmove', handleTouchMove);
+                                  document.addEventListener('touchend', handleTouchEnd);
+                                }}
+                                onClick={(e) => {
+                                  if (isSwipedOpen) {
+                                    e.preventDefault();
+                                    setSwipedExpense(null);
+                                  } else {
+                                    handleEditExpense(expense);
+                                  }
+                                }}
+                              >
+                                <div className="flex items-center justify-between p-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-full ${category.color} text-white`}>
+                                      <CategoryIcon className="w-4 h-4" />
                                     </div>
-                                  )}
+                                    <div>
+                                      <p className="font-medium">{expense.location || 'Local não informado'}</p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {category.name} • {new Date(expense.date).toLocaleDateString('pt-BR')}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-bold text-destructive">
+                                      {CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$'} {expense.amount.toFixed(2)}
+                                    </p>
+                                    {expense.receipt_url && (
+                                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                        <Receipt className="w-3 h-3" />
+                                        <span>Cupom anexado</span>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                      <MoreVertical className="w-4 h-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEditExpense(expense)}>
-                                      <Edit2 className="w-4 h-4 mr-2" />
-                                      Editar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                      onClick={() => confirmDeleteExpense(expense)}
-                                      className="text-destructive"
-                                    >
-                                      <Trash2 className="w-4 h-4 mr-2" />
-                                      Excluir
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
                               </div>
                             </div>
                           );
@@ -1353,55 +1397,70 @@ export default function GastosViagem() {
                             {category.expenses.map(expense => (
                               <div 
                                 key={expense.id}
-                                className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded"
+                                className="relative overflow-hidden bg-muted/50 rounded"
                               >
+                                {/* Background delete button */}
+                                <div className="absolute inset-0 bg-destructive flex items-center justify-end pr-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSwipedExpense(null);
+                                      confirmDeleteExpense(expense);
+                                    }}
+                                    className="text-white hover:bg-white/20 h-6 text-xs"
+                                  >
+                                    <Trash2 className="w-3 h-3 mr-1" />
+                                    Excluir
+                                  </Button>
+                                </div>
+                                
+                                {/* Main content */}
                                 <div 
-                                  className="flex-1 cursor-pointer"
+                                  className={`relative bg-muted/50 transition-transform duration-300 ease-out ${
+                                    swipedExpense === expense.id ? '-translate-x-16' : 'translate-x-0'
+                                  } flex justify-between items-center text-sm p-2 cursor-pointer`}
+                                  onTouchStart={(e) => {
+                                    const touch = e.touches[0];
+                                    const startX = touch.clientX;
+                                    
+                                    const handleTouchMove = (e: TouchEvent) => {
+                                      const touch = e.touches[0];
+                                      const deltaX = startX - touch.clientX;
+                                      
+                                      if (deltaX > 30) {
+                                        setSwipedExpense(expense.id);
+                                      } else if (deltaX < -10) {
+                                        setSwipedExpense(null);
+                                      }
+                                    };
+                                    
+                                    const handleTouchEnd = () => {
+                                      document.removeEventListener('touchmove', handleTouchMove);
+                                      document.removeEventListener('touchend', handleTouchEnd);
+                                    };
+                                    
+                                    document.addEventListener('touchmove', handleTouchMove);
+                                    document.addEventListener('touchend', handleTouchEnd);
+                                  }}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEditExpense(expense);
+                                    if (swipedExpense === expense.id) {
+                                      setSwipedExpense(null);
+                                    } else {
+                                      handleEditExpense(expense);
+                                    }
                                   }}
                                 >
-                                  <p className="font-medium">{expense.location || 'Local não informado'}</p>
-                                  <p className="text-muted-foreground text-xs">
-                                    {new Date(expense.date).toLocaleDateString('pt-BR')}
-                                  </p>
-                                </div>
-                                <div className="flex items-center gap-2">
+                                  <div>
+                                    <p className="font-medium">{expense.location || 'Local não informado'}</p>
+                                    <p className="text-muted-foreground text-xs">
+                                      {new Date(expense.date).toLocaleDateString('pt-BR')}
+                                    </p>
+                                  </div>
                                   <span className="font-medium">
                                     {selectedCurrency.symbol} {expense.amount.toFixed(2)}
                                   </span>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        className="h-6 w-6 p-0"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <MoreVertical className="w-3 h-3" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuItem onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEditExpense(expense);
-                                      }}>
-                                        <Edit2 className="w-3 h-3 mr-2" />
-                                        Editar
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem 
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          confirmDeleteExpense(expense);
-                                        }}
-                                        className="text-destructive"
-                                      >
-                                        <Trash2 className="w-3 h-3 mr-2" />
-                                        Excluir
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
                                 </div>
                               </div>
                             ))}
