@@ -129,7 +129,7 @@ export default function MinhasViagens() {
   };
 
   const handleTripClick = (tripId: string) => {
-    navigate(`/viagens/${tripId}`);
+    navigate(`/viagem/${tripId}`);
   };
 
   const handleNewTrip = () => {
