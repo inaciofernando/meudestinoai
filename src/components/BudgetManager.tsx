@@ -403,15 +403,14 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
               Adicionar Item
             </Button>
           </DialogTrigger>
-          <DialogContent className="fixed inset-0 z-50 bg-background p-0 m-0 max-w-none h-full w-full overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 md:inset-4 md:max-w-lg md:rounded-lg md:h-auto">
-            <div className="flex flex-col h-full">
-              <DialogHeader className="flex-shrink-0 p-6 border-b bg-background/95 backdrop-blur-sm">
-                <DialogTitle className="text-xl font-semibold">
-                  {editingItem ? "Editar Item" : "Adicionar Item ao Orçamento"}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="flex-1 overflow-y-auto p-6">
-                <div className="space-y-4">
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden">
+            <DialogHeader>
+              <DialogTitle>
+                {editingItem ? "Editar Item" : "Adicionar Item ao Orçamento"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="max-h-[70vh] overflow-y-auto pr-2">
+              <div className="space-y-4">
               {/* Tipo de Gasto */}
               <div className="flex items-center space-x-2">
                 <Switch
@@ -577,23 +576,22 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Adicione notas ou observações sobre este gasto..."
                 />
-              </div>
-              
-              <div className="flex gap-2">
-                <Button onClick={handleSubmit} className="flex-1">
-                  {editingItem ? "Atualizar" : "Adicionar"}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsDialogOpen(false)}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
                </div>
+               
+               <div className="flex gap-2">
+                 <Button onClick={handleSubmit} className="flex-1">
+                   {editingItem ? "Atualizar" : "Adicionar"}
+                 </Button>
+                 <Button 
+                   variant="outline" 
+                   onClick={() => setIsDialogOpen(false)}
+                   className="flex-1"
+                 >
+                   Cancelar
+                 </Button>
                </div>
-              </div>
-            </div>
+             </div>
+           </div>
           </DialogContent>
         </Dialog>
       </div>
