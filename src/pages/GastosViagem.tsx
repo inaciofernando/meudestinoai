@@ -92,6 +92,8 @@ export default function GastosViagem() {
   const [loading, setLoading] = useState(true);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [isEditingExpense, setIsEditingExpense] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   // Form states for budget editing
@@ -108,6 +110,18 @@ export default function GastosViagem() {
     currency: "BRL",
     description: "",
     date: new Date().toISOString().split('T')[0],
+    location: "",
+    receiptFile: null as File | null
+  });
+
+  // Form states for editing expense
+  const [editForm, setEditForm] = useState({
+    category: "",
+    subcategory: "",
+    amount: "",
+    currency: "BRL",
+    description: "",
+    date: "",
     location: "",
     receiptFile: null as File | null
   });
@@ -291,6 +305,93 @@ export default function GastosViagem() {
       toast({
         title: "Erro",
         description: "Não foi possível adicionar o gasto. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleEditExpense = (expense: Expense) => {
+    setEditingExpense(expense);
+    setEditForm({
+      category: expense.category,
+      subcategory: "",
+      amount: expense.amount.toString(),
+      currency: expense.currency,
+      description: expense.description,
+      date: expense.date.split('T')[0],
+      location: expense.location || "",
+      receiptFile: null
+    });
+    setIsEditingExpense(true);
+  };
+
+  const handleUpdateExpense = async () => {
+    if (!user || !trip || !editingExpense) return;
+
+    try {
+      let receiptUrl = editingExpense.receipt_url;
+
+      // Upload new receipt if provided
+      if (editForm.receiptFile) {
+        const fileExt = editForm.receiptFile.name.split('.').pop();
+        const fileName = `${user.id}/${trip.id}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('receipts')
+          .upload(fileName, editForm.receiptFile);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        receiptUrl = uploadData.path;
+      }
+
+      // Update expense in database
+      const { error } = await supabase
+        .from('budget_items')
+        .update({
+          title: editForm.description,
+          category: editForm.category,
+          actual_amount: parseFloat(editForm.amount),
+          planned_amount: parseFloat(editForm.amount),
+          currency: editForm.currency,
+          expense_date: editForm.date,
+          location: editForm.location,
+          receipt_image_url: receiptUrl
+        })
+        .eq('id', editingExpense.id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Gasto atualizado!",
+        description: "Suas alterações foram salvas com sucesso.",
+      });
+
+      // Reset form and close dialog
+      setEditForm({
+        category: "",
+        subcategory: "",
+        amount: "",
+        currency: "BRL",
+        description: "",
+        date: "",
+        location: "",
+        receiptFile: null
+      });
+      
+      setIsEditingExpense(false);
+      setEditingExpense(null);
+
+      // Refresh expenses
+      fetchExpenses();
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o gasto. Tente novamente.",
         variant: "destructive"
       });
     }
@@ -576,6 +677,177 @@ export default function GastosViagem() {
                 </div>
               </DialogContent>
             </Dialog>
+
+            {/* Expense Edit Dialog */}
+            <Dialog open={isEditingExpense} onOpenChange={(open) => {
+              setIsEditingExpense(open);
+              if (!open) {
+                setEditingExpense(null);
+              }
+            }}>
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Editar Gasto</DialogTitle>
+                </DialogHeader>
+                {editingExpense && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Categoria</Label>
+                      <Select value={editForm.category} onValueChange={(value) => setEditForm({...editForm, category: value, subcategory: ""})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma categoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EXPENSE_CATEGORIES.map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              <div className="flex items-center gap-2">
+                                <category.icon className="w-4 h-4" />
+                                {category.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {editForm.category && (
+                      <div>
+                        <Label>Subcategoria</Label>
+                        <Select value={editForm.subcategory} onValueChange={(value) => setEditForm({...editForm, subcategory: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma subcategoria" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {EXPENSE_CATEGORIES.find(c => c.id === editForm.category)?.subcategories.map(sub => (
+                              <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Valor</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={editForm.amount}
+                          onChange={(e) => setEditForm({...editForm, amount: e.target.value})}
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <Label>Moeda</Label>
+                        <Select value={editForm.currency} onValueChange={(value) => setEditForm({...editForm, currency: value})}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CURRENCIES.map(currency => (
+                              <SelectItem key={currency.code} value={currency.code}>
+                                {currency.symbol} {currency.code}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Descrição</Label>
+                      <Textarea
+                        value={editForm.description}
+                        onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                        placeholder="Descreva o gasto..."
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label>Data</Label>
+                        <Input
+                          type="date"
+                          value={editForm.date}
+                          onChange={(e) => setEditForm({...editForm, date: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>Local</Label>
+                        <Input
+                          value={editForm.location}
+                          onChange={(e) => setEditForm({...editForm, location: e.target.value})}
+                          placeholder="Ex: Restaurante Central, Hotel Plaza..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* Current Receipt Display */}
+                    {editingExpense.receipt_url && (
+                      <div>
+                        <Label>Cupom Fiscal Atual</Label>
+                        <div className="flex items-center gap-2 p-2 border rounded-lg">
+                          <Receipt className="w-4 h-4 text-green-600" />
+                          <span className="text-sm text-muted-foreground">
+                            Cupom anexado - 
+                            <Button 
+                              variant="link" 
+                              className="h-auto p-0 text-primary"
+                              onClick={() => {
+                                const { data } = supabase.storage.from('receipts').getPublicUrl(editingExpense.receipt_url!);
+                                window.open(data.publicUrl, '_blank');
+                              }}
+                            >
+                              visualizar
+                            </Button>
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <Label htmlFor="edit-receipt">
+                        {editingExpense.receipt_url ? 'Substituir Cupom Fiscal' : 'Adicionar Cupom Fiscal'}
+                      </Label>
+                      <Input
+                        id="edit-receipt"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setEditForm({...editForm, receiptFile: file});
+                          }
+                        }}
+                        className="cursor-pointer"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {editingExpense.receipt_url 
+                          ? 'Selecione uma nova imagem para substituir a atual'
+                          : 'Adicione uma foto do cupom fiscal para arquivar'
+                        }
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setIsEditingExpense(false)}
+                        className="flex-1"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button 
+                        onClick={handleUpdateExpense} 
+                        className="flex-1"
+                      >
+                        Salvar Alterações
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Budget Overview Cards */}
@@ -689,7 +961,11 @@ export default function GastosViagem() {
                           const CategoryIcon = category.icon;
                           
                           return (
-                            <div key={expense.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div 
+                              key={expense.id} 
+                              className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                              onClick={() => handleEditExpense(expense)}
+                            >
                               <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-full ${category.color} text-white`}>
                                   <CategoryIcon className="w-4 h-4" />
