@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, User, Settings, LogOut, Moon, Sun } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ArrowLeft, User, Settings, LogOut, Moon, Sun, ChevronRight, Bell, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/theme-provider";
@@ -28,6 +29,7 @@ export default function Perfil() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -114,6 +116,11 @@ export default function Perfil() {
     navigate('/');
   };
 
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
   const toggleTheme = async () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
@@ -140,133 +147,185 @@ export default function Perfil() {
     );
   }
 
+  if (isEditing) {
+    return (
+      <ProtectedRoute>
+        <PWALayout>
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 md:p-6 border-b">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditing(false)}
+                  className="h-8 w-8 p-0"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <h1 className="text-xl font-semibold">Editar Perfil</h1>
+              </div>
+            </div>
+
+            <div className="p-4 md:p-6 space-y-6">
+              {/* Edit Form */}
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Nome Completo</Label>
+                    <Input
+                      id="fullName"
+                      value={profile?.full_name || ''}
+                      onChange={(e) => profile && setProfile({ ...profile, full_name: e.target.value })}
+                      placeholder="Digite seu nome completo"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Telefone</Label>
+                    <Input
+                      id="phone"
+                      value={profile?.phone || ''}
+                      onChange={(e) => profile && setProfile({ ...profile, phone: e.target.value })}
+                      placeholder="Digite seu telefone"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <Button onClick={handleSaveProfile} disabled={saving} className="flex-1">
+                      {saving ? 'Salvando...' : 'Salvar Alterações'}
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsEditing(false)} className="flex-1">
+                      Cancelar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </PWALayout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute>
       <PWALayout>
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-center gap-4 p-4 md:p-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/viagens")}
-              className="h-8 w-8 p-0"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold">Perfil</h1>
-              <p className="text-muted-foreground">
-                Gerencie suas informações pessoais
-              </p>
+          <div className="flex items-center justify-between p-4 md:p-6 border-b">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/viagens")}
+                className="h-8 w-8 p-0"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <h1 className="text-xl font-semibold">Perfil</h1>
             </div>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Bell className="h-4 w-4" />
+            </Button>
           </div>
 
           <div className="p-4 md:p-6 space-y-6">
-            {/* Profile Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Informações Pessoais
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Nome Completo</Label>
-                  <Input
-                    id="fullName"
-                    value={profile?.full_name || ''}
-                    onChange={(e) => profile && setProfile({ ...profile, full_name: e.target.value })}
-                    placeholder="Digite seu nome completo"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone</Label>
-                  <Input
-                    id="phone"
-                    value={profile?.phone || ''}
-                    onChange={(e) => profile && setProfile({ ...profile, phone: e.target.value })}
-                    placeholder="Digite seu telefone"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    value={user?.email || ''}
-                    disabled
-                    className="bg-muted"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    O e-mail não pode ser alterado
-                  </p>
-                </div>
-                <Button onClick={handleSaveProfile} disabled={saving} className="w-full">
-                  {saving ? 'Salvando...' : 'Salvar Alterações'}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Preferences */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
-                  Preferências
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {theme === 'dark' ? (
-                      <Moon className="w-5 h-5" />
-                    ) : (
-                      <Sun className="w-5 h-5" />
-                    )}
-                    <div>
-                      <p className="font-medium">Modo Escuro</p>
-                      <p className="text-sm text-muted-foreground">
-                        Alterne entre modo claro e escuro
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={theme === 'dark'}
-                    onCheckedChange={toggleTheme}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Support Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Suporte</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-center py-4">
-                  <p className="text-muted-foreground">
-                    Precisa de ajuda? Entre em contato conosco
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Sign Out */}
+            {/* User Profile Card */}
             <Card>
               <CardContent className="pt-6">
-                <Separator className="mb-4" />
-                <Button
-                  variant="destructive"
-                  onClick={handleSignOut}
-                  className="w-full"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sair da Conta
-                </Button>
+                <div className="flex items-center gap-4 mb-6">
+                  <Avatar className="w-16 h-16">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xl font-semibold">
+                      {getInitials(profile?.full_name || 'Usuario')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold">{profile?.full_name || 'Nome não informado'}</h2>
+                    <p className="text-muted-foreground">{user?.email}</p>
+                    <p className="text-muted-foreground">{profile?.phone || 'Telefone não informado'}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
+
+            {/* Account Settings */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Configurações da Conta</h3>
+              
+              <Card>
+                <CardContent className="p-0">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-between h-14 px-4 rounded-none"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Edit className="w-5 h-5" />
+                      <span>Editar Perfil</span>
+                    </div>
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Preferences */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    Preferências
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {theme === 'dark' ? (
+                        <Moon className="w-5 h-5" />
+                      ) : (
+                        <Sun className="w-5 h-5" />
+                      )}
+                      <div>
+                        <p className="font-medium">Modo Escuro</p>
+                        <p className="text-sm text-muted-foreground">
+                          Alterne entre modo claro e escuro
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={theme === 'dark'}
+                      onCheckedChange={toggleTheme}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Support Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Suporte</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-center py-4">
+                    <p className="text-muted-foreground">
+                      Precisa de ajuda? Entre em contato conosco
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Sign Out */}
+              <Card>
+                <CardContent className="pt-6">
+                  <Button
+                    variant="destructive"
+                    onClick={handleSignOut}
+                    className="w-full"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sair da Conta
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </PWALayout>
