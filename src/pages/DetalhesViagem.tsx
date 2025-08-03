@@ -1064,23 +1064,6 @@ export default function DetalhesViagem() {
                     <span className="text-xs font-medium">Restaurantes</span>
                   </Button>
                   
-                  <Button
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    disabled
-                  >
-                    <MapPin className="w-6 h-6 text-red-600" />
-                    <span className="text-xs font-medium">Atrações</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    disabled
-                  >
-                    <Ticket className="w-6 h-6 text-indigo-600" />
-                    <span className="text-xs font-medium">Ingressos</span>
-                  </Button>
                   
                   <Button
                     variant="outline"
