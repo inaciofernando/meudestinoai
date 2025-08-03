@@ -12,6 +12,7 @@ import GastosViagem from "./pages/GastosViagem";
 import Roteiro from "./pages/Roteiro";
 import DocumentosViagem from "./pages/DocumentosViagem";
 import Hospedagem from "./pages/Hospedagem";
+import Hotel from "./pages/Hotel";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/viagem/:id/roteiro" element={<Roteiro />} />
           <Route path="/viagem/:id/documentos" element={<DocumentosViagem />} />
           <Route path="/viagem/:id/hospedagem" element={<Hospedagem />} />
+          <Route path="/viagem/:id/hotel" element={<Hotel />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
