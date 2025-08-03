@@ -98,6 +98,7 @@ export default function GastosViagem() {
   const [analysisStep, setAnalysisStep] = useState<string>("");
   const [activeTab, setActiveTab] = useState("overview");
   const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Form states for budget editing
   const [budgetForm, setBudgetForm] = useState({
@@ -207,6 +208,23 @@ export default function GastosViagem() {
     if (percentage > 100) return { status: "over-budget", percentage };
     if (percentage > 80) return { status: "warning", percentage };
     return { status: "on-track", percentage };
+  };
+
+  const getCategoryData = () => {
+    const categoryStats = EXPENSE_CATEGORIES.map(category => {
+      const categoryExpenses = expenses.filter(expense => expense.category === category.id);
+      const total = categoryExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+      const count = categoryExpenses.length;
+      
+      return {
+        ...category,
+        total,
+        count,
+        expenses: categoryExpenses
+      };
+    });
+    
+    return categoryStats;
   };
 
   const fetchExpenses = async () => {
@@ -1242,8 +1260,12 @@ export default function GastosViagem() {
 
               <TabsContent value="categories" className="space-y-4 mt-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {EXPENSE_CATEGORIES.map(category => (
-                    <Card key={category.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                  {getCategoryData().map(category => (
+                    <Card 
+                      key={category.id} 
+                      className="cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => setSelectedCategory(selectedCategory === category.id ? null : category.id)}
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center`}>
@@ -1252,11 +1274,33 @@ export default function GastosViagem() {
                           <div className="flex-1">
                             <h3 className="font-medium">{category.name}</h3>
                             <p className="text-sm text-muted-foreground">
-                              {selectedCurrency.symbol} 0,00
+                              {selectedCurrency.symbol} {category.total.toFixed(2)}
                             </p>
                           </div>
-                          <Badge variant="outline">0</Badge>
+                          <Badge variant="outline">{category.count}</Badge>
                         </div>
+                        
+                        {/* Expandable details */}
+                        {selectedCategory === category.id && category.expenses.length > 0 && (
+                          <div className="mt-4 pt-4 border-t space-y-2">
+                            {category.expenses.map(expense => (
+                              <div 
+                                key={expense.id}
+                                className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded"
+                              >
+                                <div>
+                                  <p className="font-medium">{expense.location || 'Local não informado'}</p>
+                                  <p className="text-muted-foreground text-xs">
+                                    {new Date(expense.date).toLocaleDateString('pt-BR')}
+                                  </p>
+                                </div>
+                                <span className="font-medium">
+                                  {selectedCurrency.symbol} {expense.amount.toFixed(2)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
