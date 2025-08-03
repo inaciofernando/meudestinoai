@@ -5,7 +5,6 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,31 +12,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ImageUpload } from "@/components/ImageUpload";
 import {
   ArrowLeft,
   Plus,
   MapPin,
   Clock,
   Calendar,
-  Star,
-  Navigation,
-  Camera,
   Utensils,
   Car,
-  Plane,
   Hotel,
-  Info,
   Route,
   Sun,
   Moon,
   Coffee,
-  Sunset,
   Map,
-  Compass,
   BookOpen,
-  Heart,
-  DollarSign
+  Star
 } from "lucide-react";
 
 interface Trip {
@@ -59,8 +49,6 @@ interface RoteiroPonto {
   description: string;
   location: string;
   category: 'attraction' | 'restaurant' | 'transport' | 'hotel' | 'activity' | 'shopping' | 'rest';
-  priority: 'high' | 'medium' | 'low';
-  estimated_cost?: number;
   notes?: string;
   order_index: number;
   created_at: string;
@@ -103,7 +91,7 @@ export default function Roteiro() {
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(1);
   const [isAddingPonto, setIsAddingPonto] = useState(false);
-  const [activeTab, setActiveTab] = useState("itinerary");
+  const [selectedPonto, setSelectedPonto] = useState<RoteiroPonto | null>(null);
 
   // Form states
   const [newPonto, setNewPonto] = useState({
@@ -114,11 +102,8 @@ export default function Roteiro() {
     description: "",
     location: "",
     category: "attraction" as keyof typeof CATEGORY_CONFIG,
-    priority: "medium" as "high" | "medium" | "low",
-    estimated_cost: "",
     notes: ""
   });
-  const [pontoImages, setPontoImages] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -251,8 +236,6 @@ export default function Roteiro() {
           description: newPonto.description,
           location: newPonto.location,
           category: newPonto.category,
-          priority: newPonto.priority,
-          estimated_cost: newPonto.estimated_cost ? parseFloat(newPonto.estimated_cost) : null,
           notes: newPonto.notes,
           order_index: getDayPontos(newPonto.day_number).length,
           user_id: user!.id
@@ -282,11 +265,8 @@ export default function Roteiro() {
         description: "",
         location: "",
         category: "attraction",
-        priority: "medium",
-        estimated_cost: "",
         notes: ""
       });
-      setPontoImages([]);
       
       setIsAddingPonto(false);
 
@@ -302,6 +282,10 @@ export default function Roteiro() {
         variant: "destructive"
       });
     }
+  };
+
+  const handlePontoClick = (ponto: RoteiroPonto) => {
+    setSelectedPonto(ponto);
   };
 
   if (loading) {
@@ -450,46 +434,12 @@ export default function Roteiro() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Label>Custo Estimado</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={newPonto.estimated_cost}
-                          onChange={(e) => setNewPonto({...newPonto, estimated_cost: e.target.value})}
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <Label>Prioridade</Label>
-                        <select
-                          value={newPonto.priority}
-                          onChange={(e) => setNewPonto({...newPonto, priority: e.target.value as "high" | "medium" | "low"})}
-                          className="w-full p-2 border rounded-md"
-                        >
-                          <option value="high">Alta</option>
-                          <option value="medium">Média</option>
-                          <option value="low">Baixa</option>
-                        </select>
-                      </div>
-                    </div>
-
                     <div>
                       <Label>Notas</Label>
                       <Textarea
                         value={newPonto.notes}
                         onChange={(e) => setNewPonto({...newPonto, notes: e.target.value})}
                         placeholder="Dicas, observações, lembretes..."
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Imagem (opcional)</Label>
-                      <ImageUpload
-                        images={pontoImages}
-                        onImagesChange={setPontoImages}
-                        maxImages={1}
                       />
                     </div>
 
@@ -513,27 +463,6 @@ export default function Roteiro() {
               </Dialog>
             </div>
           </div>
-
-          {/* Concierge Tips */}
-          <Card className="mx-4 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                  <Compass className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">Seu Concierge Pessoal</h3>
-                  <p className="text-muted-foreground">
-                    Como seu concierge senior, organizei seu roteiro com timing perfeito, sugestões locais e dicas exclusivas para uma experiência inesquecível em {trip.destination}.
-                  </p>
-                </div>
-                <Badge variant="secondary" className="bg-amber-100 text-amber-700">
-                  <Heart className="w-3 h-3 mr-1" />
-                  Premium
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Day Navigation */}
           <div className="px-4">
@@ -562,7 +491,7 @@ export default function Roteiro() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  Dia {selectedDay} - Itinerário Detalhado
+                  Dia {selectedDay}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -570,7 +499,7 @@ export default function Roteiro() {
                   <div className="text-center py-12 text-muted-foreground">
                     <Map className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>Nenhum ponto no roteiro para este dia</p>
-                    <p className="text-sm">Clique em "Adicionar Ponto" para começar</p>
+                    <p className="text-sm">Clique em "+" para começar</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -587,65 +516,54 @@ export default function Roteiro() {
                             <div className="absolute left-6 top-16 bottom-0 w-0.5 bg-border" />
                           )}
                           
-                          <div className="flex gap-4">
-                            <div className={`w-12 h-12 ${category.color} rounded-full flex items-center justify-center flex-shrink-0`}>
-                              <CategoryIcon className="w-6 h-6 text-white" />
-                            </div>
-                            
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="font-semibold">{ponto.title}</h4>
-                                    <Badge variant="outline" className={`text-xs ${period.color}`}>
-                                      <PeriodIcon className="w-3 h-3 mr-1" />
-                                      {period.name}
-                                    </Badge>
-                                    {ponto.priority === "high" && (
-                                      <Badge variant="destructive" className="text-xs">
-                                        <Star className="w-3 h-3 mr-1" />
-                                        Imperdível
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                                    <div className="flex items-center gap-1">
-                                      <Clock className="w-4 h-4" />
-                                      {ponto.time_start}
-                                      {ponto.time_end && ` - ${ponto.time_end}`}
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <MapPin className="w-4 h-4" />
-                                      {ponto.location}
-                                    </div>
-                                    {ponto.estimated_cost && (
-                                      <div className="flex items-center gap-1">
-                                        <DollarSign className="w-4 h-4" />
-                                        R$ {ponto.estimated_cost.toFixed(2)}
+                          <Card 
+                            className="cursor-pointer hover:shadow-md transition-shadow"
+                            onClick={() => handlePontoClick(ponto)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex gap-4">
+                                <div className={`w-12 h-12 ${category.color} rounded-full flex items-center justify-center flex-shrink-0`}>
+                                  <CategoryIcon className="w-6 h-6 text-white" />
+                                </div>
+                                
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <h4 className="font-semibold text-lg">{ponto.title}</h4>
+                                        <Badge variant="outline" className={`text-xs ${period.color}`}>
+                                          <PeriodIcon className="w-3 h-3 mr-1" />
+                                          {period.name}
+                                        </Badge>
                                       </div>
-                                    )}
-                                  </div>
-                                  
-                                  {ponto.description && (
-                                    <p className="text-sm mb-2">{ponto.description}</p>
-                                  )}
-                                  
-                                  {ponto.notes && (
-                                    <div className="bg-blue-50 p-3 rounded-lg">
-                                      <div className="flex items-start gap-2">
-                                        <Info className="w-4 h-4 text-blue-600 mt-0.5" />
-                                        <div>
-                                          <p className="text-sm font-medium text-blue-900 mb-1">Dica do Concierge</p>
-                                          <p className="text-sm text-blue-700">{ponto.notes}</p>
+                                      
+                                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                                        <div className="flex items-center gap-1">
+                                          <Clock className="w-4 h-4" />
+                                          {ponto.time_start}
+                                          {ponto.time_end && ` - ${ponto.time_end}`}
                                         </div>
                                       </div>
+
+                                      <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                                          <MapPin className="w-6 h-6 text-gray-500" />
+                                        </div>
+                                        <div>
+                                          <p className="font-medium text-sm">{ponto.location}</p>
+                                          <p className="text-xs text-muted-foreground">Clique para ver detalhes</p>
+                                        </div>
+                                      </div>
+                                      
+                                      {ponto.description && (
+                                        <p className="text-sm text-muted-foreground">{ponto.description}</p>
+                                      )}
                                     </div>
-                                  )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </div>
+                            </CardContent>
+                          </Card>
                         </div>
                       );
                     })}
@@ -654,6 +572,59 @@ export default function Roteiro() {
               </CardContent>
             </Card>
           </div>
+
+          {/* PDP Modal */}
+          <Dialog open={!!selectedPonto} onOpenChange={() => setSelectedPonto(null)}>
+            <DialogContent className="max-w-lg">
+              {selectedPonto && (
+                <>
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      {(() => {
+                        const category = CATEGORY_CONFIG[selectedPonto.category];
+                        const CategoryIcon = category.icon;
+                        return (
+                          <>
+                            <div className={`w-8 h-8 ${category.color} rounded-full flex items-center justify-center`}>
+                              <CategoryIcon className="w-4 h-4 text-white" />
+                            </div>
+                            {selectedPonto.title}
+                          </>
+                        );
+                      })()}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4" />
+                        {selectedPonto.location}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="w-4 h-4" />
+                        {selectedPonto.time_start}
+                        {selectedPonto.time_end && ` - ${selectedPonto.time_end}`}
+                      </div>
+                    </div>
+                    
+                    {selectedPonto.description && (
+                      <div>
+                        <h4 className="font-medium mb-2">Descrição</h4>
+                        <p className="text-sm text-muted-foreground">{selectedPonto.description}</p>
+                      </div>
+                    )}
+
+                    {selectedPonto.notes && (
+                      <div>
+                        <h4 className="font-medium mb-2">Notas</h4>
+                        <p className="text-sm text-muted-foreground">{selectedPonto.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </PWALayout>
     </ProtectedRoute>
