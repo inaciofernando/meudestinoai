@@ -6,7 +6,8 @@ import {
   FileText, 
   MapPin, 
   Settings,
-  Plus
+  Plus,
+  Route
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -26,8 +27,8 @@ import { Button } from "@/components/ui/button";
 const navigation = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Minhas Viagens", url: "/viagens", icon: Map },
+  { title: "Roteiro", url: "/roteiro", icon: Route },
   { title: "Planejamento", url: "/planejamento", icon: Calendar },
-  
   { title: "Documentos", url: "/documentos", icon: FileText },
   { title: "Pontos de Interesse", url: "/pontos", icon: MapPin },
 ];
