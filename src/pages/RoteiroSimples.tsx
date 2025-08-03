@@ -84,6 +84,7 @@ export default function RoteiroSimples() {
   };
 
   useEffect(() => {
+    console.log("🚀 RoteiroSimples carregando - versão nova");
     if (!user?.id || !id) return;
     
     const fetchData = async () => {
@@ -153,6 +154,7 @@ export default function RoteiroSimples() {
           setPontos(pontosData || []);
         }
       } catch (error) {
+        console.error("❌ Erro na nova página:", error);
         console.error("Erro:", error);
       } finally {
         setLoading(false);
