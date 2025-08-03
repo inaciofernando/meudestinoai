@@ -117,39 +117,39 @@ export default function RoteiroSimples() {
   };
 
   useEffect(() => {
-    console.log("🚀 RoteiroSimples carregando - versão nova");
+    console.log("🚀 RoteiroSimples carregando - otimizado");
     if (!user?.id || !id) return;
     
     const fetchData = async () => {
       try {
-        // Fetch trip with dates
-        const { data: tripData, error: tripError } = await supabase
-          .from("trips")
-          .select("id, title, destination, start_date, end_date")
-          .eq("id", id)
-          .eq("user_id", user.id)
-          .single();
+        // Busca dados em paralelo para melhor performance
+        const [tripResult, roteiroResult] = await Promise.all([
+          supabase
+            .from("trips")
+            .select("id, title, destination, start_date, end_date")
+            .eq("id", id)
+            .eq("user_id", user.id)
+            .single(),
+          supabase
+            .from("roteiros")
+            .select("*")
+            .eq("trip_id", id)
+            .eq("user_id", user.id)
+            .maybeSingle()
+        ]);
 
-        if (tripError) {
+        if (tripResult.error) {
           navigate("/viagens");
           return;
         }
 
+        const tripData = tripResult.data;
         setTrip(tripData);
 
-        // Get or create roteiro - using the same logic as the old page
-        let roteiroData;
-        const { data: existingRoteiro, error: roteiroError } = await supabase
-          .from("roteiros")
-          .select("*")
-          .eq("trip_id", tripData.id)
-          .eq("user_id", user.id)
-          .single();
-
-        if (existingRoteiro && !roteiroError) {
-          roteiroData = existingRoteiro;
-        } else {
-          // Create new roteiro if none exists
+        let roteiroData = roteiroResult.data;
+        
+        // Se não existe roteiro, cria um novo
+        if (!roteiroData) {
           const { data: newRoteiro, error: createError } = await supabase
             .from("roteiros")
             .insert({
@@ -171,7 +171,7 @@ export default function RoteiroSimples() {
 
         setRoteiro(roteiroData);
 
-        // Fetch pontos - using the same query as the old page
+        // Busca pontos do roteiro
         const { data: pontosData, error: pontosError } = await supabase
           .from("roteiro_pontos")
           .select("*")
@@ -187,14 +187,18 @@ export default function RoteiroSimples() {
           setPontos(pontosData || []);
         }
       } catch (error) {
-        console.error("❌ Erro na nova página:", error);
-        console.error("Erro:", error);
+        console.error("❌ Erro ao carregar roteiro:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    // Evita execução desnecessária se já temos os dados
+    if (!trip || !roteiro || trip.id !== id) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
   }, [user?.id, id]);
 
   const fetchPontos = async () => {

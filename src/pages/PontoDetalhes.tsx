@@ -87,35 +87,34 @@ export default function PontoDetalhes() {
     
     const fetchData = async () => {
       try {
-        // Fetch trip data
-        const { data: tripData, error: tripError } = await supabase
-          .from("trips")
-          .select("id, title, destination")
-          .eq("id", tripId)
-          .eq("user_id", user.id)
-          .single();
+        // Busca dados em paralelo para melhor performance
+        const [tripResult, pontoResult] = await Promise.all([
+          supabase
+            .from("trips")
+            .select("id, title, destination")
+            .eq("id", tripId)
+            .eq("user_id", user.id)
+            .single(),
+          supabase
+            .from("roteiro_pontos")
+            .select("*")
+            .eq("id", pontoId)
+            .eq("user_id", user.id)
+            .single()
+        ]);
 
-        if (tripError) {
+        if (tripResult.error) {
           navigate("/viagens");
           return;
         }
 
-        setTrip(tripData);
-
-        // Fetch ponto data
-        const { data: pontoData, error: pontoError } = await supabase
-          .from("roteiro_pontos")
-          .select("*")
-          .eq("id", pontoId)
-          .eq("user_id", user.id)
-          .single();
-
-        if (pontoError) {
+        if (pontoResult.error) {
           navigate(`/roteiro/${tripId}`);
           return;
         }
 
-        setPonto(pontoData);
+        setTrip(tripResult.data);
+        setPonto(pontoResult.data);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
         toast({
@@ -128,7 +127,12 @@ export default function PontoDetalhes() {
       }
     };
 
-    fetchData();
+    // Evita execução desnecessária se já temos os dados do ponto
+    if (!ponto || ponto.id !== pontoId) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
   }, [user?.id, tripId, pontoId]);
 
   const nextImage = () => {
