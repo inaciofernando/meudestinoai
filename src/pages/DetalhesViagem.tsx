@@ -467,9 +467,9 @@ export default function DetalhesViagem() {
 
           {/* Galeria de Imagens no Topo - Estilo Airbnb */}
           {images.length > 0 && (
-            <div className="relative w-full border-b border-border">
+            <div className="relative px-4 md:px-6 pb-6">
               {images.length === 1 ? (
-                <div className="aspect-[16/9] md:aspect-[21/9] max-h-[60vh] overflow-hidden w-full">
+                <div className="aspect-[16/9] md:aspect-[3/2] max-h-[400px] overflow-hidden rounded-2xl border border-border">
                   <img 
                     src={images[0]} 
                     alt="Imagem da viagem"
@@ -482,7 +482,7 @@ export default function DetalhesViagem() {
               ) : (
                 <div className="w-full">
                   {/* Mobile: Imagem única com navegação por swipe */}
-                  <div className="md:hidden aspect-[16/9] overflow-hidden relative">
+                  <div className="md:hidden aspect-[16/9] overflow-hidden relative rounded-2xl border border-border">
                     <img 
                       src={images[currentImageIndex]} 
                       alt={`Imagem ${currentImageIndex + 1} da viagem`}
@@ -525,9 +525,9 @@ export default function DetalhesViagem() {
                   </div>
 
                   {/* Desktop: Grid layout estilo Airbnb */}
-                  <div className="hidden md:grid grid-cols-4 gap-2 h-[400px] w-full">
+                  <div className="hidden md:grid grid-cols-4 gap-2 h-[400px] w-full border border-border rounded-2xl overflow-hidden">
                     {/* Imagem Principal */}
-                    <div className="col-span-2 h-full overflow-hidden rounded-l-2xl relative group">
+                    <div className="col-span-2 h-full overflow-hidden relative group">
                       <img 
                         src={images[currentImageIndex]} 
                         alt="Imagem principal da viagem"
@@ -602,26 +602,22 @@ export default function DetalhesViagem() {
                     
                     {/* Grid de Imagens Menores */}
                     <div className="col-span-2 grid grid-cols-2 gap-2 h-full">
-                      {images.slice(0, 4).filter((_, index) => index !== currentImageIndex).slice(0, 4).map((image, index) => {
-                        const originalIndex = images.findIndex(img => img === image);
+                      {images.slice(1, 5).map((image, index) => {
+                        const realIndex = index + 1;
                         return (
                           <div 
-                            key={originalIndex} 
-                            className={cn(
-                              "h-full overflow-hidden relative cursor-pointer hover:brightness-95 transition-all",
-                              index === 1 && "rounded-tr-2xl",
-                              index === 3 && "rounded-br-2xl"
-                            )}
-                            onClick={() => setCurrentImageIndex(originalIndex)}
+                            key={realIndex} 
+                            className="h-full overflow-hidden relative cursor-pointer hover:brightness-95 transition-all"
+                            onClick={() => setCurrentImageIndex(realIndex)}
                           >
                             <img 
                               src={image} 
-                              alt={`Imagem ${originalIndex + 1} da viagem`}
+                              alt={`Imagem ${realIndex + 1} da viagem`}
                               className="w-full h-full object-cover"
                             />
                             {index === 3 && images.length > 5 && (
-                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-medium text-lg rounded-br-2xl">
-                                +{images.length - 4}
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-medium text-lg">
+                                +{images.length - 5}
                               </div>
                             )}
                             {isEditing && (
@@ -632,7 +628,7 @@ export default function DetalhesViagem() {
                                   className="bg-white/80 hover:bg-white text-black rounded-full w-6 h-6 p-0"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    moveImage(originalIndex, originalIndex > 0 ? originalIndex - 1 : originalIndex + 1);
+                                    moveImage(realIndex, realIndex > 0 ? realIndex - 1 : realIndex + 1);
                                   }}
                                 >
                                   <Move className="w-3 h-3" />
@@ -649,7 +645,7 @@ export default function DetalhesViagem() {
               
               {/* Modo de Edição - Controles de Reordenar */}
               {isEditing && images.length > 1 && (
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-2">
+                <div className="absolute top-8 left-8 bg-white/90 backdrop-blur-sm rounded-lg p-2">
                   <div className="flex items-center gap-2 text-sm text-gray-700">
                     <Move className="w-4 h-4" />
                     <span>Clique nas setas para reordenar</span>
