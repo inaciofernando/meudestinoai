@@ -115,7 +115,7 @@ export default function DetalhesViagem() {
             description: "Viagem não encontrada",
             variant: "destructive",
           });
-          navigate("/");
+          navigate("/viagens");
           return;
         }
 
@@ -155,7 +155,7 @@ export default function DetalhesViagem() {
         });
       } catch (error) {
         console.error("Erro ao buscar viagem:", error);
-        navigate("/");
+        navigate("/viagens");
       } finally {
         setLoading(false);
       }
@@ -253,7 +253,7 @@ export default function DetalhesViagem() {
         description: "Viagem excluída com sucesso",
       });
 
-      navigate("/");
+      navigate("/viagens");
     } catch (error) {
       console.error("Erro ao excluir viagem:", error);
       toast({
@@ -436,7 +436,7 @@ export default function DetalhesViagem() {
           <div className="min-h-[50vh] flex items-center justify-center">
             <div className="text-center">
               <p className="text-muted-foreground mb-4">Viagem não encontrada</p>
-              <Button onClick={() => navigate("/")} variant="outline">
+              <Button onClick={() => navigate("/viagens")} variant="outline">
                 Voltar ao Dashboard
               </Button>
             </div>
@@ -455,7 +455,7 @@ export default function DetalhesViagem() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/viagens")}
               className="h-8 w-8 p-0"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -1024,7 +1024,7 @@ export default function DetalhesViagem() {
           {!isEditing && (
             <div className="flex gap-4 pt-4">
               <Button 
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/viagens")}
                 variant="outline"
                 className="flex-1"
               >
