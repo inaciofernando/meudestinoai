@@ -18,6 +18,21 @@ export default {
 			}
 		},
 		extend: {
+			backgroundImage: {
+				'gradient-ocean': 'var(--gradient-ocean)',
+				'gradient-sunset': 'var(--gradient-sunset)',
+				'gradient-nature': 'var(--gradient-nature)',
+				'gradient-sky': 'var(--gradient-sky)',
+			},
+			boxShadow: {
+				'travel': 'var(--shadow-travel)',
+				'card': 'var(--shadow-card)',
+				'float': 'var(--shadow-float)',
+			},
+			transitionTimingFunction: {
+				'smooth': 'var(--transition-smooth)',
+				'bounce': 'var(--transition-bounce)',
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -26,7 +41,8 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					glow: 'hsl(var(--primary-glow))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -43,6 +59,10 @@ export default {
 				accent: {
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))'
+				},
+				highlight: {
+					DEFAULT: 'hsl(var(--highlight))',
+					foreground: 'hsl(var(--highlight-foreground))'
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
