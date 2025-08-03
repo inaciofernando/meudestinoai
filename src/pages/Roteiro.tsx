@@ -106,8 +106,8 @@ export default function Roteiro() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user || !id) return;
+  const fetchData = async () => {
+    if (!user || !id) return;
 
       try {
         // Fetch trip details

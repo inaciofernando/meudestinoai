@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 const navigation = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Minhas Viagens", url: "/viagens", icon: Map },
-  { title: "Roteiro", url: "/roteiro", icon: Route },
+  { title: "Roteiro", url: "#", icon: Route },
   { title: "Planejamento", url: "/planejamento", icon: Calendar },
   { title: "Documentos", url: "/documentos", icon: FileText },
   { title: "Pontos de Interesse", url: "/pontos", icon: MapPin },
