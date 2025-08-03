@@ -414,8 +414,6 @@ export default function GastosViagem() {
     setIsAnalyzingReceipt(true);
     setAnalysisStep("✈️ Preparando para decolagem...");
     
-    // Delay inicial para mostrar a primeira etapa
-    await new Promise(resolve => setTimeout(resolve, 600));
     console.log("✅ Estado atualizado - iniciando processamento real");
 
     try {
@@ -425,18 +423,12 @@ export default function GastosViagem() {
         setAnalysisStep("🧳 Fazendo check-in...");
         console.log("📤 Processando imagem...");
         
-        // Delay para mostrar o processamento da imagem
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
         const base64 = e.target?.result as string;
         const imageBase64 = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
 
         try {
           setAnalysisStep("🗺️ IA explorando o cupom...");
-          console.log("🤖 Enviando para IA - iniciando requisição real...");
-          
-          // Pequeno delay para mostrar que está enviando
-          await new Promise(resolve => setTimeout(resolve, 400));
+          console.log("🤖 Enviando para IA - aguardando resposta real...");
           
           const { data, error } = await supabase.functions.invoke('analyze-receipt', {
             body: { imageBase64 }
@@ -453,8 +445,6 @@ export default function GastosViagem() {
             setAnalysisStep("📝 Preenchendo diário de viagem...");
             console.log("✅ Dados extraídos com sucesso!");
             
-            // Delay para mostrar que está preenchendo os campos
-            await new Promise(resolve => setTimeout(resolve, 800));
             const extractedData = data.data;
             
             // Auto-fill the form with extracted data
@@ -480,6 +470,11 @@ export default function GastosViagem() {
               title: "Concierge de Gastos ativado! 🎯",
               description: `Categorizado: ${extractedData.subcategory} (${EXPENSE_CATEGORIES.find(c => c.id === extractedData.category)?.name}). Todos os campos preenchidos automaticamente!`,
             });
+
+            // AQUI é onde a animação deve parar - quando a IA realmente completou
+            console.log("🎯 IA completou com sucesso - parando animação");
+            setIsAnalyzingReceipt(false);
+            setAnalysisStep("");
           } else {
             console.error('Resposta inválida da IA:', data);
             throw new Error(data?.error || 'Erro na análise do cupom - resposta inválida');
@@ -487,9 +482,6 @@ export default function GastosViagem() {
         } catch (analysisError: any) {
           console.error('Error analyzing receipt:', analysisError);
           setAnalysisStep("❌ Erro na análise...");
-          
-          // Delay para mostrar o erro antes de exibir o toast
-          await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Verificar se é erro de API key
           if (analysisError.message?.includes('API key not configured')) {
@@ -505,6 +497,11 @@ export default function GastosViagem() {
               variant: "destructive"
             });
           }
+
+          // Parar animação após erro
+          console.log("❌ Erro na IA - parando animação");
+          setIsAnalyzingReceipt(false);
+          setAnalysisStep("");
         }
       };
 
@@ -529,13 +526,8 @@ export default function GastosViagem() {
         variant: "destructive"
       });
     } finally {
-      console.log("🔄 Finalizando análise...");
-      // Delay maior para mostrar o resultado final antes de resetar
-      setTimeout(() => {
-        setIsAnalyzingReceipt(false);
-        setAnalysisStep("");
-        console.log("✅ Estado resetado");
-      }, 1500);
+      // Não fazer nada aqui - a animação para apenas quando IA completa ou dá erro
+      console.log("🔄 Finally executado - animação controlada pelos sucessos/erros acima");
     }
   };
 
