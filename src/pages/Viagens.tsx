@@ -1,10 +1,10 @@
-import { AppLayout } from "@/components/layout/AppLayout";
+import { PWALayout } from "@/components/layout/PWALayout";
 import Dashboard from "./Dashboard";
 
 export default function Viagens() {
   return (
-    <AppLayout>
+    <PWALayout>
       <Dashboard />
-    </AppLayout>
+    </PWALayout>
   );
 }
