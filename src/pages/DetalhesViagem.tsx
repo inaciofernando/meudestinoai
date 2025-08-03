@@ -35,7 +35,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Move,
-  Settings
+  Settings,
+  DollarSign,
+  Plane,
+  Hotel,
+  UtensilsCrossed,
+  Car,
+  ShoppingBag,
+  Ticket
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
@@ -1009,6 +1016,100 @@ export default function DetalhesViagem() {
             </div>
           )}
 
+          {/* Travel Management Menu */}
+          {!isEditing && (
+            <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <DollarSign className="w-5 h-5 text-primary" />
+                  Gestão da Viagem
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    onClick={() => navigate(`/viagem/${id}/gastos`)}
+                  >
+                    <DollarSign className="w-6 h-6 text-green-600" />
+                    <span className="text-xs font-medium">Gastos</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    disabled
+                  >
+                    <Plane className="w-6 h-6 text-blue-600" />
+                    <span className="text-xs font-medium">Transporte</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    disabled
+                  >
+                    <Hotel className="w-6 h-6 text-purple-600" />
+                    <span className="text-xs font-medium">Hospedagem</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    disabled
+                  >
+                    <UtensilsCrossed className="w-6 h-6 text-orange-600" />
+                    <span className="text-xs font-medium">Restaurantes</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    disabled
+                  >
+                    <MapPin className="w-6 h-6 text-red-600" />
+                    <span className="text-xs font-medium">Atrações</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    disabled
+                  >
+                    <Ticket className="w-6 h-6 text-indigo-600" />
+                    <span className="text-xs font-medium">Ingressos</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    disabled
+                  >
+                    <Car className="w-6 h-6 text-yellow-600" />
+                    <span className="text-xs font-medium">Roteiro</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    disabled
+                  >
+                    <ShoppingBag className="w-6 h-6 text-pink-600" />
+                    <span className="text-xs font-medium">Documentos</span>
+                  </Button>
+                </div>
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-700 font-medium mb-1">
+                    🤖 IA Integrada em Breve
+                  </p>
+                  <p className="text-xs text-blue-600">
+                    Nosso assistente de IA ajudará a organizar automaticamente todos os aspectos da sua viagem.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Descrição */}
           {!isEditing && trip.description && (
