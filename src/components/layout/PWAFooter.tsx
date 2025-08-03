@@ -33,14 +33,14 @@ export const PWAFooter = () => {
                 key={item.key}
                 to={item.url}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-smooth min-w-0 flex-1",
+                  "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 min-w-0 flex-1",
                   active
                     ? "text-primary bg-primary/10"
                     : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                 )}
               >
                 <item.icon className={cn(
-                  "w-5 h-5 transition-smooth",
+                  "w-5 h-5 transition-all duration-200",
                   active && "scale-110"
                 )} />
                 <span className="text-xs font-medium truncate">
