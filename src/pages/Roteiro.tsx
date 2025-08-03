@@ -818,8 +818,13 @@ export default function Roteiro() {
           </div>
 
           {/* PDP Modal */}
-          <Dialog open={!!selectedPonto} onOpenChange={() => setSelectedPonto(null)}>
-            <DialogContent className="max-w-lg">
+          <Dialog open={!!selectedPonto} onOpenChange={(open) => {
+            if (!open) {
+              setSelectedPonto(null);
+              setIsEditingPonto(false);
+            }
+          }}>
+            <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
               {selectedPonto && (
                 <>
                   <DialogHeader>
