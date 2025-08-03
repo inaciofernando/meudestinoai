@@ -9,8 +9,9 @@ import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Textarea } from "./ui/textarea";
-import { Plus, Edit2, Check, X, DollarSign } from "lucide-react";
+import { Plus, Edit2, Check, X, DollarSign, Calendar, MapPin, Camera, Receipt } from "lucide-react";
 import { Switch } from "./ui/switch";
+import { ImageUpload } from "./ImageUpload";
 
 interface BudgetItem {
   id: string;
@@ -21,6 +22,11 @@ interface BudgetItem {
   actual_amount?: number;
   currency: string;
   is_confirmed: boolean;
+  location?: string;
+  expense_date?: string;
+  payment_method?: string;
+  receipt_image_url?: string;
+  notes?: string;
 }
 
 interface BudgetManagerProps {
@@ -53,7 +59,12 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isBudgetDialogOpen, setIsBudgetDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<BudgetItem | null>(null);
+  
+  // Budget editing states
+  const [editBudgetAmount, setEditBudgetAmount] = useState(totalBudget.toString());
+  const [editBudgetCurrency, setEditBudgetCurrency] = useState(budgetCurrency);
   
   // Form states
   const [title, setTitle] = useState("");
@@ -62,6 +73,11 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
   const [plannedAmount, setPlannedAmount] = useState("");
   const [actualAmount, setActualAmount] = useState("");
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [location, setLocation] = useState("");
+  const [expenseDate, setExpenseDate] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [receiptImageUrl, setReceiptImageUrl] = useState("");
+  const [notes, setNotes] = useState("");
 
   const selectedCurrency = CURRENCIES.find(c => c.code === budgetCurrency) || CURRENCIES[0];
 
@@ -98,6 +114,11 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
     setPlannedAmount("");
     setActualAmount("");
     setIsConfirmed(false);
+    setLocation("");
+    setExpenseDate("");
+    setPaymentMethod("");
+    setReceiptImageUrl("");
+    setNotes("");
     setEditingItem(null);
   };
 
@@ -122,6 +143,11 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
         actual_amount: actualAmount ? parseFloat(actualAmount) : null,
         currency: budgetCurrency,
         is_confirmed: isConfirmed,
+        location: location || null,
+        expense_date: expenseDate || null,
+        payment_method: paymentMethod || null,
+        receipt_image_url: receiptImageUrl || null,
+        notes: notes || null,
       };
 
       if (editingItem) {
@@ -171,6 +197,11 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
     setPlannedAmount(item.planned_amount.toString());
     setActualAmount(item.actual_amount?.toString() || "");
     setIsConfirmed(item.is_confirmed);
+    setLocation(item.location || "");
+    setExpenseDate(item.expense_date || "");
+    setPaymentMethod(item.payment_method || "");
+    setReceiptImageUrl(item.receipt_image_url || "");
+    setNotes(item.notes || "");
     setIsDialogOpen(true);
   };
 
@@ -201,6 +232,44 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
     }
   };
 
+  const handleBudgetUpdate = async () => {
+    if (!user || !editBudgetAmount) {
+      toast({
+        title: "Erro",
+        description: "Preencha o valor do orçamento",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("trips")
+        .update({ 
+          total_budget: parseFloat(editBudgetAmount),
+          budget_currency: editBudgetCurrency
+        })
+        .eq("id", tripId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Orçamento da viagem atualizado com sucesso",
+      });
+
+      setIsBudgetDialogOpen(false);
+      onBudgetUpdate?.();
+    } catch (error) {
+      console.error("Erro ao atualizar orçamento:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar orçamento da viagem",
+        variant: "destructive",
+      });
+    }
+  };
+
   const totalPlanned = budgetItems.reduce((sum, item) => sum + item.planned_amount, 0);
   const totalSpent = budgetItems
     .filter(item => item.is_confirmed && item.actual_amount)
@@ -213,45 +282,116 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
   }
 
   return (
-    <div className="space-y-6">
-      {/* Budget Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm text-muted-foreground">Orçamento Total</div>
-            <div className="text-2xl font-bold text-primary">
-              {selectedCurrency.symbol} {totalBudget.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
+    <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
+      {/* Budget Summary - Fixed Header */}
+      <div className="flex-shrink-0 space-y-4 p-4 bg-background/95 backdrop-blur-sm border-b sticky top-0 z-10">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Resumo do Orçamento</h3>
+          <Dialog open={isBudgetDialogOpen} onOpenChange={setIsBudgetDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setEditBudgetAmount(totalBudget.toString());
+                  setEditBudgetCurrency(budgetCurrency);
+                }}
+              >
+                <Edit2 className="h-4 w-4 mr-2" />
+                Editar Orçamento
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Editar Orçamento da Viagem</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="budget-amount">Orçamento Total *</Label>
+                  <Input
+                    id="budget-amount"
+                    type="number"
+                    step="0.01"
+                    value={editBudgetAmount}
+                    onChange={(e) => setEditBudgetAmount(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="budget-currency">Moeda</Label>
+                  <Select value={editBudgetCurrency} onValueChange={setEditBudgetCurrency}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a moeda" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map(currency => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.symbol} - {currency.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button onClick={handleBudgetUpdate} className="flex-1">
+                    Salvar Orçamento
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsBudgetDialogOpen(false)}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
         
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm text-muted-foreground">Planejado</div>
-            <div className="text-2xl font-bold">
-              {selectedCurrency.symbol} {totalPlanned.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm text-muted-foreground">Gasto</div>
-            <div className="text-2xl font-bold text-destructive">
-              {selectedCurrency.symbol} {totalSpent.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm text-muted-foreground">Restante</div>
-            <div className={`text-2xl font-bold ${remainingBudget >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-              {selectedCurrency.symbol} {remainingBudget.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Orçamento Total</div>
+              <div className="text-2xl font-bold text-primary">
+                {selectedCurrency.symbol} {totalBudget.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Planejado</div>
+              <div className="text-2xl font-bold">
+                {selectedCurrency.symbol} {totalPlanned.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Gasto</div>
+              <div className="text-2xl font-bold text-destructive">
+                {selectedCurrency.symbol} {totalSpent.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Restante</div>
+              <div className={`text-2xl font-bold ${remainingBudget >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                {selectedCurrency.symbol} {remainingBudget.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
       {/* Add Item Button */}
       <div className="flex justify-between items-center">
@@ -263,13 +403,68 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
               Adicionar Item
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingItem ? "Editar Item" : "Adicionar Item ao Orçamento"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
+          <DialogContent className="sm:max-w-[600px] p-0 gap-0 fixed bottom-0 left-0 right-0 top-auto rounded-t-xl border-t sm:relative sm:top-auto sm:bottom-auto sm:left-auto sm:right-auto sm:rounded-lg sm:border data-[state=open]:slide-in-from-bottom-80 data-[state=open]:sm:slide-in-from-bottom-0 data-[state=closed]:slide-out-to-bottom-80 data-[state=closed]:sm:slide-out-to-bottom-0 max-h-[85vh] sm:max-h-[90vh]">
+            <div className="flex flex-col max-h-full">
+              <DialogHeader className="p-6 pb-4 flex-shrink-0 border-b">
+                <div className="w-12 h-1 bg-muted rounded-full mx-auto mb-4 sm:hidden"></div>
+                <DialogTitle className="text-xl font-semibold">
+                  {editingItem ? "Editar Item" : "Adicionar Item ao Orçamento"}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto p-6 pt-4">
+                <div className="space-y-4">
+              {/* Tipo de Gasto */}
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="is-confirmed"
+                  checked={isConfirmed}
+                  onCheckedChange={setIsConfirmed}
+                />
+                <Label htmlFor="is-confirmed">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    isConfirmed ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {isConfirmed ? 'Realizado' : 'Planejado'}
+                  </span>
+                </Label>
+              </div>
+
+              {/* Comprovante - Movido para o topo */}
+              <div>
+                <Label htmlFor="receipt-upload">Comprovante</Label>
+                <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center">
+                  {receiptImageUrl ? (
+                    <div className="space-y-2">
+                      <img 
+                        src={receiptImageUrl} 
+                        alt="Comprovante" 
+                        className="max-h-32 mx-auto rounded"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReceiptImageUrl("")}
+                      >
+                        Remover
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Camera className="h-8 w-8 mx-auto text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Adicione uma foto do comprovante
+                      </p>
+                      <ImageUpload
+                        images={receiptImageUrl ? [receiptImageUrl] : []}
+                        onImagesChange={(images) => setReceiptImageUrl(images[0] || "")}
+                        maxImages={1}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <Label htmlFor="title">Título *</Label>
                 <Input
@@ -293,15 +488,49 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
-                <Label htmlFor="description">Descrição</Label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Detalhes adicionais sobre o item"
-                />
+                <Label htmlFor="location">Local</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="Ex: Universal CityWalk, Orlando"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="expense-date">Data</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="expense-date"
+                    type="date"
+                    value={expenseDate}
+                    onChange={(e) => setExpenseDate(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="payment-method">Método de Pagamento</Label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o método de pagamento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
+                    <SelectItem value="Cartão de Débito">Cartão de Débito</SelectItem>
+                    <SelectItem value="Dinheiro">Dinheiro</SelectItem>
+                    <SelectItem value="PIX">PIX</SelectItem>
+                    <SelectItem value="Transferência">Transferência</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
@@ -329,32 +558,46 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
                   />
                 </div>
               )}
+
               
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is-confirmed"
-                  checked={isConfirmed}
-                  onCheckedChange={setIsConfirmed}
+              <div>
+                <Label htmlFor="description">Descrição</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Detalhes adicionais sobre o item"
                 />
-                <Label htmlFor="is-confirmed">Marcar como gasto confirmado</Label>
               </div>
-              
-              <div className="flex gap-2">
-                <Button onClick={handleSubmit} className="flex-1">
-                  {editingItem ? "Atualizar" : "Adicionar"}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsDialogOpen(false)}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+
+              <div>
+                <Label htmlFor="notes">Notas</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Adicione notas ou observações sobre este gasto..."
+                />
+               </div>
+               
+               <div className="flex gap-2">
+                 <Button onClick={handleSubmit} className="flex-1">
+                   {editingItem ? "Atualizar" : "Adicionar"}
+                 </Button>
+                 <Button 
+                   variant="outline" 
+                   onClick={() => setIsDialogOpen(false)}
+                   className="flex-1"
+                 >
+                   Cancelar
+                 </Button>
+               </div>
+               </div>
+               </div>
+             </div>
+           </DialogContent>
+         </Dialog>
+       </div>
 
       {/* Budget Items List */}
       <div className="space-y-3">
@@ -371,37 +614,95 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
           budgetItems.map((item) => (
             <Card key={item.id} className={`transition-all ${item.is_confirmed ? 'border-destructive/20 bg-destructive/5' : 'border-primary/20 bg-primary/5'}`}>
               <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-start gap-4">
+                  {/* Receipt Image - Left Side */}
+                  <div className="flex-shrink-0">
+                    {item.receipt_image_url ? (
+                      <div className="relative">
+                        <img 
+                          src={item.receipt_image_url} 
+                          alt="Comprovante" 
+                          className="w-16 h-16 object-cover rounded-lg border-2 border-primary/20"
+                        />
+                        <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1">
+                          <Receipt className="h-3 w-3" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
+                        <Camera className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content - Center */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
                       <span className="px-2 py-1 text-xs rounded-full bg-muted">
                         {item.category}
                       </span>
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         item.is_confirmed 
-                          ? 'bg-destructive text-destructive-foreground' 
-                          : 'bg-primary text-primary-foreground'
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-blue-100 text-blue-800'
                       }`}>
-                        {item.is_confirmed ? 'Confirmado' : 'Planejado'}
+                        {item.is_confirmed ? 'Realizado' : 'Planejado'}
                       </span>
                     </div>
-                    <h4 className="font-medium">{item.title}</h4>
+                    
+                    <h4 className="font-semibold text-base truncate">{item.title}</h4>
+                    
                     {item.description && (
-                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
                     )}
-                    <div className="flex gap-4 text-sm text-muted-foreground mt-1">
-                      <span>Planejado: {selectedCurrency.symbol} {item.planned_amount.toFixed(2)}</span>
-                      {item.is_confirmed && item.actual_amount && (
-                        <span>Gasto: {selectedCurrency.symbol} {item.actual_amount.toFixed(2)}</span>
+                    
+                    {/* Additional Details */}
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-2">
+                      {item.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          <span className="truncate max-w-32">{item.location}</span>
+                        </span>
+                      )}
+                      {item.expense_date && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(item.expense_date).toLocaleDateString('pt-BR')}
+                        </span>
+                      )}
+                      {item.payment_method && (
+                        <span className="px-2 py-1 bg-secondary rounded-full">
+                          {item.payment_method}
+                        </span>
                       )}
                     </div>
+                    
+                    {/* Values */}
+                    <div className="flex gap-4 text-sm font-medium mt-2">
+                      <span className="text-muted-foreground">
+                        Planejado: <span className="text-primary">{selectedCurrency.symbol} {item.planned_amount.toFixed(2)}</span>
+                      </span>
+                      {item.is_confirmed && item.actual_amount && (
+                        <span className="text-muted-foreground">
+                          Gasto: <span className="text-destructive">{selectedCurrency.symbol} {item.actual_amount.toFixed(2)}</span>
+                        </span>
+                      )}
+                    </div>
+
+                    {item.notes && (
+                      <p className="text-xs text-muted-foreground mt-2 italic bg-muted/50 p-2 rounded">
+                        {item.notes}
+                      </p>
+                    )}
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  {/* Actions - Right Side */}
+                  <div className="flex flex-col gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(item)}
+                      className="h-8 w-8 p-0"
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
@@ -409,6 +710,7 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
                       variant={item.is_confirmed ? "destructive" : "default"}
                       size="sm"
                       onClick={() => handleToggleConfirmed(item)}
+                      className="h-8 w-8 p-0"
                     >
                       {item.is_confirmed ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
                     </Button>
@@ -418,6 +720,7 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
             </Card>
           ))
         )}
+      </div>
       </div>
     </div>
   );

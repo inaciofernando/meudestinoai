@@ -21,9 +21,14 @@ export type Database = {
           created_at: string
           currency: string
           description: string | null
+          expense_date: string | null
           id: string
           is_confirmed: boolean
+          location: string | null
+          notes: string | null
+          payment_method: string | null
           planned_amount: number
+          receipt_image_url: string | null
           title: string
           trip_id: string
           updated_at: string
@@ -35,9 +40,14 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          expense_date?: string | null
           id?: string
           is_confirmed?: boolean
+          location?: string | null
+          notes?: string | null
+          payment_method?: string | null
           planned_amount: number
+          receipt_image_url?: string | null
           title: string
           trip_id: string
           updated_at?: string
@@ -49,9 +59,14 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          expense_date?: string | null
           id?: string
           is_confirmed?: boolean
+          location?: string | null
+          notes?: string | null
+          payment_method?: string | null
           planned_amount?: number
+          receipt_image_url?: string | null
           title?: string
           trip_id?: string
           updated_at?: string
