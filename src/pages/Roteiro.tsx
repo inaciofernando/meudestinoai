@@ -387,7 +387,13 @@ export default function Roteiro() {
               </Button>
               <div className="flex-1">
                 <div className="flex items-center gap-3">
-                  <Route className="w-6 h-6 text-primary" />
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-indigo-600 flex-shrink-0">
+                    <img 
+                      src="https://images.unsplash.com/photo-1469474968028-56623f02e420?ixlib=rb-4.0.3&auto=format&fit=crop&w=32&h=32&q=80" 
+                      alt="Roteiro" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                   <h1 className="text-2xl font-bold">Roteiro de Viagem</h1>
                 </div>
                 <p className="text-muted-foreground">{trip.title} • {trip.destination}</p>
