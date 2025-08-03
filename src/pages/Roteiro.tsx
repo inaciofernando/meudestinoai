@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUpload } from "@/components/ImageUpload";
 import {
   ArrowLeft,
   Plus,
@@ -117,6 +118,7 @@ export default function Roteiro() {
     estimated_cost: "",
     notes: ""
   });
+  const [pontoImages, setPontoImages] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -228,6 +230,7 @@ export default function Roteiro() {
       estimated_cost: "",
       notes: ""
     });
+    setPontoImages([]);
     
     setIsAddingPonto(false);
 
@@ -414,6 +417,15 @@ export default function Roteiro() {
                         value={newPonto.notes}
                         onChange={(e) => setNewPonto({...newPonto, notes: e.target.value})}
                         placeholder="Dicas, observações, lembretes..."
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Imagem (opcional)</Label>
+                      <ImageUpload
+                        images={pontoImages}
+                        onImagesChange={setPontoImages}
+                        maxImages={1}
                       />
                     </div>
 
