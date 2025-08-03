@@ -66,20 +66,20 @@ serve(async (req) => {
           content: [
             {
               type: 'text',
-              text: 'Analise este cupom fiscal e extraia as informações solicitadas:'
+              text: 'Analise este cupom fiscal brasileiro e extraia as informações solicitadas. Se a imagem estiver difícil de ler, tente o seu melhor para extrair pelo menos algumas informações:'
             },
             {
               type: 'image_url',
               image_url: {
                 url: `data:image/jpeg;base64,${imageBase64}`,
-                detail: 'high'
+                detail: 'auto'
               }
             }
           ]
         }
       ],
-      max_tokens: 500,
-      temperature: 0.1
+      max_tokens: 800,
+      temperature: 0.2
     };
 
     console.log('Making OpenAI API request...');
