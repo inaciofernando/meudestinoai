@@ -129,6 +129,8 @@ export default function Roteiro() {
   });
 
   useEffect(() => {
+    if (!user?.id || !id) return;
+    
     console.time("⏱️ Roteiro useEffect total");
     const fetchData = async () => {
     if (!user || !id) return;
@@ -250,7 +252,7 @@ export default function Roteiro() {
     };
 
     fetchData();
-  }, [user, id, navigate]);
+  }, [user?.id, id]); // Removed navigate to prevent re-executions
 
   const getTotalDays = (startDate: string | null, endDate: string | null): number => {
     if (!startDate || !endDate) return 1;
