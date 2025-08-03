@@ -282,9 +282,9 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
   }
 
   return (
-    <div className="space-y-6">
-      {/* Budget Summary */}
-      <div className="space-y-4">
+    <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
+      {/* Budget Summary - Fixed Header */}
+      <div className="flex-shrink-0 space-y-4 p-4 bg-background/95 backdrop-blur-sm border-b sticky top-0 z-10">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Resumo do Orçamento</h3>
           <Dialog open={isBudgetDialogOpen} onOpenChange={setIsBudgetDialogOpen}>
@@ -389,6 +389,9 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
           </Card>
         </div>
       </div>
+
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
       {/* Add Item Button */}
       <div className="flex justify-between items-center">
@@ -604,71 +607,95 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
           budgetItems.map((item) => (
             <Card key={item.id} className={`transition-all ${item.is_confirmed ? 'border-destructive/20 bg-destructive/5' : 'border-primary/20 bg-primary/5'}`}>
               <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-start gap-4">
+                  {/* Receipt Image - Left Side */}
+                  <div className="flex-shrink-0">
+                    {item.receipt_image_url ? (
+                      <div className="relative">
+                        <img 
+                          src={item.receipt_image_url} 
+                          alt="Comprovante" 
+                          className="w-16 h-16 object-cover rounded-lg border-2 border-primary/20"
+                        />
+                        <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-1">
+                          <Receipt className="h-3 w-3" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-muted-foreground/30">
+                        <Camera className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content - Center */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
                       <span className="px-2 py-1 text-xs rounded-full bg-muted">
                         {item.category}
                       </span>
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         item.is_confirmed 
-                          ? 'bg-destructive text-destructive-foreground' 
-                          : 'bg-primary text-primary-foreground'
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-blue-100 text-blue-800'
                       }`}>
-                        {item.is_confirmed ? 'Confirmado' : 'Planejado'}
+                        {item.is_confirmed ? 'Realizado' : 'Planejado'}
                       </span>
                     </div>
-                     <h4 className="font-medium">{item.title}</h4>
-                     {item.description && (
-                       <p className="text-sm text-muted-foreground">{item.description}</p>
-                     )}
-                     
-                     {/* Additional Details */}
-                     <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-2">
-                       {item.location && (
-                         <span className="flex items-center gap-1">
-                           <MapPin className="h-3 w-3" />
-                           {item.location}
-                         </span>
-                       )}
-                       {item.expense_date && (
-                         <span className="flex items-center gap-1">
-                           <Calendar className="h-3 w-3" />
-                           {new Date(item.expense_date).toLocaleDateString('pt-BR')}
-                         </span>
-                       )}
-                       {item.payment_method && (
-                         <span className="px-2 py-1 bg-muted rounded-full">
-                           {item.payment_method}
-                         </span>
-                       )}
-                       {item.receipt_image_url && (
-                         <span className="flex items-center gap-1 text-primary">
-                           <Receipt className="h-3 w-3" />
-                           Comprovante
-                         </span>
-                       )}
-                     </div>
-                     
-                     <div className="flex gap-4 text-sm text-muted-foreground mt-2">
-                       <span>Planejado: {selectedCurrency.symbol} {item.planned_amount.toFixed(2)}</span>
-                       {item.is_confirmed && item.actual_amount && (
-                         <span>Gasto: {selectedCurrency.symbol} {item.actual_amount.toFixed(2)}</span>
-                       )}
-                     </div>
+                    
+                    <h4 className="font-semibold text-base truncate">{item.title}</h4>
+                    
+                    {item.description && (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+                    )}
+                    
+                    {/* Additional Details */}
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-2">
+                      {item.location && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          <span className="truncate max-w-32">{item.location}</span>
+                        </span>
+                      )}
+                      {item.expense_date && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(item.expense_date).toLocaleDateString('pt-BR')}
+                        </span>
+                      )}
+                      {item.payment_method && (
+                        <span className="px-2 py-1 bg-secondary rounded-full">
+                          {item.payment_method}
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Values */}
+                    <div className="flex gap-4 text-sm font-medium mt-2">
+                      <span className="text-muted-foreground">
+                        Planejado: <span className="text-primary">{selectedCurrency.symbol} {item.planned_amount.toFixed(2)}</span>
+                      </span>
+                      {item.is_confirmed && item.actual_amount && (
+                        <span className="text-muted-foreground">
+                          Gasto: <span className="text-destructive">{selectedCurrency.symbol} {item.actual_amount.toFixed(2)}</span>
+                        </span>
+                      )}
+                    </div>
 
-                     {item.notes && (
-                       <p className="text-xs text-muted-foreground mt-1 italic">
-                         {item.notes}
-                       </p>
-                     )}
+                    {item.notes && (
+                      <p className="text-xs text-muted-foreground mt-2 italic bg-muted/50 p-2 rounded">
+                        {item.notes}
+                      </p>
+                    )}
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  {/* Actions - Right Side */}
+                  <div className="flex flex-col gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(item)}
+                      className="h-8 w-8 p-0"
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
@@ -676,6 +703,7 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
                       variant={item.is_confirmed ? "destructive" : "default"}
                       size="sm"
                       onClick={() => handleToggleConfirmed(item)}
+                      className="h-8 w-8 p-0"
                     >
                       {item.is_confirmed ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
                     </Button>
@@ -685,6 +713,7 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
             </Card>
           ))
         )}
+      </div>
       </div>
     </div>
   );
