@@ -640,12 +640,12 @@ export default function GastosViagem() {
                           onClick={handleAnalyzeReceipt} 
                           disabled={isAnalyzingReceipt}
                           variant="outline"
-                          className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200"
+                          className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 disabled:opacity-75 disabled:cursor-not-allowed disabled:hover:from-purple-50 disabled:hover:to-blue-50"
                         >
                           {isAnalyzingReceipt ? (
-                            <div className="flex flex-col items-center">
-                              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mb-2" />
-                              <span className="text-xs">{analysisStep || "Processando..."}</span>
+                            <div className="flex items-center justify-center gap-3">
+                              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                              <span className="text-sm font-medium text-purple-700">{analysisStep || "Processando..."}</span>
                             </div>
                           ) : (
                             <>
