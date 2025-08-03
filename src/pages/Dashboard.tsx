@@ -1,7 +1,12 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { 
   MapPin, 
   Calendar, 
@@ -11,19 +16,125 @@ import {
   Plane
 } from "lucide-react";
 
+interface Trip {
+  id: string;
+  title: string;
+  destination: string;
+  description: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrips = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("trips")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error("Erro ao buscar viagens:", error);
+          return;
+        }
+
+        setTrips(data || []);
+      } catch (error) {
+        console.error("Erro ao buscar viagens:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrips();
+
+    // Setup real-time subscription
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'trips',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchTrips(); // Refetch data on any change
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const getStatusColor = (status: string | null) => {
+    switch (status) {
+      case 'confirmed':
+        return 'default';
+      case 'planned':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getStatusText = (status: string | null) => {
+    switch (status) {
+      case 'confirmed':
+        return 'Confirmada';
+      case 'planned':
+        return 'Planejando';
+      default:
+        return 'Rascunho';
+    }
+  };
+
+  const formatDateRange = (startDate: string | null, endDate: string | null) => {
+    if (!startDate && !endDate) {
+      return "Datas não definidas";
+    }
+    
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      return `${format(start, "dd")} - ${format(end, "dd MMM", { locale: ptBR })}`;
+    }
+    
+    if (startDate) {
+      const start = new Date(startDate);
+      return `A partir de ${format(start, "dd MMM", { locale: ptBR })}`;
+    }
+    
+    return "Datas não definidas";
+  };
+
   const stats = [
     {
       title: "Viagens Realizadas",
-      value: "12",
+      value: trips.filter(trip => trip.status === 'completed').length.toString(),
       change: "+2 este ano",
       icon: MapPin,
       color: "text-accent"
     },
     {
       title: "Próximas Viagens",
-      value: "3",
+      value: trips.filter(trip => trip.status === 'planned' || trip.status === 'confirmed').length.toString(),
       change: "2 este mês",
       icon: Calendar,
       color: "text-primary"
@@ -41,27 +152,6 @@ export default function Dashboard() {
       change: "vs orçamento planejado",
       icon: TrendingUp,
       color: "text-accent"
-    }
-  ];
-
-  const upcomingTrips = [
-    {
-      destination: "Paris, França",
-      date: "15-22 Março",
-      status: "Confirmada",
-      budget: "R$ 8.500"
-    },
-    {
-      destination: "Tokyo, Japão",
-      date: "10-20 Maio",
-      status: "Planejando",
-      budget: "R$ 12.000"
-    },
-    {
-      destination: "Bali, Indonésia",
-      date: "5-15 Julho",
-      status: "Orçamento",
-      budget: "R$ 6.800"
     }
   ];
 
@@ -112,29 +202,48 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingTrips.map((trip, index) => (
-              <div 
-                key={index}
-                className="flex items-center justify-between p-3 md:p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth"
-              >
-                <div className="space-y-1 flex-1 min-w-0">
-                  <h4 className="font-semibold text-foreground text-sm md:text-base truncate">{trip.destination}</h4>
-                  <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                    <Clock className="w-3 h-3 md:w-4 md:h-4" />
-                    {trip.date}
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-sm text-muted-foreground">Carregando viagens...</p>
+              </div>
+            ) : trips.length === 0 ? (
+              <div className="text-center py-8">
+                <Plane className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-4">Nenhuma viagem encontrada</p>
+                <Button 
+                  onClick={() => navigate("/nova-viagem")}
+                  className="bg-gradient-ocean hover:shadow-travel transition-all duration-300"
+                >
+                  Criar primeira viagem
+                </Button>
+              </div>
+            ) : (
+              trips.slice(0, 3).map((trip) => (
+                <div 
+                  key={trip.id}
+                  className="flex items-center justify-between p-3 md:p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth cursor-pointer"
+                  onClick={() => navigate(`/viagem/${trip.id}`)}
+                >
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <h4 className="font-semibold text-foreground text-sm md:text-base truncate">{trip.destination}</h4>
+                    <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                      <Clock className="w-3 h-3 md:w-4 md:h-4" />
+                      {formatDateRange(trip.start_date, trip.end_date)}
+                    </div>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <Badge 
+                      variant={getStatusColor(trip.status)}
+                      className="mb-1 text-xs"
+                    >
+                      {getStatusText(trip.status)}
+                    </Badge>
+                    <div className="text-xs md:text-sm font-medium text-foreground">{trip.title}</div>
                   </div>
                 </div>
-                <div className="text-right space-y-1">
-                  <Badge 
-                    variant={trip.status === 'Confirmada' ? 'default' : 'secondary'}
-                    className="mb-1 text-xs"
-                  >
-                    {trip.status}
-                  </Badge>
-                  <div className="text-xs md:text-sm font-medium text-foreground">{trip.budget}</div>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
 
