@@ -426,6 +426,42 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
                 </Label>
               </div>
 
+              {/* Comprovante - Movido para o topo */}
+              <div>
+                <Label htmlFor="receipt-upload">Comprovante</Label>
+                <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center">
+                  {receiptImageUrl ? (
+                    <div className="space-y-2">
+                      <img 
+                        src={receiptImageUrl} 
+                        alt="Comprovante" 
+                        className="max-h-32 mx-auto rounded"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReceiptImageUrl("")}
+                      >
+                        Remover
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Camera className="h-8 w-8 mx-auto text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Adicione uma foto do comprovante
+                      </p>
+                      <ImageUpload
+                        images={receiptImageUrl ? [receiptImageUrl] : []}
+                        onImagesChange={(images) => setReceiptImageUrl(images[0] || "")}
+                        maxImages={1}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <Label htmlFor="title">Título *</Label>
                 <Input
@@ -520,40 +556,6 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
                 </div>
               )}
 
-              <div>
-                <Label htmlFor="receipt-upload">Comprovante</Label>
-                <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center">
-                  {receiptImageUrl ? (
-                    <div className="space-y-2">
-                      <img 
-                        src={receiptImageUrl} 
-                        alt="Comprovante" 
-                        className="max-h-32 mx-auto rounded"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setReceiptImageUrl("")}
-                      >
-                        Remover
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Camera className="h-8 w-8 mx-auto text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        Adicione uma foto do comprovante
-                      </p>
-                      <ImageUpload
-                        images={receiptImageUrl ? [receiptImageUrl] : []}
-                        onImagesChange={(images) => setReceiptImageUrl(images[0] || "")}
-                        maxImages={1}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
               
               <div>
                 <Label htmlFor="description">Descrição</Label>
