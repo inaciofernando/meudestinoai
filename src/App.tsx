@@ -11,7 +11,6 @@ import MinhasViagens from "./pages/MinhasViagens";
 import NovaViagem from "./pages/NovaViagem";
 import DetalhesViagem from "./pages/DetalhesViagem";
 import GastosViagem from "./pages/GastosViagem";
-import Roteiro from "./pages/Roteiro";
 import RoteiroSimples from "./pages/RoteiroSimples";
 import DocumentosViagem from "./pages/DocumentosViagem";
 import Hospedagem from "./pages/Hospedagem";
@@ -39,8 +38,7 @@ const App: React.FC = () => (
           <Route path="/nova-viagem" element={<NovaViagem />} />
           <Route path="/viagem/:id" element={<DetalhesViagem />} />
           <Route path="/viagem/:id/gastos" element={<GastosViagem />} />
-          <Route path="/viagem/:id/roteiro" element={<Roteiro />} />
-          <Route path="/viagem/:id/roteiro-simples" element={<RoteiroSimples />} />
+          <Route path="/viagem/:id/roteiro" element={<RoteiroSimples />} />
           <Route path="/viagem/:id/documentos" element={<DocumentosViagem />} />
           <Route path="/viagem/:id/hospedagem" element={<Hospedagem />} />
           <Route path="/viagem/:id/hotel" element={<Hotel />} />

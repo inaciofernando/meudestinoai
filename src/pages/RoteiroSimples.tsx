@@ -74,15 +74,24 @@ export default function RoteiroSimples() {
   const [pontos, setPontos] = useState<RoteiroPonto[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const getTotalDays = (startDate: string | null, endDate: string | null): number => {
+    if (!startDate || !endDate) return 7;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays + 1;
+  };
+
   useEffect(() => {
     if (!user?.id || !id) return;
     
     const fetchData = async () => {
       try {
-        // Fetch trip
+        // Fetch trip with dates
         const { data: tripData, error: tripError } = await supabase
           .from("trips")
-          .select("id, title, destination")
+          .select("id, title, destination, start_date, end_date")
           .eq("id", id)
           .eq("user_id", user.id)
           .single();
@@ -94,42 +103,55 @@ export default function RoteiroSimples() {
 
         setTrip(tripData);
 
-        // Get or create roteiro
+        // Get or create roteiro - using the same logic as the old page
         let roteiroData;
-        const { data: existingRoteiro } = await supabase
+        const { data: existingRoteiro, error: roteiroError } = await supabase
           .from("roteiros")
           .select("*")
           .eq("trip_id", tripData.id)
           .eq("user_id", user.id)
           .single();
 
-        if (existingRoteiro) {
+        if (existingRoteiro && !roteiroError) {
           roteiroData = existingRoteiro;
         } else {
-          const { data: newRoteiro } = await supabase
+          // Create new roteiro if none exists
+          const { data: newRoteiro, error: createError } = await supabase
             .from("roteiros")
             .insert({
               trip_id: tripData.id,
               user_id: user.id,
-              title: `Roteiro - ${tripData.destination}`,
-              total_days: 7
+              title: `Roteiro ${tripData.title}`,
+              description: `Planejamento detalhado para ${tripData.destination}`,
+              total_days: getTotalDays(tripData.start_date, tripData.end_date)
             })
             .select()
             .single();
+
+          if (createError) {
+            console.error("Erro ao criar roteiro:", createError);
+            return;
+          }
           roteiroData = newRoteiro;
         }
 
         setRoteiro(roteiroData);
 
-        // Fetch pontos
-        const { data: pontosData } = await supabase
+        // Fetch pontos - using the same query as the old page
+        const { data: pontosData, error: pontosError } = await supabase
           .from("roteiro_pontos")
           .select("*")
           .eq("roteiro_id", roteiroData.id)
           .eq("user_id", user.id)
-          .order("day_number, order_index");
+          .order("day_number", { ascending: true })
+          .order("order_index", { ascending: true });
 
-        setPontos(pontosData || []);
+        if (pontosError) {
+          console.error("Erro ao buscar pontos:", pontosError);
+        } else {
+          console.log("✅ Pontos encontrados:", pontosData?.length || 0);
+          setPontos(pontosData || []);
+        }
       } catch (error) {
         console.error("Erro:", error);
       } finally {
@@ -202,13 +224,6 @@ export default function RoteiroSimples() {
               <h1 className="text-xl font-bold">{trip.destination}</h1>
               <p className="text-sm text-muted-foreground">Roteiro de Viagem</p>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/viagem/${id}/roteiro`)}
-              className="text-xs"
-            >
-              Versão Completa
-            </Button>
           </div>
 
           {/* Timeline vertical */}
@@ -218,13 +233,7 @@ export default function RoteiroSimples() {
                 <CardContent className="text-center py-12">
                   <Map className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p className="text-muted-foreground">Nenhum ponto no roteiro ainda</p>
-                  <Button 
-                    className="mt-4"
-                    onClick={() => navigate(`/viagem/${id}/roteiro`)}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar Primeiro Ponto
-                  </Button>
+                  <p className="text-sm">Clique em "+" para começar</p>
                 </CardContent>
               </Card>
             ) : (
@@ -300,7 +309,7 @@ export default function RoteiroSimples() {
             <Button
               size="icon"
               className="h-12 w-12 rounded-full shadow-lg"
-              onClick={() => navigate(`/viagem/${id}/roteiro`)}
+              onClick={() => toast({ title: "Em desenvolvimento", description: "Funcionalidade de edição será adicionada em breve!" })}
             >
               <Plus className="w-6 h-6" />
             </Button>

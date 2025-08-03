@@ -1040,7 +1040,7 @@ export default function DetalhesViagem() {
                   <Button
                     variant="outline"
                     className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    onClick={() => navigate(`/viagem/${id}/roteiro-simples`)}
+                    onClick={() => navigate(`/viagem/${id}/roteiro`)}
                   >
                     <Route className="w-6 h-6 text-yellow-600" />
                     <span className="text-xs font-medium">Roteiro</span>
