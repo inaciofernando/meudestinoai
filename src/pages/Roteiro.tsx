@@ -301,9 +301,8 @@ export default function Roteiro() {
               </div>
               <Dialog open={isAddingPonto} onOpenChange={setIsAddingPonto}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-ocean hover:shadow-travel transition-all duration-300">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar Ponto
+                  <Button size="icon" className="bg-gradient-ocean hover:shadow-travel transition-all duration-300 rounded-full">
+                    <Plus className="w-5 h-5" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
