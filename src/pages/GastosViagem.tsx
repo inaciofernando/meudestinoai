@@ -1200,10 +1200,9 @@ export default function GastosViagem() {
                                   <CategoryIcon className="w-4 h-4" />
                                 </div>
                                 <div>
-                                  <p className="font-medium">{expense.description}</p>
+                                  <p className="font-medium">{expense.location || 'Local não informado'}</p>
                                   <p className="text-sm text-muted-foreground">
                                     {category.name} • {new Date(expense.date).toLocaleDateString('pt-BR')}
-                                    {expense.location && ` • ${expense.location}`}
                                   </p>
                                 </div>
                               </div>
