@@ -212,6 +212,8 @@ export default function Roteiro() {
             })
             .select()
             .single();
+          console.timeEnd("⏱️ Insert new roteiro");
+        console.timeEnd("⏱️ Roteiro query");
 
           if (createError) {
             console.error("Erro ao criar roteiro:", createError);
@@ -219,11 +221,17 @@ export default function Roteiro() {
             return;
           }
 
+          console.time("⏱️ Setup roteiro data");
           roteiroData = newRoteiro;
+          console.timeEnd("⏱️ Setup roteiro data");
         }
         
         console.timeEnd("⏱️ Roteiro fetch/create");
+        console.timeEnd("⏱️ Roteiro logic");
+        console.time("⏱️ SetState roteiro");
         setRoteiro(roteiroData);
+
+        console.timeEnd("⏱️ SetState roteiro");
 
         console.time("⏱️ Pontos fetch");
         // Fetch roteiro pontos efficiently
@@ -235,12 +243,15 @@ export default function Roteiro() {
           .order("day_number, order_index");
         
         console.timeEnd("⏱️ Pontos fetch");
+        console.time("⏱️ Process pontos");
         if (pontosError) {
           console.error("Erro ao buscar pontos do roteiro:", pontosError);
+          console.timeEnd("⏱️ Create new roteiro");
         } else {
           console.log("✅ Pontos carregados:", pontosData?.length || 0);
           setPontos((pontosData || []) as RoteiroPonto[]);
         }
+        console.timeEnd("⏱️ Process pontos");
         
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
