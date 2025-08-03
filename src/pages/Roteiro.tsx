@@ -801,21 +801,17 @@ export default function Roteiro() {
                                         </Badge>
                                       </div>
                                       
-                                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                                      <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                                         <div className="flex items-center gap-1">
                                           <Clock className="w-4 h-4" />
-                                          {ponto.time_start}
-                                          {ponto.time_end && ` - ${ponto.time_end}`}
+                                          <span className="font-medium">{ponto.time_start}</span>
+                                          {ponto.time_end && <span> - {ponto.time_end}</span>}
                                         </div>
                                         <div className="flex items-center gap-1">
                                           <MapPin className="w-4 h-4" />
-                                          <span className="font-medium">{ponto.location}</span>
+                                          <span className="font-medium text-foreground/80">{ponto.location}</span>
                                         </div>
                                       </div>
-                                      
-                                      {ponto.description && (
-                                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{ponto.description}</p>
-                                      )}
                                       
                                     </div>
                                   </div>
