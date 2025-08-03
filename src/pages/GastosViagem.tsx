@@ -39,7 +39,6 @@ import {
   AlertCircle,
   CheckCircle,
   Edit2,
-  Trash2,
   MoreVertical
 } from "lucide-react";
 
@@ -103,9 +102,6 @@ export default function GastosViagem() {
   const [activeTab, setActiveTab] = useState("overview");
   const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
-  const [swipedExpense, setSwipedExpense] = useState<string | null>(null);
 
   // Form states for budget editing
   const [budgetForm, setBudgetForm] = useState({
@@ -561,42 +557,6 @@ export default function GastosViagem() {
     setViewingReceiptUrl(data.publicUrl);
   };
 
-  const handleDeleteExpense = async () => {
-    if (!user || !expenseToDelete) return;
-
-    try {
-      // Delete from database
-      const { error } = await supabase
-        .from('budget_items')
-        .delete()
-        .eq('id', expenseToDelete.id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Gasto excluído!",
-        description: "O gasto foi removido com sucesso.",
-      });
-
-      // Reset states and refresh
-      setExpenseToDelete(null);
-      setDeleteDialogOpen(false);
-      fetchExpenses();
-    } catch (error) {
-      console.error('Error deleting expense:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível excluir o gasto. Tente novamente.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const confirmDeleteExpense = (expense: Expense) => {
-    setExpenseToDelete(expense);
-    setDeleteDialogOpen(true);
-  };
 
   const handleUpdateBudget = async () => {
     if (!trip || !user) return;
@@ -1143,17 +1103,6 @@ export default function GastosViagem() {
                         Cancelar
                       </Button>
                       <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          setIsEditingExpense(false);
-                          confirmDeleteExpense(editingExpense);
-                        }}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Excluir
-                      </Button>
-                      <Button 
                         onClick={handleUpdateExpense} 
                         className="flex-1"
                       >
@@ -1275,89 +1224,35 @@ export default function GastosViagem() {
                         {expenses.map((expense) => {
                           const category = EXPENSE_CATEGORIES.find(c => c.id === expense.category) || EXPENSE_CATEGORIES[EXPENSE_CATEGORIES.length - 1];
                           const CategoryIcon = category.icon;
-                          const isSwipedOpen = swipedExpense === expense.id;
                           
                           return (
                             <div 
                               key={expense.id} 
-                              className="relative overflow-hidden border rounded-lg"
+                              className="border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                              onClick={() => handleEditExpense(expense)}
                             >
-                              {/* Background delete button - only visible when swiped */}
-                              <div className="absolute inset-0 bg-destructive flex items-center justify-end pr-4">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    setSwipedExpense(null);
-                                    confirmDeleteExpense(expense);
-                                  }}
-                                  className="text-white hover:bg-white/20"
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Excluir
-                                </Button>
-                              </div>
-                              
-                              {/* Main content - swipeable */}
-                              <div 
-                                className={`relative bg-background transition-transform duration-300 ease-out ${
-                                  isSwipedOpen ? '-translate-x-24' : 'translate-x-0'
-                                } hover:bg-muted/50 cursor-pointer`}
-                                onTouchStart={(e) => {
-                                  const touch = e.touches[0];
-                                  const startX = touch.clientX;
-                                  
-                                  const handleTouchMove = (e: TouchEvent) => {
-                                    const touch = e.touches[0];
-                                    const deltaX = startX - touch.clientX;
-                                    
-                                    if (deltaX > 50) {
-                                      setSwipedExpense(expense.id);
-                                    } else if (deltaX < -20) {
-                                      setSwipedExpense(null);
-                                    }
-                                  };
-                                  
-                                  const handleTouchEnd = () => {
-                                    document.removeEventListener('touchmove', handleTouchMove);
-                                    document.removeEventListener('touchend', handleTouchEnd);
-                                  };
-                                  
-                                  document.addEventListener('touchmove', handleTouchMove);
-                                  document.addEventListener('touchend', handleTouchEnd);
-                                }}
-                                onClick={(e) => {
-                                  if (isSwipedOpen) {
-                                    e.preventDefault();
-                                    setSwipedExpense(null);
-                                  } else {
-                                    handleEditExpense(expense);
-                                  }
-                                }}
-                              >
-                                <div className="flex items-center justify-between p-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-full ${category.color} text-white`}>
-                                      <CategoryIcon className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                      <p className="font-medium">{expense.location || 'Local não informado'}</p>
-                                       <p className="text-sm text-muted-foreground">
-                                         {category.name} • {new Date(expense.date + 'T00:00:00').toLocaleDateString('pt-BR')}
-                                       </p>
-                                    </div>
+                              <div className="flex items-center justify-between p-4">
+                                <div className="flex items-center gap-3">
+                                  <div className={`p-2 rounded-full ${category.color} text-white`}>
+                                    <CategoryIcon className="w-4 h-4" />
                                   </div>
-                                  <div className="text-right">
-                                    <p className="font-bold text-destructive">
-                                      {CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$'} {expense.amount.toFixed(2)}
+                                  <div>
+                                    <p className="font-medium">{expense.location || 'Local não informado'}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {category.name} • {new Date(expense.date + 'T00:00:00').toLocaleDateString('pt-BR')}
                                     </p>
-                                    {expense.receipt_url && (
-                                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                                        <Receipt className="w-3 h-3" />
-                                        <span>Cupom anexado</span>
-                                      </div>
-                                    )}
                                   </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-bold text-destructive">
+                                    {CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$'} {expense.amount.toFixed(2)}
+                                  </p>
+                                  {expense.receipt_url && (
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                      <Receipt className="w-3 h-3" />
+                                      <span>Cupom anexado</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -1498,34 +1393,6 @@ export default function GastosViagem() {
         </DialogContent>
       </Dialog>
 
-      {/* Alert Dialog para confirmação de exclusão */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir este gasto? Esta ação não pode ser desfeita.
-              {expenseToDelete && (
-                <div className="mt-2 p-2 bg-muted rounded">
-                  <p className="font-medium">{expenseToDelete.location || 'Local não informado'}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {CURRENCIES.find(c => c.code === expenseToDelete.currency)?.symbol || '$'} {expenseToDelete.amount.toFixed(2)}
-                  </p>
-                </div>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteExpense}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </ProtectedRoute>
   );
 }
