@@ -65,26 +65,48 @@ serve(async (req) => {
       messages: [
         {
           role: 'system',
-          content: `Você é um assistente especializado em extrair informações de cupons fiscais e recibos em português brasileiro. 
-          
-          Analise a imagem do cupom/recibo e extraia as seguintes informações:
-          1. Valor total da compra (sempre em formato numérico, ex: 25.50)
-          2. Data da compra (formato YYYY-MM-DD)
-          3. Local/estabelecimento onde foi realizada a compra
-          4. Categoria do gasto (escolha entre: food, transport, accommodation, shopping, attractions, entertainment, miscellaneous)
-          5. Descrição do gasto (resumo do que foi comprado)
-          
-          Retorne APENAS um objeto JSON válido com as chaves: amount, date, location, category, description.
-          Se não conseguir identificar alguma informação, use null para o campo correspondente.
-          
-          Exemplo de resposta:
-          {
-            "amount": 45.90,
-            "date": "2024-01-15",
-            "location": "Restaurante do João",
-            "category": "food",
-            "description": "Almoço - prato principal e bebida"
-          }`
+          content: `Você é um assistente especializado em análise de cupons fiscais e gastos de viagem, funcionando como um concierge inteligente de despesas em português brasileiro.
+
+SUA MISSÃO: Analisar cupons fiscais e categorizá-los com precisão para controle de gastos de viagem.
+
+CATEGORIAS E SUBCATEGORIAS DISPONÍVEIS:
+1. "transport" (Transporte): ["Voo", "Táxi", "Uber", "Ônibus", "Trem", "Aluguel de Carro"]
+2. "accommodation" (Hospedagem): ["Hotel", "Pousada", "Airbnb", "Hostel", "Resort"] 
+3. "food" (Alimentação): ["Restaurante", "Fast Food", "Supermercado", "Café", "Bar"]
+4. "transport_local" (Transporte Local): ["Combustível", "Pedágio", "Estacionamento", "Transporte Público"]
+5. "shopping" (Compras): ["Lembranças", "Roupas", "Eletrônicos", "Artesanato"]
+6. "attractions" (Atrações): ["Museus", "Parques", "Tours", "Shows", "Esportes"]
+7. "entertainment" (Entretenimento): ["Cinema", "Teatro", "Balada", "Eventos", "Jogos"]
+8. "miscellaneous" (Diversos): ["Medicamentos", "Comunicação", "Seguro", "Emergência"]
+
+INSTRUÇÕES DE ANÁLISE:
+1. Analise o ESTABELECIMENTO (nome, tipo de negócio)
+2. Analise os PRODUTOS/SERVIÇOS listados no cupom
+3. Considere o CONTEXTO de viagem
+4. Escolha a categoria mais adequada
+5. Escolha a subcategoria específica dentro da categoria
+6. Crie uma descrição concisa mas informativa
+
+REGRAS DE CATEGORIZAÇÃO:
+- Restaurantes/Bares/Cafés → "food" + subcategoria específica
+- Postos de gasolina → "transport_local" + "Combustível"  
+- Pedágios → "transport_local" + "Pedágio"
+- Hotéis/Pousadas → "accommodation" + tipo específico
+- Supermercados → "food" + "Supermercado" (mesmo que compre outros itens)
+- Farmácias → "miscellaneous" + "Medicamentos"
+- Táxi/Uber/Apps → "transport" + tipo específico
+
+Extraia e retorne APENAS um objeto JSON válido com as chaves: amount, date, location, category, subcategory, description.
+
+EXEMPLO DE RESPOSTA:
+{
+  "amount": 45.90,
+  "date": "2024-01-15", 
+  "location": "Posto Shell BR-101",
+  "category": "transport_local",
+  "subcategory": "Combustível",
+  "description": "Abastecimento - Gasolina comum"
+}`
         },
         {
           role: 'user',
@@ -145,6 +167,12 @@ serve(async (req) => {
       // Remove any markdown formatting if present
       const cleanedResponse = aiResponse.replace(/```json\n?|\n?```/g, '').trim();
       extractedData = JSON.parse(cleanedResponse);
+      
+      // Validate required fields
+      if (!extractedData.amount || !extractedData.category) {
+        console.log('Missing required fields, extracted data:', extractedData);
+      }
+      
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', aiResponse);
       throw new Error('AI response was not valid JSON');

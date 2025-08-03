@@ -454,12 +454,21 @@ export default function GastosViagem() {
               date: extractedData.date || prev.date,
               location: extractedData.location || prev.location,
               category: extractedData.category || prev.category,
+              subcategory: extractedData.subcategory || "", // Reset se não houver subcategoria
               description: extractedData.description || prev.description
             }));
 
+            // Log da análise inteligente
+            console.log("🧠 Análise inteligente da IA:", {
+              categoria: extractedData.category,
+              subcategoria: extractedData.subcategory,
+              local: extractedData.location,
+              valor: extractedData.amount
+            });
+
             toast({
-              title: "Análise concluída! 🎉",
-              description: "Os dados do cupom foram extraídos e preenchidos automaticamente.",
+              title: "Análise concluída! 🎯",
+              description: `Categorizado como "${extractedData.subcategory || extractedData.category}" de forma inteligente.`,
             });
           } else {
             console.error('Resposta inválida da IA:', data);
