@@ -479,10 +479,23 @@ export default function RoteiroSimples() {
                              
                              <CardContent className="p-4">
                                <div className="flex items-start gap-3">
-                                 <div className={`p-2 rounded-lg ${category.color} text-white flex-shrink-0`}>
-                                   <CategoryIcon className="w-4 h-4" />
-                                 </div>
+                                 {/* Imagem à esquerda */}
+                                 {ponto.images && ponto.images.length > 0 ? (
+                                   <div className="flex-shrink-0">
+                                     <img
+                                       src={ponto.images[0]}
+                                       alt={ponto.title}
+                                       className="w-20 h-16 object-cover rounded cursor-pointer"
+                                       onClick={() => openImageViewer(ponto.images!, 0)}
+                                     />
+                                   </div>
+                                 ) : (
+                                   <div className={`p-2 rounded-lg ${category.color} text-white flex-shrink-0 w-20 h-16 flex items-center justify-center`}>
+                                     <CategoryIcon className="w-6 h-6" />
+                                   </div>
+                                 )}
                                  
+                                 {/* Conteúdo à direita */}
                                  <div className="flex-1 min-w-0">
                                    <div className="flex items-center gap-2 mb-1">
                                      <h4 className="font-semibold truncate">{ponto.title}</h4>
@@ -492,25 +505,18 @@ export default function RoteiroSimples() {
                                      </Badge>
                                    </div>
                                    
-                                   <p className="text-sm text-muted-foreground truncate mb-2">
+                                   <p className="text-sm text-muted-foreground truncate mb-1">
                                      {ponto.location}
                                    </p>
                                    
-                                   {ponto.images && ponto.images.length > 0 && (
-                                     <div className="mt-2">
-                                       <img
-                                         src={ponto.images[0]}
-                                         alt={ponto.title}
-                                         className="w-full h-32 object-cover rounded cursor-pointer"
-                                         onClick={() => openImageViewer(ponto.images!, 0)}
-                                       />
-                                       {ponto.images.length > 1 && (
-                                         <div className="mt-1 text-xs text-muted-foreground">
-                                           +{ponto.images.length - 1} {ponto.images.length === 2 ? 'imagem' : 'imagens'}
-                                         </div>
-                                       )}
-                                     </div>
-                                   )}
+                                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                     <Badge variant="secondary" className="text-xs">
+                                       {category.name}
+                                     </Badge>
+                                     {ponto.images && ponto.images.length > 1 && (
+                                       <span>• +{ponto.images.length - 1} {ponto.images.length === 2 ? 'imagem' : 'imagens'}</span>
+                                     )}
+                                   </div>
                                  </div>
 
                                  <div className="flex flex-col gap-1">
