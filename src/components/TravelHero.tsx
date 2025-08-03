@@ -34,9 +34,9 @@ export const TravelHero = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="space-y-16">
       {/* Hero Section */}
-      <div className="relative h-screen flex items-center justify-center overflow-hidden">
+      <div className="relative py-16 flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
         
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
@@ -70,7 +70,7 @@ export const TravelHero = () => {
       </div>
 
       {/* Features Section */}
-      <div className="py-16 px-6">
+      <div className="space-y-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
