@@ -976,6 +976,27 @@ export default function DetalhesViagem() {
                   </div>
                   <Separator />
                   <div>
+                    <label className="text-sm font-medium text-muted-foreground">Alterar Status</label>
+                    <Select 
+                      value={trip.status || 'planned'} 
+                      onValueChange={handleStatusUpdate}
+                      disabled={statusUpdating}
+                    >
+                      <SelectTrigger className="w-full mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="planned">Planejando</SelectItem>
+                        <SelectItem value="confirmed">Confirmada</SelectItem>
+                        <SelectItem value="completed">Concluída</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {statusUpdating && (
+                      <p className="text-sm text-muted-foreground mt-1">Atualizando status...</p>
+                    )}
+                  </div>
+                  <Separator />
+                  <div>
                     <label className="text-sm font-medium text-muted-foreground">Criada em</label>
                     <p className="text-foreground">{format(new Date(trip.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}</p>
                   </div>
