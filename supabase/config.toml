@@ -2,3 +2,6 @@ project_id = "sqbdqqbvxrmxnmrlqynu"
 
 [functions.auto-complete-trips]
 verify_jwt = false
+
+[functions.analyze-receipt]
+verify_jwt = false

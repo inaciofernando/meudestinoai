@@ -434,12 +434,14 @@ export default function GastosViagem() {
             body: { imageBase64 }
           });
 
+          console.log("📊 Resposta da edge function:", data);
+
           if (error) {
             console.error('Supabase function error:', error);
             throw new Error(`Erro na função: ${error.message}`);
           }
 
-          if (data.success && data.data) {
+          if (data && data.success && data.data) {
             setAnalysisStep("📝 Preenchendo diário de viagem...");
             console.log("✅ Dados extraídos com sucesso!");
             const extractedData = data.data;
@@ -459,17 +461,27 @@ export default function GastosViagem() {
               description: "Os dados do cupom foram extraídos e preenchidos automaticamente.",
             });
           } else {
-            throw new Error(data.error || 'Erro na análise do cupom - resposta inválida');
+            console.error('Resposta inválida da IA:', data);
+            throw new Error(data?.error || 'Erro na análise do cupom - resposta inválida');
           }
         } catch (analysisError: any) {
           console.error('Error analyzing receipt:', analysisError);
           setAnalysisStep("❌ Erro na análise...");
           
-          toast({
-            title: "Erro na análise",
-            description: `Não foi possível analisar o cupom fiscal: ${analysisError.message}`,
-            variant: "destructive"
-          });
+          // Verificar se é erro de API key
+          if (analysisError.message?.includes('API key not configured')) {
+            toast({
+              title: "Configuração necessária",
+              description: "A chave da API OpenAI não está configurada. Configure nas configurações do projeto.",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "Erro na análise",
+              description: `Não foi possível analisar o cupom fiscal: ${analysisError.message}`,
+              variant: "destructive"
+            });
+          }
         }
       };
 

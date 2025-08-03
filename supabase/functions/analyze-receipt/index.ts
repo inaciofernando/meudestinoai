@@ -19,7 +19,13 @@ serve(async (req) => {
     
     if (!openAIApiKey) {
       console.error('OpenAI API key not configured');
-      throw new Error('OpenAI API key not configured');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'OpenAI API key not configured. Please configure OPENAI_API_KEY in Supabase secrets.' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const requestBody = await req.json();
@@ -29,10 +35,29 @@ serve(async (req) => {
     
     if (!imageBase64) {
       console.error('No image data provided');
-      throw new Error('No image data provided');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'No image data provided' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('Image data received, length:', imageBase64.length);
+    
+    // Validar se a imagem está em formato base64 válido
+    if (!imageBase64.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
+      console.error('Invalid base64 image format');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Invalid image format. Please upload a valid image.' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('Sending image to OpenAI for analysis...');
 
     const openAIRequest = {
