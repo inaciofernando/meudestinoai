@@ -409,8 +409,10 @@ export default function GastosViagem() {
       return;
     }
 
+    console.log("Iniciando análise - isAnalyzingReceipt:", isAnalyzingReceipt);
     setIsAnalyzingReceipt(true);
     setAnalysisStep("🔍 Preparando imagem...");
+    console.log("Estado atualizado - isAnalyzingReceipt:", true);
 
     try {
       // Convert file to base64
@@ -481,8 +483,10 @@ export default function GastosViagem() {
         variant: "destructive"
       });
     } finally {
+      console.log("Finalizando análise - resetando estado");
       setIsAnalyzingReceipt(false);
       setAnalysisStep("");
+      console.log("Estado resetado - isAnalyzingReceipt:", false);
     }
   };
 
@@ -637,22 +641,28 @@ export default function GastosViagem() {
                     {newExpense.receiptFile && (
                       <div className="mt-3">
                         <Button 
-                          onClick={handleAnalyzeReceipt} 
+                          onClick={() => {
+                            console.log("Botão clicado - isAnalyzingReceipt:", isAnalyzingReceipt);
+                            handleAnalyzeReceipt();
+                          }} 
                           disabled={isAnalyzingReceipt}
                           variant="outline"
                           className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 disabled:opacity-75 disabled:cursor-not-allowed disabled:hover:from-purple-50 disabled:hover:to-blue-50"
                         >
-                          {isAnalyzingReceipt ? (
-                            <div className="flex items-center justify-center gap-3">
-                              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                              <span className="text-sm font-medium text-purple-700">{analysisStep || "Processando..."}</span>
-                            </div>
-                          ) : (
-                            <>
-                              <Bot className="w-4 h-4 mr-2 text-purple-600" />
-                              Analisar com IA
-                            </>
-                          )}
+                          {(() => {
+                            console.log("Renderizando botão - isAnalyzingReceipt:", isAnalyzingReceipt, "analysisStep:", analysisStep);
+                            return isAnalyzingReceipt ? (
+                              <div className="flex items-center justify-center gap-3">
+                                <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                                <span className="text-sm font-medium text-purple-700">{analysisStep || "Processando..."}</span>
+                              </div>
+                            ) : (
+                              <>
+                                <Bot className="w-4 h-4 mr-2 text-purple-600" />
+                                Analisar com IA
+                              </>
+                            );
+                          })()}
                         </Button>
                       </div>
                     )}
