@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -219,35 +219,19 @@ export default function Roteiro() {
         
         setRoteiro(roteiroData);
 
-        // Fetch roteiro pontos
-        console.log("🔍 Buscando pontos do roteiro:");
-        console.log("- User ID:", user.id);
-        console.log("- Roteiro ID:", roteiroData.id);
-        
-        // First let's check what roteiro_pontos exist
-        const { data: allPontos } = await supabase
-          .from("roteiro_pontos")
-          .select("*");
-        console.log("🗂️ Todos os pontos do roteiro no DB:", allPontos);
-        
+        // Fetch roteiro pontos efficiently
         const { data: pontosData, error: pontosError } = await supabase
           .from("roteiro_pontos")
           .select("*")
           .eq("roteiro_id", roteiroData.id)
           .eq("user_id", user.id)
-          .order("day_number", { ascending: true })
-          .order("order_index", { ascending: true });
-
-        console.log("📊 Resultado da query:");
-        console.log("- Pontos encontrados:", pontosData);
-        console.log("- Erro:", pontosError);
-        console.log("- Total de pontos:", pontosData?.length || 0);
-
+          .order("day_number, order_index");
+        
         if (pontosError) {
           console.error("Erro ao buscar pontos do roteiro:", pontosError);
         } else {
+          console.log("✅ Pontos carregados:", pontosData?.length || 0);
           setPontos((pontosData || []) as RoteiroPonto[]);
-          console.log("✅ Pontos carregados no estado");
         }
         
       } catch (error) {
@@ -277,16 +261,20 @@ export default function Roteiro() {
     return 'evening';
   };
 
-  const getDayPontos = (day: number) => {
+  // Memoize the getDayPontos function to avoid recalculations
+  const getDayPontos = useCallback((day: number) => {
     const filteredPontos = pontos.filter(ponto => ponto.day_number === day);
-    console.log(`🗓️ getDayPontos(${day}):`, {
-      totalPontos: pontos.length,
-      pontosAll: pontos,
-      filteredPontos,
-      dayRequested: day
-    });
     return filteredPontos.sort((a, b) => a.order_index - b.order_index);
-  };
+  }, [pontos]);
+
+  // Memoize day counts to avoid recalculating on every render
+  const dayPointCounts = useMemo(() => {
+    const counts: Record<number, number> = {};
+    pontos.forEach(ponto => {
+      counts[ponto.day_number] = (counts[ponto.day_number] || 0) + 1;
+    });
+    return counts;
+  }, [pontos]);
 
   const handleAddPonto = async () => {
     if (!roteiro || !newPonto.title || !newPonto.location) {
@@ -313,7 +301,7 @@ export default function Roteiro() {
           category: newPonto.category,
           notes: newPonto.notes,
           images: newPonto.images,
-          order_index: getDayPontos(newPonto.day_number).length,
+          order_index: dayPointCounts[newPonto.day_number] || 0,
           user_id: user!.id
         })
         .select()
@@ -603,9 +591,9 @@ export default function Roteiro() {
                   className="min-w-fit"
                 >
                   Dia {day}
-                  {getDayPontos(day).length > 0 && (
+                  {(dayPointCounts[day] || 0) > 0 && (
                     <Badge variant="secondary" className="ml-2 px-1 py-0 text-xs">
-                      {getDayPontos(day).length}
+                      {dayPointCounts[day]}
                     </Badge>
                   )}
                 </Button>
