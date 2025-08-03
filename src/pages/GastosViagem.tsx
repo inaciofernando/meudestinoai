@@ -108,7 +108,8 @@ export default function GastosViagem() {
     currency: "BRL",
     description: "",
     date: new Date().toISOString().split('T')[0],
-    location: ""
+    location: "",
+    receiptFile: null as File | null
   });
 
   useEffect(() => {
@@ -365,19 +366,38 @@ export default function GastosViagem() {
                         onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
                       />
                     </div>
-                    <div>
-                      <Label>Local</Label>
-                      <Input
-                        value={newExpense.location}
-                        onChange={(e) => setNewExpense({...newExpense, location: e.target.value})}
-                        placeholder="Local do gasto"
-                      />
-                    </div>
+                  <div>
+                    <Label>Local</Label>
+                    <Input
+                      value={newExpense.location}
+                      onChange={(e) => setNewExpense({...newExpense, location: e.target.value})}
+                      placeholder="Ex: Restaurante Central, Hotel Plaza..."
+                    />
                   </div>
+                </div>
 
-                  <Button onClick={handleAddExpense} className="w-full">
-                    Adicionar Gasto
-                  </Button>
+                <div>
+                  <Label htmlFor="receipt">Cupom Fiscal (Opcional)</Label>
+                  <Input
+                    id="receipt"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setNewExpense({...newExpense, receiptFile: file});
+                      }
+                    }}
+                    className="cursor-pointer"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Adicione uma foto do cupom fiscal para arquivar
+                  </p>
+                </div>
+
+                <Button onClick={handleAddExpense} className="w-full">
+                  Adicionar Gasto
+                </Button>
                 </div>
               </DialogContent>
             </Dialog>
