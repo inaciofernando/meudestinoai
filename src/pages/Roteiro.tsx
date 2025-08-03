@@ -170,6 +170,12 @@ export default function Roteiro() {
         console.log("- User ID:", user.id);
         console.log("- Roteiro ID:", roteiroData.id);
         
+        // First let's check what roteiro_pontos exist
+        const { data: allPontos } = await supabase
+          .from("roteiro_pontos")
+          .select("*");
+        console.log("🗂️ Todos os pontos do roteiro no DB:", allPontos);
+        
         const { data: pontosData, error: pontosError } = await supabase
           .from("roteiro_pontos")
           .select("*")
