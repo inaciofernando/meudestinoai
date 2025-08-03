@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,7 +38,9 @@ import {
   Target,
   AlertCircle,
   CheckCircle,
-  Edit2
+  Edit2,
+  Trash2,
+  MoreVertical
 } from "lucide-react";
 
 interface Trip {
@@ -99,6 +103,8 @@ export default function GastosViagem() {
   const [activeTab, setActiveTab] = useState("overview");
   const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
 
   // Form states for budget editing
   const [budgetForm, setBudgetForm] = useState({
@@ -552,6 +558,43 @@ export default function GastosViagem() {
   const handleViewReceipt = (receiptUrl: string) => {
     const { data } = supabase.storage.from('receipts').getPublicUrl(receiptUrl);
     setViewingReceiptUrl(data.publicUrl);
+  };
+
+  const handleDeleteExpense = async () => {
+    if (!user || !expenseToDelete) return;
+
+    try {
+      // Delete from database
+      const { error } = await supabase
+        .from('budget_items')
+        .delete()
+        .eq('id', expenseToDelete.id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Gasto excluído!",
+        description: "O gasto foi removido com sucesso.",
+      });
+
+      // Reset states and refresh
+      setExpenseToDelete(null);
+      setDeleteDialogOpen(false);
+      fetchExpenses();
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o gasto. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const confirmDeleteExpense = (expense: Expense) => {
+    setExpenseToDelete(expense);
+    setDeleteDialogOpen(true);
   };
 
   const handleUpdateBudget = async () => {
@@ -1224,10 +1267,12 @@ export default function GastosViagem() {
                           return (
                             <div 
                               key={expense.id} 
-                              className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                              onClick={() => handleEditExpense(expense)}
+                              className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                             >
-                              <div className="flex items-center gap-3">
+                              <div 
+                                className="flex items-center gap-3 flex-1 cursor-pointer"
+                                onClick={() => handleEditExpense(expense)}
+                              >
                                 <div className={`p-2 rounded-full ${category.color} text-white`}>
                                   <CategoryIcon className="w-4 h-4" />
                                 </div>
@@ -1238,16 +1283,38 @@ export default function GastosViagem() {
                                   </p>
                                 </div>
                               </div>
-                              <div className="text-right">
-                                <p className="font-bold text-destructive">
-                                  {CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$'} {expense.amount.toFixed(2)}
-                                </p>
-                                {expense.receipt_url && (
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                                    <Receipt className="w-3 h-3" />
-                                    <span>Cupom anexado</span>
-                                  </div>
-                                )}
+                              <div className="flex items-center gap-3">
+                                <div className="text-right">
+                                  <p className="font-bold text-destructive">
+                                    {CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$'} {expense.amount.toFixed(2)}
+                                  </p>
+                                  {expense.receipt_url && (
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                      <Receipt className="w-3 h-3" />
+                                      <span>Cupom anexado</span>
+                                    </div>
+                                  )}
+                                </div>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                      <MoreVertical className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditExpense(expense)}>
+                                      <Edit2 className="w-4 h-4 mr-2" />
+                                      Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => confirmDeleteExpense(expense)}
+                                      className="text-destructive"
+                                    >
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Excluir
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                           );
@@ -1288,15 +1355,54 @@ export default function GastosViagem() {
                                 key={expense.id}
                                 className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded"
                               >
-                                <div>
+                                <div 
+                                  className="flex-1 cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditExpense(expense);
+                                  }}
+                                >
                                   <p className="font-medium">{expense.location || 'Local não informado'}</p>
                                   <p className="text-muted-foreground text-xs">
                                     {new Date(expense.date).toLocaleDateString('pt-BR')}
                                   </p>
                                 </div>
-                                <span className="font-medium">
-                                  {selectedCurrency.symbol} {expense.amount.toFixed(2)}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">
+                                    {selectedCurrency.symbol} {expense.amount.toFixed(2)}
+                                  </span>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="h-6 w-6 p-0"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <MoreVertical className="w-3 h-3" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEditExpense(expense);
+                                      }}>
+                                        <Edit2 className="w-3 h-3 mr-2" />
+                                        Editar
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          confirmDeleteExpense(expense);
+                                        }}
+                                        className="text-destructive"
+                                      >
+                                        <Trash2 className="w-3 h-3 mr-2" />
+                                        Excluir
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -1382,6 +1488,35 @@ export default function GastosViagem() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Alert Dialog para confirmação de exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este gasto? Esta ação não pode ser desfeita.
+              {expenseToDelete && (
+                <div className="mt-2 p-2 bg-muted rounded">
+                  <p className="font-medium">{expenseToDelete.location || 'Local não informado'}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {CURRENCIES.find(c => c.code === expenseToDelete.currency)?.symbol || '$'} {expenseToDelete.amount.toFixed(2)}
+                  </p>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteExpense}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ProtectedRoute>
   );
 }
