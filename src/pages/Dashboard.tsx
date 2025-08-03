@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { 
   MapPin, 
   Calendar, 
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const stats = [
     {
       title: "Viagens Realizadas",
@@ -71,7 +73,11 @@ export default function Dashboard() {
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground text-sm">Bem-vindo de volta! Aqui está o resumo das suas viagens</p>
         </div>
-        <Button variant="travel" className="gap-2 text-sm">
+        <Button 
+          variant="travel" 
+          className="gap-2 text-sm"
+          onClick={() => navigate("/nova-viagem")}
+        >
           <Plane className="w-4 h-4" />
           <span className="hidden sm:inline">Nova Viagem</span>
           <span className="sm:hidden">Nova</span>
