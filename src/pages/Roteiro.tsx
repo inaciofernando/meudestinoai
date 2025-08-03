@@ -350,117 +350,6 @@ export default function Roteiro() {
                   </Badge>
                 </div>
               </div>
-              <Dialog open={isAddingPonto} onOpenChange={setIsAddingPonto}>
-                <DialogTrigger asChild>
-                  <Button size="icon" className="bg-gradient-ocean hover:shadow-travel transition-all duration-300 rounded-full">
-                    <Plus className="w-5 h-5" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Adicionar Ponto ao Roteiro</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Label>Dia</Label>
-                        <select
-                          value={newPonto.day_number}
-                          onChange={(e) => setNewPonto({...newPonto, day_number: parseInt(e.target.value)})}
-                          className="w-full p-2 border rounded-md"
-                        >
-                          {Array.from({length: roteiro.total_days}, (_, i) => i + 1).map(day => (
-                            <option key={day} value={day}>Dia {day}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <Label>Categoria</Label>
-                        <select
-                          value={newPonto.category}
-                          onChange={(e) => setNewPonto({...newPonto, category: e.target.value as keyof typeof CATEGORY_CONFIG})}
-                          className="w-full p-2 border rounded-md"
-                        >
-                          {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
-                            <option key={key} value={key}>{config.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Label>Horário Início</Label>
-                        <Input
-                          type="time"
-                          value={newPonto.time_start}
-                          onChange={(e) => setNewPonto({...newPonto, time_start: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label>Horário Fim</Label>
-                        <Input
-                          type="time"
-                          value={newPonto.time_end}
-                          onChange={(e) => setNewPonto({...newPonto, time_end: e.target.value})}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>Título *</Label>
-                      <Input
-                        value={newPonto.title}
-                        onChange={(e) => setNewPonto({...newPonto, title: e.target.value})}
-                        placeholder="Ex: Visita ao Cristo Redentor"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Local *</Label>
-                      <Input
-                        value={newPonto.location}
-                        onChange={(e) => setNewPonto({...newPonto, location: e.target.value})}
-                        placeholder="Ex: Corcovado, Rio de Janeiro"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Descrição</Label>
-                      <Textarea
-                        value={newPonto.description}
-                        onChange={(e) => setNewPonto({...newPonto, description: e.target.value})}
-                        placeholder="Descreva o que fazer neste local..."
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Notas</Label>
-                      <Textarea
-                        value={newPonto.notes}
-                        onChange={(e) => setNewPonto({...newPonto, notes: e.target.value})}
-                        placeholder="Dicas, observações, lembretes..."
-                      />
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setIsAddingPonto(false)}
-                        className="flex-1"
-                      >
-                        Cancelar
-                      </Button>
-                      <Button 
-                        onClick={handleAddPonto} 
-                        className="flex-1"
-                      >
-                        Adicionar ao Roteiro
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
             </div>
           </div>
 
@@ -489,10 +378,113 @@ export default function Roteiro() {
           <div className="px-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Dia {selectedDay}
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Dia {selectedDay}
+                  </CardTitle>
+                  <Dialog open={isAddingPonto} onOpenChange={setIsAddingPonto}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="icon" 
+                        className="bg-gradient-ocean hover:shadow-travel transition-all duration-300 rounded-full"
+                        onClick={() => setNewPonto({...newPonto, day_number: selectedDay})}
+                      >
+                        <Plus className="w-5 h-5" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Adicionar Ponto - Dia {selectedDay}</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Categoria</Label>
+                          <select
+                            value={newPonto.category}
+                            onChange={(e) => setNewPonto({...newPonto, category: e.target.value as keyof typeof CATEGORY_CONFIG})}
+                            className="w-full p-2 border rounded-md"
+                          >
+                            {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
+                              <option key={key} value={key}>{config.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label>Horário Início</Label>
+                            <Input
+                              type="time"
+                              value={newPonto.time_start}
+                              onChange={(e) => setNewPonto({...newPonto, time_start: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label>Horário Fim</Label>
+                            <Input
+                              type="time"
+                              value={newPonto.time_end}
+                              onChange={(e) => setNewPonto({...newPonto, time_end: e.target.value})}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>Título *</Label>
+                          <Input
+                            value={newPonto.title}
+                            onChange={(e) => setNewPonto({...newPonto, title: e.target.value})}
+                            placeholder="Ex: Visita ao Cristo Redentor"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Local *</Label>
+                          <Input
+                            value={newPonto.location}
+                            onChange={(e) => setNewPonto({...newPonto, location: e.target.value})}
+                            placeholder="Ex: Corcovado, Rio de Janeiro"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Descrição</Label>
+                          <Textarea
+                            value={newPonto.description}
+                            onChange={(e) => setNewPonto({...newPonto, description: e.target.value})}
+                            placeholder="Descreva o que fazer neste local..."
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Notas</Label>
+                          <Textarea
+                            value={newPonto.notes}
+                            onChange={(e) => setNewPonto({...newPonto, notes: e.target.value})}
+                            placeholder="Dicas, observações, lembretes..."
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setIsAddingPonto(false)}
+                            className="flex-1"
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            onClick={handleAddPonto} 
+                            className="flex-1"
+                          >
+                            Adicionar ao Dia {selectedDay}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </CardHeader>
               <CardContent>
                 {getDayPontos(selectedDay).length === 0 ? (
