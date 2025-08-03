@@ -414,7 +414,8 @@ export default function GastosViagem() {
     setIsAnalyzingReceipt(true);
     setAnalysisStep("✈️ Preparando para decolagem...");
     
-    // Sem delay artificial - vai direto para o processamento
+    // Delay inicial para mostrar a primeira etapa
+    await new Promise(resolve => setTimeout(resolve, 600));
     console.log("✅ Estado atualizado - iniciando processamento real");
 
     try {
@@ -424,12 +425,18 @@ export default function GastosViagem() {
         setAnalysisStep("🧳 Fazendo check-in...");
         console.log("📤 Processando imagem...");
         
+        // Delay para mostrar o processamento da imagem
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
         const base64 = e.target?.result as string;
         const imageBase64 = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
 
         try {
           setAnalysisStep("🗺️ IA explorando o cupom...");
           console.log("🤖 Enviando para IA - iniciando requisição real...");
+          
+          // Pequeno delay para mostrar que está enviando
+          await new Promise(resolve => setTimeout(resolve, 400));
           
           const { data, error } = await supabase.functions.invoke('analyze-receipt', {
             body: { imageBase64 }
@@ -445,6 +452,9 @@ export default function GastosViagem() {
           if (data && data.success && data.data) {
             setAnalysisStep("📝 Preenchendo diário de viagem...");
             console.log("✅ Dados extraídos com sucesso!");
+            
+            // Delay para mostrar que está preenchendo os campos
+            await new Promise(resolve => setTimeout(resolve, 800));
             const extractedData = data.data;
             
             // Auto-fill the form with extracted data
@@ -477,6 +487,9 @@ export default function GastosViagem() {
         } catch (analysisError: any) {
           console.error('Error analyzing receipt:', analysisError);
           setAnalysisStep("❌ Erro na análise...");
+          
+          // Delay para mostrar o erro antes de exibir o toast
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Verificar se é erro de API key
           if (analysisError.message?.includes('API key not configured')) {
@@ -517,12 +530,12 @@ export default function GastosViagem() {
       });
     } finally {
       console.log("🔄 Finalizando análise...");
-      // Pequeno delay apenas para mostrar o resultado
+      // Delay maior para mostrar o resultado final antes de resetar
       setTimeout(() => {
         setIsAnalyzingReceipt(false);
         setAnalysisStep("");
         console.log("✅ Estado resetado");
-      }, 1000);
+      }, 1500);
     }
   };
 
