@@ -246,6 +246,21 @@ export default function DetalhesViagem() {
   const handleStatusUpdate = async (newStatus: string) => {
     if (!trip || !user) return;
 
+    // Validação: não pode concluir viagem se a data de término não passou
+    if (newStatus === 'completed' && trip.end_date) {
+      const today = new Date();
+      const endDate = new Date(trip.end_date);
+      
+      if (endDate > today) {
+        toast({
+          title: "Não é possível concluir",
+          description: "A viagem só pode ser concluída após a data de término",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setStatusUpdating(true);
 
     try {
@@ -912,26 +927,11 @@ export default function DetalhesViagem() {
                 <CardContent className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Status</label>
-                    <div className="flex items-center gap-3 mt-1">
+                    <p className="text-foreground">
                       <Badge variant={getStatusColor(trip.status)}>
                         {getStatusText(trip.status)}
                       </Badge>
-                      <Select 
-                        value={trip.status || 'planned'} 
-                        onValueChange={handleStatusUpdate}
-                        disabled={statusUpdating}
-                      >
-                        <SelectTrigger className="w-[140px] h-8">
-                          <Settings className="w-3 h-3 mr-1" />
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="planned">Planejando</SelectItem>
-                          <SelectItem value="confirmed">Confirmada</SelectItem>
-                          <SelectItem value="completed">Concluída</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    </p>
                   </div>
                   <Separator />
                   <div>
@@ -942,6 +942,27 @@ export default function DetalhesViagem() {
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Última atualização</label>
                     <p className="text-foreground">{format(new Date(trip.updated_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}</p>
+                  </div>
+                  <Separator />
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Alterar Status</label>
+                    <div className="flex items-center gap-3 mt-1">
+                      <Select 
+                        value={trip.status || 'planned'} 
+                        onValueChange={handleStatusUpdate}
+                        disabled={statusUpdating}
+                      >
+                        <SelectTrigger className="w-full">
+                          <Settings className="w-4 h-4 mr-2" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="planned">Planejando</SelectItem>
+                          <SelectItem value="confirmed">Confirmada</SelectItem>
+                          <SelectItem value="completed">Concluída</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
