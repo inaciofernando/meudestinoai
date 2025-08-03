@@ -99,11 +99,9 @@ export default function DocumentosViagem() {
   const [uploading, setUploading] = useState(false);
 
   // Form states
-  const [newDocument, setNewDocument] = useState({
-    title: "",
-    description: "",
+  const [newDocuments, setNewDocuments] = useState({
     category: "other" as keyof typeof DOCUMENT_CATEGORIES,
-    file: null as File | null
+    files: [] as File[]
   });
 
   useEffect(() => {
@@ -177,11 +175,11 @@ export default function DocumentosViagem() {
     }
   };
 
-  const handleAddDocument = async () => {
-    if (!newDocument.title || !newDocument.file) {
+  const handleAddDocuments = async () => {
+    if (newDocuments.files.length === 0) {
       toast({
         title: "Erro",
-        description: "Preencha o título e selecione um arquivo.",
+        description: "Selecione pelo menos um arquivo.",
         variant: "destructive"
       });
       return;
@@ -189,52 +187,55 @@ export default function DocumentosViagem() {
 
     try {
       setUploading(true);
+      const uploadedDocs: Document[] = [];
 
-      const fileUrl = await uploadDocument(newDocument.file);
-      if (!fileUrl) {
+      for (const file of newDocuments.files) {
+        const fileUrl = await uploadDocument(file);
+        if (fileUrl) {
+          const tempDoc: Document = {
+            id: `${Date.now()}-${Math.random()}`,
+            trip_id: id!,
+            title: file.name.split('.')[0], // Use filename as default title
+            description: "",
+            category: newDocuments.category,
+            file_url: fileUrl,
+            file_name: file.name,
+            file_type: file.type,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          uploadedDocs.push(tempDoc);
+        }
+      }
+
+      if (uploadedDocs.length === 0) {
         toast({
           title: "Erro",
-          description: "Falha no upload do arquivo. Tente novamente.",
+          description: "Falha no upload dos arquivos. Tente novamente.",
           variant: "destructive"
         });
         return;
       }
 
-      // Simplificado: adicionar documento ao estado local
-      const tempDoc: Document = {
-        id: Date.now().toString(),
-        trip_id: id!,
-        title: newDocument.title,
-        description: newDocument.description || "",
-        category: newDocument.category,
-        file_url: fileUrl,
-        file_name: newDocument.file.name,
-        file_type: newDocument.file.type,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      setDocuments(prev => [tempDoc, ...prev]);
+      setDocuments(prev => [...uploadedDocs, ...prev]);
 
       toast({
-        title: "Documento adicionado! 📄",
-        description: `${newDocument.title} foi salvo com sucesso.`,
+        title: "Documentos adicionados! 📄",
+        description: `${uploadedDocs.length} documento${uploadedDocs.length > 1 ? 's' : ''} ${uploadedDocs.length > 1 ? 'foram salvos' : 'foi salvo'} com sucesso.`,
       });
 
       // Reset form
-      setNewDocument({
-        title: "",
-        description: "",
+      setNewDocuments({
         category: "other",
-        file: null
+        files: []
       });
       
       setIsAddingDocument(false);
     } catch (error) {
-      console.error("Erro ao adicionar documento:", error);
+      console.error("Erro ao adicionar documentos:", error);
       toast({
         title: "Erro",
-        description: "Não foi possível adicionar o documento. Tente novamente.",
+        description: "Não foi possível adicionar os documentos. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -404,8 +405,8 @@ export default function DocumentosViagem() {
                         <div>
                           <Label>Categoria</Label>
                           <select
-                            value={newDocument.category}
-                            onChange={(e) => setNewDocument({...newDocument, category: e.target.value as keyof typeof DOCUMENT_CATEGORIES})}
+                            value={newDocuments.category}
+                            onChange={(e) => setNewDocuments({...newDocuments, category: e.target.value as keyof typeof DOCUMENT_CATEGORIES})}
                             className="w-full p-2 border rounded-md"
                           >
                             {Object.entries(DOCUMENT_CATEGORIES).map(([key, config]) => (
@@ -415,33 +416,26 @@ export default function DocumentosViagem() {
                         </div>
 
                         <div>
-                          <Label>Título *</Label>
-                          <Input
-                            value={newDocument.title}
-                            onChange={(e) => setNewDocument({...newDocument, title: e.target.value})}
-                            placeholder="Ex: Seguro Travel Ace"
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Descrição</Label>
-                          <Textarea
-                            value={newDocument.description}
-                            onChange={(e) => setNewDocument({...newDocument, description: e.target.value})}
-                            placeholder="Detalhes sobre o documento..."
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Arquivo *</Label>
+                          <Label>Arquivos * (múltiplos arquivos)</Label>
                           <Input
                             type="file"
                             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                            onChange={(e) => setNewDocument({...newDocument, file: e.target.files?.[0] || null})}
+                            multiple
+                            onChange={(e) => setNewDocuments({...newDocuments, files: Array.from(e.target.files || [])})}
                           />
                           <p className="text-xs text-muted-foreground mt-1">
-                            Formatos aceitos: PDF, JPG, PNG, DOC, DOCX
+                            Formatos aceitos: PDF, JPG, PNG, DOC, DOCX. Você pode selecionar múltiplos arquivos.
                           </p>
+                          {newDocuments.files.length > 0 && (
+                            <div className="mt-2 space-y-1">
+                              <p className="text-sm font-medium">Arquivos selecionados:</p>
+                              {newDocuments.files.map((file, index) => (
+                                <div key={index} className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                                  {file.name} ({(file.size / 1024 / 1024).toFixed(1)}MB)
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         <div className="flex gap-2">
@@ -454,9 +448,9 @@ export default function DocumentosViagem() {
                             Cancelar
                           </Button>
                           <Button 
-                            onClick={handleAddDocument} 
+                            onClick={handleAddDocuments} 
                             className="flex-1"
-                            disabled={uploading}
+                            disabled={uploading || newDocuments.files.length === 0}
                           >
                             {uploading ? (
                               <>
@@ -466,7 +460,7 @@ export default function DocumentosViagem() {
                             ) : (
                               <>
                                 <Upload className="w-4 h-4 mr-2" />
-                                Adicionar
+                                Adicionar {newDocuments.files.length > 0 ? `(${newDocuments.files.length})` : ''}
                               </>
                             )}
                           </Button>
