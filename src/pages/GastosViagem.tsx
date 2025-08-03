@@ -94,6 +94,7 @@ export default function GastosViagem() {
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [isEditingExpense, setIsEditingExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [isAnalyzingReceipt, setIsAnalyzingReceipt] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
   // Form states for budget editing
@@ -397,6 +398,75 @@ export default function GastosViagem() {
     }
   };
 
+  const handleAnalyzeReceipt = async () => {
+    if (!newExpense.receiptFile) {
+      toast({
+        title: "Erro",
+        description: "Selecione uma imagem do cupom fiscal primeiro.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsAnalyzingReceipt(true);
+
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target?.result as string;
+        const imageBase64 = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
+
+        try {
+          const { data, error } = await supabase.functions.invoke('analyze-receipt', {
+            body: { imageBase64 }
+          });
+
+          if (error) throw error;
+
+          if (data.success && data.data) {
+            const extractedData = data.data;
+            
+            // Auto-fill the form with extracted data
+            setNewExpense(prev => ({
+              ...prev,
+              amount: extractedData.amount ? extractedData.amount.toString() : prev.amount,
+              date: extractedData.date || prev.date,
+              location: extractedData.location || prev.location,
+              category: extractedData.category || prev.category,
+              description: extractedData.description || prev.description
+            }));
+
+            toast({
+              title: "Análise concluída! 🎉",
+              description: "Os dados do cupom foram extraídos e preenchidos automaticamente.",
+            });
+          } else {
+            throw new Error(data.error || 'Erro na análise do cupom');
+          }
+        } catch (analysisError) {
+          console.error('Error analyzing receipt:', analysisError);
+          toast({
+            title: "Erro na análise",
+            description: "Não foi possível analisar o cupom fiscal. Tente novamente.",
+            variant: "destructive"
+          });
+        }
+      };
+
+      reader.readAsDataURL(newExpense.receiptFile);
+    } catch (error) {
+      console.error('Error processing file:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao processar a imagem. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzingReceipt(false);
+    }
+  };
+
   const handleUpdateBudget = async () => {
     if (!trip || !user) return;
 
@@ -545,6 +615,28 @@ export default function GastosViagem() {
                         </label>
                       </div>
                     </div>
+                    {newExpense.receiptFile && (
+                      <div className="mt-3">
+                        <Button 
+                          onClick={handleAnalyzeReceipt} 
+                          disabled={isAnalyzingReceipt}
+                          variant="outline"
+                          className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200"
+                        >
+                          {isAnalyzingReceipt ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mr-2" />
+                              Analisando cupom...
+                            </>
+                          ) : (
+                            <>
+                              <Bot className="w-4 h-4 mr-2 text-purple-600" />
+                              Analisar com IA
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   <div>
