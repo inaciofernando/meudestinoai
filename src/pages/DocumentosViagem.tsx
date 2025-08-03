@@ -591,11 +591,45 @@ export default function DocumentosViagem() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => {
-                                        const link = window.document.createElement('a');
-                                        link.href = document.file_url;
-                                        link.download = document.file_name;
-                                        link.click();
+                                      onClick={async () => {
+                                        try {
+                                          // Extrair o caminho do arquivo da URL
+                                          const urlParts = document.file_url.split('/');
+                                          const bucketIndex = urlParts.findIndex(part => part === 'trip-documents');
+                                          const filePath = urlParts.slice(bucketIndex + 1).join('/');
+                                          
+                                          // Baixar o arquivo usando a API do Supabase
+                                          const { data, error } = await supabase.storage
+                                            .from('trip-documents')
+                                            .download(filePath);
+
+                                          if (error) {
+                                            console.error('Erro no download:', error);
+                                            toast({
+                                              title: "Erro no download",
+                                              description: "Não foi possível baixar o arquivo. Tente novamente.",
+                                              variant: "destructive"
+                                            });
+                                            return;
+                                          }
+
+                                          // Criar URL temporária e fazer download
+                                          const url = URL.createObjectURL(data);
+                                          const link = window.document.createElement('a');
+                                          link.href = url;
+                                          link.download = document.file_name;
+                                          window.document.body.appendChild(link);
+                                          link.click();
+                                          window.document.body.removeChild(link);
+                                          URL.revokeObjectURL(url);
+                                        } catch (error) {
+                                          console.error('Erro no download:', error);
+                                          toast({
+                                            title: "Erro no download",
+                                            description: "Não foi possível baixar o arquivo. Tente novamente.",
+                                            variant: "destructive"
+                                          });
+                                        }
                                       }}
                                     >
                                       <Download className="w-4 h-4" />
