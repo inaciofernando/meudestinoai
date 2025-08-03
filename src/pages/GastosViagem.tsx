@@ -413,25 +413,22 @@ export default function GastosViagem() {
     setIsAnalyzingReceipt(true);
     setAnalysisStep("✈️ Preparando para decolagem...");
     
-    // Delay maior para garantir que a animação seja visível
-    await new Promise(resolve => setTimeout(resolve, 800));
-    console.log("✅ Estado atualizado:", { isAnalyzingReceipt: true, analysisStep: "✈️ Preparando para decolagem..." });
+    // Sem delay artificial - vai direto para o processamento
+    console.log("✅ Estado atualizado - iniciando processamento real");
 
     try {
       // Convert file to base64
       const reader = new FileReader();
       reader.onload = async (e) => {
-        console.log("📤 Processando imagem...");
         setAnalysisStep("🧳 Fazendo check-in...");
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log("📤 Processando imagem...");
         
         const base64 = e.target?.result as string;
         const imageBase64 = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
 
         try {
-          console.log("🤖 Enviando para IA...");
           setAnalysisStep("🗺️ IA explorando o cupom...");
-          await new Promise(resolve => setTimeout(resolve, 800));
+          console.log("🤖 Enviando para IA - iniciando requisição real...");
           
           const { data, error } = await supabase.functions.invoke('analyze-receipt', {
             body: { imageBase64 }
@@ -444,7 +441,7 @@ export default function GastosViagem() {
 
           if (data.success && data.data) {
             setAnalysisStep("📝 Preenchendo diário de viagem...");
-            await new Promise(resolve => setTimeout(resolve, 600));
+            console.log("✅ Dados extraídos com sucesso!");
             const extractedData = data.data;
             
             // Auto-fill the form with extracted data
@@ -467,7 +464,6 @@ export default function GastosViagem() {
         } catch (analysisError: any) {
           console.error('Error analyzing receipt:', analysisError);
           setAnalysisStep("❌ Erro na análise...");
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Manter animação visível mesmo com erro
           
           toast({
             title: "Erro na análise",
@@ -498,12 +494,13 @@ export default function GastosViagem() {
         variant: "destructive"
       });
     } finally {
-      console.log("🔄 Finalizando análise em 1 segundo...");
-      // Delay antes de resetar para que o usuário veja o resultado
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      console.log("✅ Resetando estado");
-      setIsAnalyzingReceipt(false);
-      setAnalysisStep("");
+      console.log("🔄 Finalizando análise...");
+      // Pequeno delay apenas para mostrar o resultado
+      setTimeout(() => {
+        setIsAnalyzingReceipt(false);
+        setAnalysisStep("");
+        console.log("✅ Estado resetado");
+      }, 1000);
     }
   };
 

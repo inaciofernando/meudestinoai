@@ -84,6 +84,10 @@ serve(async (req) => {
 
     console.log('Making OpenAI API request...');
 
+    // Criar a requisição com timeout mais generoso
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -91,7 +95,10 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(openAIRequest),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     console.log('OpenAI response status:', response.status);
 
