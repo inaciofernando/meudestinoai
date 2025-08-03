@@ -39,15 +39,47 @@ export default function Perfil() {
         .from('profiles')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setProfile(data as Profile);
+      
+      // Se não existe perfil, criar um novo
+      if (!data) {
+        await createProfile();
+      } else {
+        setProfile(data as Profile);
+      }
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
       toast.error('Erro ao carregar perfil');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createProfile = async () => {
+    if (!user) return;
+
+    try {
+      const newProfile = {
+        user_id: user.id,
+        full_name: user.user_metadata?.full_name || '',
+        phone: '',
+        theme_mode: 'light' as const
+      };
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert(newProfile)
+        .select()
+        .single();
+
+      if (error) throw error;
+      setProfile(data as Profile);
+      toast.success('Perfil criado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao criar perfil:', error);
+      toast.error('Erro ao criar perfil');
     }
   };
 
