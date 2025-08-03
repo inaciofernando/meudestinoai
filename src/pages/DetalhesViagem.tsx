@@ -299,7 +299,7 @@ export default function DetalhesViagem() {
       case 'planned':
         return 'Planejando';
       case 'completed':
-        return 'Concluída';
+        return 'Realizada';
       default:
         return 'Rascunho';
     }
@@ -911,7 +911,7 @@ export default function DetalhesViagem() {
                           <SelectContent>
                             <SelectItem value="planned">Planejando</SelectItem>
                             <SelectItem value="confirmed">Confirmada</SelectItem>
-                            <SelectItem value="completed">Concluída</SelectItem>
+                            <SelectItem value="completed">Realizada</SelectItem>
                           </SelectContent>
                         </Select>
                         {statusUpdating && (
@@ -968,27 +968,6 @@ export default function DetalhesViagem() {
                         {getStatusText(trip.status)}
                       </Badge>
                     </p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Alterar Status</label>
-                    <Select 
-                      value={trip.status || 'planned'} 
-                      onValueChange={handleStatusUpdate}
-                      disabled={statusUpdating}
-                    >
-                      <SelectTrigger className="w-full mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="planned">Planejando</SelectItem>
-                        <SelectItem value="confirmed">Confirmada</SelectItem>
-                        <SelectItem value="completed">Concluída</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {statusUpdating && (
-                      <p className="text-sm text-muted-foreground mt-1">Atualizando status...</p>
-                    )}
                   </div>
                   <Separator />
                   <div>
