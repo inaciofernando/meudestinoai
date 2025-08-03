@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Calendar as CalendarIcon, Clock, Download, Trash2, ExternalLink, Save, Plus, Edit, UtensilsCrossed } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -135,7 +135,7 @@ export default function Restaurantes() {
     setEditingRestaurant(restaurant);
     setNewRestaurant({
       restaurant_name: restaurant.restaurant_name,
-      reservation_date: restaurant.reservation_date ? new Date(restaurant.reservation_date) : undefined,
+      reservation_date: restaurant.reservation_date ? parseISO(restaurant.reservation_date) : undefined,
       reservation_time: restaurant.reservation_time || "",
       restaurant_image_url: restaurant.restaurant_image_url || "",
       voucher_file_url: restaurant.voucher_file_url || "",
@@ -323,7 +323,7 @@ export default function Restaurantes() {
                   <Label>Data da Reserva</Label>
                   {trip?.start_date && trip?.end_date && (
                     <p className="text-xs text-muted-foreground mb-2">
-                      Período da viagem: {format(new Date(trip.start_date), "dd/MM/yyyy")} - {format(new Date(trip.end_date), "dd/MM/yyyy")}
+                      Período da viagem: {format(parseISO(trip.start_date), "dd/MM/yyyy")} - {format(parseISO(trip.end_date), "dd/MM/yyyy")}
                     </p>
                   )}
                   <Popover>
@@ -346,8 +346,8 @@ export default function Restaurantes() {
                         onSelect={(date) => setNewRestaurant({ ...newRestaurant, reservation_date: date })}
                         disabled={(date) => {
                           if (!trip?.start_date || !trip?.end_date) return false;
-                          const startDate = new Date(trip.start_date);
-                          const endDate = new Date(trip.end_date);
+                          const startDate = parseISO(trip.start_date);
+                          const endDate = parseISO(trip.end_date);
                           return date < startDate || date > endDate;
                         }}
                         initialFocus
@@ -515,7 +515,7 @@ export default function Restaurantes() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {restaurant.reservation_date && (
                         <div>
-                          <strong>Data da Reserva:</strong> {format(new Date(restaurant.reservation_date), "dd/MM/yyyy")}
+                          <strong>Data da Reserva:</strong> {format(parseISO(restaurant.reservation_date), "dd/MM/yyyy")}
                         </div>
                       )}
                       {restaurant.reservation_time && (

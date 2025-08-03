@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -123,8 +123,8 @@ export default function Hospedagem() {
     setEditingAccommodation(accommodation);
     setNewAccommodation({
       hotel_name: accommodation.hotel_name,
-      check_in_date: new Date(accommodation.check_in_date),
-      check_out_date: new Date(accommodation.check_out_date),
+      check_in_date: parseISO(accommodation.check_in_date),
+      check_out_date: parseISO(accommodation.check_out_date),
       hotel_image_url: accommodation.hotel_image_url || "",
       voucher_file_url: accommodation.voucher_file_url || "",
       voucher_file_name: accommodation.voucher_file_name || "",
@@ -305,7 +305,7 @@ export default function Hospedagem() {
                   <Label>Data de Check-in *</Label>
                   {trip?.start_date && trip?.end_date && (
                     <p className="text-xs text-muted-foreground mb-2">
-                      Período da viagem: {format(new Date(trip.start_date), "dd/MM/yyyy")} - {format(new Date(trip.end_date), "dd/MM/yyyy")}
+                      Período da viagem: {format(parseISO(trip.start_date), "dd/MM/yyyy")} - {format(parseISO(trip.end_date), "dd/MM/yyyy")}
                     </p>
                   )}
                   <Popover>
@@ -328,8 +328,8 @@ export default function Hospedagem() {
                         onSelect={(date) => setNewAccommodation({ ...newAccommodation, check_in_date: date })}
                         disabled={(date) => {
                           if (!trip?.start_date || !trip?.end_date) return false;
-                          const startDate = new Date(trip.start_date);
-                          const endDate = new Date(trip.end_date);
+                          const startDate = parseISO(trip.start_date);
+                          const endDate = parseISO(trip.end_date);
                           return date < startDate || date > endDate;
                         }}
                         initialFocus
@@ -361,8 +361,8 @@ export default function Hospedagem() {
                         onSelect={(date) => setNewAccommodation({ ...newAccommodation, check_out_date: date })}
                         disabled={(date) => {
                           if (!trip?.start_date || !trip?.end_date) return false;
-                          const startDate = new Date(trip.start_date);
-                          const endDate = new Date(trip.end_date);
+                          const startDate = parseISO(trip.start_date);
+                          const endDate = parseISO(trip.end_date);
                           return date < startDate || date > endDate || (newAccommodation.check_in_date && date <= newAccommodation.check_in_date);
                         }}
                         initialFocus
@@ -484,10 +484,10 @@ export default function Hospedagem() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <strong>Check-in:</strong> {format(new Date(accommodation.check_in_date), "dd/MM/yyyy")}
+                      <strong>Check-in:</strong> {format(parseISO(accommodation.check_in_date), "dd/MM/yyyy")}
                     </div>
                     <div>
-                      <strong>Check-out:</strong> {format(new Date(accommodation.check_out_date), "dd/MM/yyyy")}
+                      <strong>Check-out:</strong> {format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}
                     </div>
                   </div>
 

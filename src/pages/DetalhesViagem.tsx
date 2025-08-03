@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { 
@@ -132,7 +132,7 @@ export default function DetalhesViagem() {
         // Check if trip has expired and should be marked as completed
         if (data.end_date && data.status !== 'completed') {
           const today = new Date();
-          const endDate = new Date(data.end_date);
+          const endDate = parseISO(data.end_date);
           
           if (endDate < today) {
             // Trip has expired, update status to completed
@@ -160,8 +160,8 @@ export default function DetalhesViagem() {
           title: data.title,
           destination: data.destination,
           description: data.description || "",
-          start_date: data.start_date ? new Date(data.start_date) : undefined,
-          end_date: data.end_date ? new Date(data.end_date) : undefined,
+          start_date: data.start_date ? parseISO(data.start_date) : undefined,
+          end_date: data.end_date ? parseISO(data.end_date) : undefined,
         });
       } catch (error) {
         console.error("Erro ao buscar viagem:", error);
@@ -235,9 +235,9 @@ export default function DetalhesViagem() {
     form.reset({
       title: trip.title,
       destination: trip.destination,
-      description: trip.description || "",
-      start_date: trip.start_date ? new Date(trip.start_date) : undefined,
-      end_date: trip.end_date ? new Date(trip.end_date) : undefined,
+          description: trip.description || "",
+          start_date: trip.start_date ? parseISO(trip.start_date) : undefined,
+          end_date: trip.end_date ? parseISO(trip.end_date) : undefined,
     });
     setIsEditing(false);
   };
@@ -282,7 +282,7 @@ export default function DetalhesViagem() {
     // Validação: não pode concluir viagem se a data de término não passou
     if (newStatus === 'completed' && trip.end_date) {
       const today = new Date();
-      const endDate = new Date(trip.end_date);
+      const endDate = parseISO(trip.end_date);
       
       if (endDate > today) {
         toast({
@@ -353,7 +353,7 @@ export default function DetalhesViagem() {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Não definida";
-    const date = new Date(dateString);
+    const date = parseISO(dateString);
     return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   };
 
@@ -363,15 +363,15 @@ export default function DetalhesViagem() {
     }
     
     if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      const start = parseISO(startDate);
+      const end = parseISO(endDate);
       const diffTime = Math.abs(end.getTime() - start.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
       return `${format(start, "dd")} - ${format(end, "dd 'de' MMM", { locale: ptBR })} • ${diffDays} dias`;
     }
     
     if (startDate) {
-      const start = new Date(startDate);
+      const start = parseISO(startDate);
       return `A partir de ${format(start, "dd 'de' MMM", { locale: ptBR })}`;
     }
     
