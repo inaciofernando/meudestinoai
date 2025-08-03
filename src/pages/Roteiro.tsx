@@ -577,65 +577,74 @@ export default function Roteiro() {
                         <div key={ponto.id} className="relative">
                           {/* Timeline line */}
                           {index < getDayPontos(selectedDay).length - 1 && (
-                            <div className="absolute left-6 top-16 bottom-0 w-0.5 bg-border" />
+                            <div className="absolute left-8 top-20 bottom-0 w-0.5 bg-border" />
                           )}
                           
                           <Card 
-                            className="cursor-pointer hover:shadow-md transition-shadow"
+                            className="cursor-pointer hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary/20 hover:border-l-primary bg-gradient-to-r from-background to-background/50"
                             onClick={() => handlePontoClick(ponto)}
                           >
                             <CardContent className="p-4">
                               <div className="flex gap-4">
-                                <div className={`w-12 h-12 ${category.color} rounded-full flex items-center justify-center flex-shrink-0`}>
-                                  <CategoryIcon className="w-6 h-6 text-white" />
+                                {/* Main Image or Category Icon */}
+                                <div className="flex-shrink-0">
+                                  {ponto.images && ponto.images.length > 0 ? (
+                                    <div className="w-16 h-16 rounded-xl overflow-hidden shadow-lg ring-2 ring-primary/10">
+                                      <img
+                                        src={ponto.images[0]}
+                                        alt={ponto.title}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className={`w-16 h-16 ${category.color} rounded-xl flex items-center justify-center shadow-lg`}>
+                                      <CategoryIcon className="w-8 h-8 text-white" />
+                                    </div>
+                                  )}
                                 </div>
                                 
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2 mb-2">
-                                        <h4 className="font-semibold text-lg">{ponto.title}</h4>
-                                        <Badge variant="outline" className={`text-xs ${period.color}`}>
+                                        <h4 className="font-semibold text-lg text-foreground">{ponto.title}</h4>
+                                        <Badge variant="outline" className={`text-xs ${period.color} border-current/20`}>
                                           <PeriodIcon className="w-3 h-3 mr-1" />
                                           {period.name}
                                         </Badge>
                                       </div>
                                       
-                                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
                                         <div className="flex items-center gap-1">
                                           <Clock className="w-4 h-4" />
                                           {ponto.time_start}
                                           {ponto.time_end && ` - ${ponto.time_end}`}
                                         </div>
-                                      </div>
-
-                                      <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                                          <MapPin className="w-6 h-6 text-gray-500" />
-                                        </div>
-                                        <div>
-                                          <p className="font-medium text-sm">{ponto.location}</p>
-                                          <p className="text-xs text-muted-foreground">Clique para ver detalhes</p>
+                                        <div className="flex items-center gap-1">
+                                          <MapPin className="w-4 h-4" />
+                                          <span className="font-medium">{ponto.location}</span>
                                         </div>
                                       </div>
                                       
                                       {ponto.description && (
-                                        <p className="text-sm text-muted-foreground">{ponto.description}</p>
+                                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{ponto.description}</p>
                                       )}
                                       
-                                      {ponto.images && ponto.images.length > 0 && (
+                                      {ponto.images && ponto.images.length > 1 && (
                                         <div className="flex gap-2 mt-3">
-                                          {ponto.images.slice(0, 3).map((image, imgIndex) => (
-                                            <img
-                                              key={imgIndex}
-                                              src={image}
-                                              alt={`${ponto.title} ${imgIndex + 1}`}
-                                              className="w-12 h-12 object-cover rounded-lg border"
-                                            />
+                                          <span className="text-xs text-muted-foreground font-medium mr-1">+{ponto.images.length - 1} foto{ponto.images.length > 2 ? 's' : ''}</span>
+                                          {ponto.images.slice(1, 4).map((image, imgIndex) => (
+                                            <div key={imgIndex} className="w-10 h-10 rounded-lg overflow-hidden border border-border/50">
+                                              <img
+                                                src={image}
+                                                alt={`${ponto.title} ${imgIndex + 2}`}
+                                                className="w-full h-full object-cover"
+                                              />
+                                            </div>
                                           ))}
-                                          {ponto.images.length > 3 && (
-                                            <div className="w-12 h-12 bg-gray-100 rounded-lg border flex items-center justify-center text-xs text-gray-500">
-                                              +{ponto.images.length - 3}
+                                          {ponto.images.length > 4 && (
+                                            <div className="w-10 h-10 bg-muted rounded-lg border border-border/50 flex items-center justify-center text-xs text-muted-foreground font-medium">
+                                              +{ponto.images.length - 4}
                                             </div>
                                           )}
                                         </div>
