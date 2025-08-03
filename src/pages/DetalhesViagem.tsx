@@ -986,34 +986,6 @@ export default function DetalhesViagem() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary" />
-                    Informações Gerais
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Status</label>
-                    <p className="text-foreground">
-                      <Badge variant={getStatusColor(trip.status)}>
-                        {getStatusText(trip.status)}
-                      </Badge>
-                    </p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Criada em</label>
-                    <p className="text-foreground">{format(new Date(trip.created_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}</p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Última atualização</label>
-                    <p className="text-foreground">{format(new Date(trip.updated_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}</p>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           )}
 
