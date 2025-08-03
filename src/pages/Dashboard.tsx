@@ -27,6 +27,7 @@ interface Trip {
   created_at: string;
   updated_at: string;
   user_id: string;
+  images: string[] | null;
 }
 
 export default function Dashboard() {
@@ -222,25 +223,52 @@ export default function Dashboard() {
               trips.slice(0, 3).map((trip) => (
                 <div 
                   key={trip.id}
-                  className="flex items-center justify-between p-3 md:p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth cursor-pointer"
+                  className="relative group cursor-pointer transition-all duration-300 hover:scale-[1.02] rounded-xl overflow-hidden"
                   onClick={() => navigate(`/viagem/${trip.id}`)}
                 >
-                  <div className="space-y-1 flex-1 min-w-0">
-                    <h4 className="font-semibold text-foreground text-sm md:text-base truncate">{trip.destination}</h4>
-                    <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                      <Clock className="w-3 h-3 md:w-4 md:h-4" />
-                      {formatDateRange(trip.start_date, trip.end_date)}
-                    </div>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <Badge 
-                      variant={getStatusColor(trip.status)}
-                      className="mb-1 text-xs"
+                  {trip.images && trip.images.length > 0 ? (
+                    <div 
+                      className="h-32 md:h-40 bg-cover bg-center relative rounded-xl"
+                      style={{ backgroundImage: `url(${trip.images[0]})` }}
                     >
-                      {getStatusText(trip.status)}
-                    </Badge>
-                    <div className="text-xs md:text-sm font-medium text-foreground">{trip.title}</div>
-                  </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent rounded-xl" />
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <div className="flex items-center gap-2 text-white mb-1">
+                          <MapPin className="w-4 h-4" />
+                          <h4 className="font-bold text-lg">{trip.destination}</h4>
+                        </div>
+                        <p className="text-white/90 text-sm">{trip.description || trip.title}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-2 text-white/80 text-xs">
+                            <Clock className="w-3 h-3" />
+                            {formatDateRange(trip.start_date, trip.end_date)}
+                          </div>
+                          <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
+                            {getStatusText(trip.status)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-3 md:p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground text-sm md:text-base truncate">{trip.destination}</h4>
+                        <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                          <Clock className="w-3 h-3 md:w-4 md:h-4" />
+                          {formatDateRange(trip.start_date, trip.end_date)}
+                        </div>
+                      </div>
+                      <div className="text-right space-y-1">
+                        <Badge 
+                          variant={getStatusColor(trip.status)}
+                          className="mb-1 text-xs"
+                        >
+                          {getStatusText(trip.status)}
+                        </Badge>
+                        <div className="text-xs md:text-sm font-medium text-foreground">{trip.title}</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))
             )}

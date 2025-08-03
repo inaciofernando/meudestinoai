@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUpload } from "@/components/ImageUpload";
 
 const formSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
@@ -42,6 +43,7 @@ export default function NovaViagem() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -75,6 +77,7 @@ export default function NovaViagem() {
           end_date: data.end_date ? format(data.end_date, "yyyy-MM-dd") : null,
           user_id: user.id,
           status: "planned",
+          images: images,
         });
 
       if (error) {
@@ -259,6 +262,15 @@ export default function NovaViagem() {
                         <FormMessage />
                       </FormItem>
                     )}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Imagens da Viagem</label>
+                  <ImageUpload 
+                    images={images} 
+                    onImagesChange={setImages}
+                    maxImages={5}
                   />
                 </div>
 

@@ -32,6 +32,7 @@ import {
   X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUpload } from "@/components/ImageUpload";
 
 interface Trip {
   id: string;
@@ -44,6 +45,7 @@ interface Trip {
   created_at: string;
   updated_at: string;
   user_id: string;
+  images: string[] | null;
 }
 
 const formSchema = z.object({
@@ -74,6 +76,7 @@ export default function DetalhesViagem() {
   const [deleting, setDeleting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [images, setImages] = useState<string[]>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -108,6 +111,7 @@ export default function DetalhesViagem() {
         }
 
         setTrip(data);
+        setImages(data.images || []);
         
         // Update form with trip data when trip is loaded
         form.reset({
@@ -142,6 +146,7 @@ export default function DetalhesViagem() {
           description: data.description || null,
           start_date: data.start_date ? format(data.start_date, "yyyy-MM-dd") : null,
           end_date: data.end_date ? format(data.end_date, "yyyy-MM-dd") : null,
+          images: images,
         })
         .eq("id", trip.id)
         .eq("user_id", user.id);
@@ -564,6 +569,19 @@ export default function DetalhesViagem() {
                     />
                   </CardContent>
                 </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Imagens da Viagem</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ImageUpload 
+                      images={images} 
+                      onImagesChange={setImages}
+                      maxImages={5}
+                    />
+                  </CardContent>
+                </Card>
               </form>
             </Form>
           ) : (
@@ -621,6 +639,52 @@ export default function DetalhesViagem() {
                 </CardContent>
               </Card>
             </div>
+          )}
+
+          {/* Galeria de Imagens */}
+          {!isEditing && trip.images && trip.images.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Galeria de Imagens</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {trip.images.length === 1 ? (
+                  <div className="rounded-lg overflow-hidden">
+                    <img 
+                      src={trip.images[0]} 
+                      alt="Imagem da viagem"
+                      className="w-full h-64 md:h-96 object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="rounded-lg overflow-hidden">
+                      <img 
+                        src={trip.images[0]} 
+                        alt="Imagem principal da viagem"
+                        className="w-full h-64 md:h-80 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {trip.images.slice(1, 5).map((image, index) => (
+                        <div key={index} className="rounded-lg overflow-hidden relative">
+                          <img 
+                            src={image} 
+                            alt={`Imagem ${index + 2} da viagem`}
+                            className="w-full h-[calc(50%-4px)] md:h-[calc((20rem-8px)/2)] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          />
+                          {index === 3 && trip.images!.length > 5 && (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-medium">
+                              +{trip.images!.length - 4} fotos
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           {/* Descrição */}
