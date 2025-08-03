@@ -885,6 +885,47 @@ export default function DetalhesViagem() {
                     )}
                   </CardContent>
                 </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-primary" />
+                      Status da Viagem
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Status Atual</label>
+                        <div className="mt-1">
+                          <Badge variant={getStatusColor(trip.status)}>
+                            {getStatusText(trip.status)}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">Alterar Status</label>
+                        <Select 
+                          value={trip.status || 'planned'} 
+                          onValueChange={handleStatusUpdate}
+                          disabled={statusUpdating}
+                        >
+                          <SelectTrigger className="w-full mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="planned">Planejando</SelectItem>
+                            <SelectItem value="confirmed">Confirmada</SelectItem>
+                            <SelectItem value="completed">Concluída</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {statusUpdating && (
+                          <p className="text-sm text-muted-foreground mt-1">Atualizando status...</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </form>
             </Form>
           ) : (
@@ -942,27 +983,6 @@ export default function DetalhesViagem() {
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Última atualização</label>
                     <p className="text-foreground">{format(new Date(trip.updated_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}</p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Alterar Status</label>
-                    <div className="flex items-center gap-3 mt-1">
-                      <Select 
-                        value={trip.status || 'planned'} 
-                        onValueChange={handleStatusUpdate}
-                        disabled={statusUpdating}
-                      >
-                        <SelectTrigger className="w-full">
-                          <Settings className="w-4 h-4 mr-2" />
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="planned">Planejando</SelectItem>
-                          <SelectItem value="confirmed">Confirmada</SelectItem>
-                          <SelectItem value="completed">Concluída</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
