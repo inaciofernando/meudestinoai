@@ -1049,7 +1049,7 @@ export default function DetalhesViagem() {
                   <Button
                     variant="outline"
                     className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    disabled
+                    onClick={() => navigate(`/viagem/${id}/hospedagem`)}
                   >
                     <Hotel className="w-6 h-6 text-purple-600" />
                     <span className="text-xs font-medium">Hospedagem</span>
