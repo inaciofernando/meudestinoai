@@ -126,13 +126,15 @@ export default function Roteiro() {
 
         setTrip(tripData);
 
-        // Fetch or create roteiro for this trip
+        // Fetch or create roteiro for this trip (get the most recent one)
         let { data: roteiroData, error: roteiroError } = await supabase
           .from("roteiros")
           .select("*")
           .eq("trip_id", tripData.id)
           .eq("user_id", user.id)
-          .single();
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
         if (roteiroError && roteiroError.code !== 'PGRST116') {
           console.error("Erro ao buscar roteiro:", roteiroError);
