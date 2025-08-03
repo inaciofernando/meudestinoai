@@ -235,7 +235,7 @@ export default function PontoDetalhes() {
           </div>
 
           {/* Galeria de imagens estilo Airbnb */}
-          <div className="relative h-[60vh] bg-muted">
+          <div className="relative aspect-square bg-muted">
             {ponto.images && ponto.images.length > 0 ? (
               <div className="relative h-full">
                 <img
@@ -262,12 +262,10 @@ export default function PontoDetalhes() {
                       className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white"
                       onClick={nextImage}
                       disabled={currentImageIndex === ponto.images.length - 1}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
+                    />
                     
                     {/* Indicadores */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                       {ponto.images.map((_, index) => (
                         <button
                           key={index}
@@ -375,27 +373,6 @@ export default function PontoDetalhes() {
               </Card>
             </div>
 
-            {/* Galeria de miniaturas */}
-            {ponto.images && ponto.images.length > 1 && (
-              <div className="space-y-3">
-                <h2 className="text-lg font-semibold">Todas as fotos</h2>
-                <div className="grid grid-cols-3 gap-2">
-                  {ponto.images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`${ponto.title} - Foto ${index + 1}`}
-                      className={`aspect-square object-cover rounded-lg cursor-pointer border-2 transition-all ${
-                        index === currentImageIndex 
-                          ? 'border-primary scale-105' 
-                          : 'border-transparent hover:border-muted-foreground'
-                      }`}
-                      onClick={() => setCurrentImageIndex(index)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Footer fixo com ações */}
