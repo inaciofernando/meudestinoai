@@ -1397,71 +1397,21 @@ export default function GastosViagem() {
                             {category.expenses.map(expense => (
                               <div 
                                 key={expense.id}
-                                className="relative overflow-hidden bg-muted/50 rounded"
+                                className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded cursor-pointer hover:bg-muted/70 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditExpense(expense);
+                                }}
                               >
-                                {/* Background delete button */}
-                                <div className="absolute inset-0 bg-destructive flex items-center justify-end pr-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSwipedExpense(null);
-                                      confirmDeleteExpense(expense);
-                                    }}
-                                    className="text-white hover:bg-white/20 h-6 text-xs"
-                                  >
-                                    <Trash2 className="w-3 h-3 mr-1" />
-                                    Excluir
-                                  </Button>
+                                <div>
+                                  <p className="font-medium">{expense.location || 'Local não informado'}</p>
+                                  <p className="text-muted-foreground text-xs">
+                                    {new Date(expense.date).toLocaleDateString('pt-BR')}
+                                  </p>
                                 </div>
-                                
-                                {/* Main content */}
-                                <div 
-                                  className={`relative bg-muted/50 transition-transform duration-300 ease-out ${
-                                    swipedExpense === expense.id ? '-translate-x-16' : 'translate-x-0'
-                                  } flex justify-between items-center text-sm p-2 cursor-pointer`}
-                                  onTouchStart={(e) => {
-                                    const touch = e.touches[0];
-                                    const startX = touch.clientX;
-                                    
-                                    const handleTouchMove = (e: TouchEvent) => {
-                                      const touch = e.touches[0];
-                                      const deltaX = startX - touch.clientX;
-                                      
-                                      if (deltaX > 30) {
-                                        setSwipedExpense(expense.id);
-                                      } else if (deltaX < -10) {
-                                        setSwipedExpense(null);
-                                      }
-                                    };
-                                    
-                                    const handleTouchEnd = () => {
-                                      document.removeEventListener('touchmove', handleTouchMove);
-                                      document.removeEventListener('touchend', handleTouchEnd);
-                                    };
-                                    
-                                    document.addEventListener('touchmove', handleTouchMove);
-                                    document.addEventListener('touchend', handleTouchEnd);
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (swipedExpense === expense.id) {
-                                      setSwipedExpense(null);
-                                    } else {
-                                      handleEditExpense(expense);
-                                    }
-                                  }}
-                                >
-                                  <div>
-                                    <p className="font-medium">{expense.location || 'Local não informado'}</p>
-                                    <p className="text-muted-foreground text-xs">
-                                      {new Date(expense.date).toLocaleDateString('pt-BR')}
-                                    </p>
-                                  </div>
-                                  <span className="font-medium">
-                                    {selectedCurrency.symbol} {expense.amount.toFixed(2)}
-                                  </span>
-                                </div>
+                                <span className="font-medium">
+                                  {selectedCurrency.symbol} {expense.amount.toFixed(2)}
+                                </span>
                               </div>
                             ))}
                           </div>
