@@ -97,6 +97,7 @@ export default function GastosViagem() {
   const [isAnalyzingReceipt, setIsAnalyzingReceipt] = useState(false);
   const [analysisStep, setAnalysisStep] = useState<string>("");
   const [activeTab, setActiveTab] = useState("overview");
+  const [viewingReceiptUrl, setViewingReceiptUrl] = useState<string | null>(null);
 
   // Form states for budget editing
   const [budgetForm, setBudgetForm] = useState({
@@ -514,6 +515,11 @@ export default function GastosViagem() {
         console.log("✅ Estado resetado");
       }, 1000);
     }
+  };
+
+  const handleViewReceipt = (receiptUrl: string) => {
+    const { data } = supabase.storage.from('receipts').getPublicUrl(receiptUrl);
+    setViewingReceiptUrl(data.publicUrl);
   };
 
   const handleUpdateBudget = async () => {
@@ -982,10 +988,7 @@ export default function GastosViagem() {
                             <Button 
                               variant="link" 
                               className="h-auto p-0 text-primary"
-                              onClick={() => {
-                                const { data } = supabase.storage.from('receipts').getPublicUrl(editingExpense.receipt_url!);
-                                window.open(data.publicUrl, '_blank');
-                              }}
+                              onClick={() => handleViewReceipt(editingExpense.receipt_url!)}
                             >
                               visualizar
                             </Button>
@@ -1045,10 +1048,7 @@ export default function GastosViagem() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => {
-                              const { data } = supabase.storage.from('receipts').getPublicUrl(editingExpense.receipt_url!);
-                              window.open(data.publicUrl, '_blank');
-                            }}
+                            onClick={() => handleViewReceipt(editingExpense.receipt_url!)}
                             className="text-xs"
                           >
                             <Receipt className="w-3 h-3 mr-1" />
@@ -1288,6 +1288,42 @@ export default function GastosViagem() {
           </div>
         </div>
       </PWALayout>
+
+      {/* Modal para visualizar cupom */}
+      <Dialog open={!!viewingReceiptUrl} onOpenChange={() => setViewingReceiptUrl(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Receipt className="w-5 h-5" />
+              Cupom Fiscal
+            </DialogTitle>
+          </DialogHeader>
+          {viewingReceiptUrl && (
+            <div className="flex flex-col items-center gap-4">
+              <img 
+                src={viewingReceiptUrl} 
+                alt="Cupom fiscal" 
+                className="max-w-full h-auto rounded-lg shadow-lg"
+                style={{ maxHeight: '70vh' }}
+              />
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setViewingReceiptUrl(null)}
+                >
+                  Fechar
+                </Button>
+                <Button 
+                  variant="default"
+                  onClick={() => window.open(viewingReceiptUrl, '_blank')}
+                >
+                  Abrir em nova aba
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </ProtectedRoute>
   );
 }
