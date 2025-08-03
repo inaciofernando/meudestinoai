@@ -45,6 +45,7 @@ export default function Hospedagem() {
   const { id: tripId } = useParams();
   const { user } = useAuth();
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
+  const [trip, setTrip] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAccommodation, setEditingAccommodation] = useState<Accommodation | null>(null);
@@ -62,9 +63,31 @@ export default function Hospedagem() {
 
   useEffect(() => {
     if (tripId && user) {
-      loadAccommodations();
+      loadTripAndAccommodations();
     }
   }, [tripId, user]);
+
+  const loadTripAndAccommodations = async () => {
+    try {
+      // Carregar dados da viagem
+      const { data: tripData, error: tripError } = await supabase
+        .from('trips')
+        .select('*')
+        .eq('id', tripId)
+        .single();
+
+      if (tripError) throw tripError;
+      setTrip(tripData);
+
+      // Carregar hospedagens
+      await loadAccommodations();
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      toast.error('Erro ao carregar dados da viagem');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadAccommodations = async () => {
     try {
@@ -79,8 +102,6 @@ export default function Hospedagem() {
     } catch (error) {
       console.error('Erro ao carregar hospedagens:', error);
       toast.error('Erro ao carregar hospedagens');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -282,6 +303,11 @@ export default function Hospedagem() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Data de Check-in *</Label>
+                  {trip?.start_date && trip?.end_date && (
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Período da viagem: {format(new Date(trip.start_date), "dd/MM/yyyy")} - {format(new Date(trip.end_date), "dd/MM/yyyy")}
+                    </p>
+                  )}
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -300,6 +326,12 @@ export default function Hospedagem() {
                         mode="single"
                         selected={newAccommodation.check_in_date}
                         onSelect={(date) => setNewAccommodation({ ...newAccommodation, check_in_date: date })}
+                        disabled={(date) => {
+                          if (!trip?.start_date || !trip?.end_date) return false;
+                          const startDate = new Date(trip.start_date);
+                          const endDate = new Date(trip.end_date);
+                          return date < startDate || date > endDate;
+                        }}
                         initialFocus
                         className="p-3 pointer-events-auto"
                       />
@@ -327,6 +359,12 @@ export default function Hospedagem() {
                         mode="single"
                         selected={newAccommodation.check_out_date}
                         onSelect={(date) => setNewAccommodation({ ...newAccommodation, check_out_date: date })}
+                        disabled={(date) => {
+                          if (!trip?.start_date || !trip?.end_date) return false;
+                          const startDate = new Date(trip.start_date);
+                          const endDate = new Date(trip.end_date);
+                          return date < startDate || date > endDate || (newAccommodation.check_in_date && date <= newAccommodation.check_in_date);
+                        }}
                         initialFocus
                         className="p-3 pointer-events-auto"
                       />

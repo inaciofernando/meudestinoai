@@ -51,6 +51,7 @@ export default function Restaurantes() {
   const { id: tripId } = useParams();
   const { user } = useAuth();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [trip, setTrip] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
@@ -71,9 +72,31 @@ export default function Restaurantes() {
 
   useEffect(() => {
     if (tripId && user) {
-      loadRestaurants();
+      loadTripAndRestaurants();
     }
   }, [tripId, user]);
+
+  const loadTripAndRestaurants = async () => {
+    try {
+      // Carregar dados da viagem
+      const { data: tripData, error: tripError } = await supabase
+        .from('trips')
+        .select('*')
+        .eq('id', tripId)
+        .single();
+
+      if (tripError) throw tripError;
+      setTrip(tripData);
+
+      // Carregar restaurantes
+      await loadRestaurants();
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      toast.error('Erro ao carregar dados da viagem');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadRestaurants = async () => {
     try {
@@ -88,8 +111,6 @@ export default function Restaurantes() {
     } catch (error) {
       console.error('Erro ao carregar restaurantes:', error);
       toast.error('Erro ao carregar restaurantes');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -300,6 +321,11 @@ export default function Restaurantes() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Data da Reserva</Label>
+                  {trip?.start_date && trip?.end_date && (
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Período da viagem: {format(new Date(trip.start_date), "dd/MM/yyyy")} - {format(new Date(trip.end_date), "dd/MM/yyyy")}
+                    </p>
+                  )}
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -318,6 +344,12 @@ export default function Restaurantes() {
                         mode="single"
                         selected={newRestaurant.reservation_date}
                         onSelect={(date) => setNewRestaurant({ ...newRestaurant, reservation_date: date })}
+                        disabled={(date) => {
+                          if (!trip?.start_date || !trip?.end_date) return false;
+                          const startDate = new Date(trip.start_date);
+                          const endDate = new Date(trip.end_date);
+                          return date < startDate || date > endDate;
+                        }}
                         initialFocus
                         className="p-3 pointer-events-auto"
                       />
