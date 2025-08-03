@@ -35,7 +35,8 @@ import {
   Receipt,
   Target,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Edit2
 } from "lucide-react";
 
 interface Trip {
@@ -90,7 +91,14 @@ export default function GastosViagem() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Form states for budget editing
+  const [budgetForm, setBudgetForm] = useState({
+    total_budget: "",
+    budget_currency: "BRL"
+  });
 
   // Form states for new expense
   const [newExpense, setNewExpense] = useState({
@@ -123,8 +131,10 @@ export default function GastosViagem() {
         }
 
         setTrip(tripData);
-
-        // TODO: Fetch expenses when database is ready
+        setBudgetForm({
+          total_budget: (tripData.total_budget || 0).toString(),
+          budget_currency: tripData.budget_currency || "BRL"
+        });
         // For now, we'll use mock data for UI development
         setExpenses([]);
 
@@ -165,6 +175,46 @@ export default function GastosViagem() {
       description: "O sistema de gastos será implementado com IA em breve",
     });
     setIsAddingExpense(false);
+  };
+
+  const handleUpdateBudget = async () => {
+    if (!trip || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from("trips")
+        .update({
+          total_budget: parseFloat(budgetForm.total_budget) || 0,
+          budget_currency: budgetForm.budget_currency
+        })
+        .eq("id", trip.id)
+        .eq("user_id", user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setTrip({
+        ...trip,
+        total_budget: parseFloat(budgetForm.total_budget) || 0,
+        budget_currency: budgetForm.budget_currency
+      });
+
+      setIsEditingBudget(false);
+
+      toast({
+        title: "Sucesso!",
+        description: "Orçamento atualizado com sucesso",
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar orçamento:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao atualizar o orçamento. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -331,6 +381,63 @@ export default function GastosViagem() {
                 </div>
               </DialogContent>
             </Dialog>
+
+            {/* Budget Edit Dialog */}
+            <Dialog open={isEditingBudget} onOpenChange={setIsEditingBudget}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Editar Orçamento da Viagem</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label>Orçamento Total</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={budgetForm.total_budget}
+                        onChange={(e) => setBudgetForm({...budgetForm, total_budget: e.target.value})}
+                        placeholder="0,00"
+                      />
+                    </div>
+                    <div>
+                      <Label>Moeda</Label>
+                      <Select 
+                        value={budgetForm.budget_currency} 
+                        onValueChange={(value) => setBudgetForm({...budgetForm, budget_currency: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CURRENCIES.map(currency => (
+                            <SelectItem key={currency.code} value={currency.code}>
+                              {currency.symbol} {currency.code} - {currency.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsEditingBudget(false)}
+                      className="flex-1"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      onClick={handleUpdateBudget} 
+                      className="flex-1"
+                    >
+                      Salvar Orçamento
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Budget Overview Cards */}
@@ -344,7 +451,17 @@ export default function GastosViagem() {
                       {selectedCurrency.symbol} {(trip.total_budget || 0).toFixed(2)}
                     </p>
                   </div>
-                  <Target className="w-8 h-8 text-primary/50" />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditingBudget(true)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Target className="w-8 h-8 text-primary/50" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
