@@ -1,11 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, Calendar, Wallet, FileText } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import heroImage from "@/assets/hero-travel.jpg";
 
 export const TravelHero = () => {
-  const navigate = useNavigate();
-  
   const features = [
     {
       icon: MapPin,
@@ -29,40 +27,32 @@ export const TravelHero = () => {
     }
   ];
 
-  const handleStartNow = () => {
-    navigate('/viagens');
-  };
-
   return (
-    <div className="space-y-16">
+    <div className="relative min-h-screen bg-gradient-sky">
       {/* Hero Section */}
-      <div className="relative py-16 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+      <div className="relative h-screen flex items-center justify-center overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-highlight/20" />
+        </div>
         
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-foreground">
+        <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 drop-shadow-lg">
             Gerencie Suas
-            <span className="block text-transparent bg-gradient-to-r from-primary to-accent bg-clip-text mt-2">
+            <span className="block bg-gradient-ocean bg-clip-text text-transparent">
               Viagens dos Sonhos
             </span>
           </h1>
-          <p className="text-lg md:text-xl mb-8 text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl mb-8 text-white/90 drop-shadow-md max-w-2xl mx-auto">
             Tudo que você precisa para planejar, organizar e aproveitar suas aventuras ao máximo
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={handleStartNow}
-              className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-            >
+            <Button size="hero" variant="travel" className="shadow-float">
               Começar Agora
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate('/viagens')}
-              className="border-primary text-primary hover:bg-primary/5"
-            >
+            <Button size="hero" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">
               Explorar Funcionalidades
             </Button>
           </div>
@@ -70,13 +60,13 @@ export const TravelHero = () => {
       </div>
 
       {/* Features Section */}
-      <div className="space-y-8">
+      <div className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
               Tudo em Um Só Lugar
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Simplifique o planejamento das suas viagens com ferramentas inteligentes e intuitivas
             </p>
           </div>
@@ -85,9 +75,9 @@ export const TravelHero = () => {
             {features.map((feature, index) => (
               <Card 
                 key={index} 
-                className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:scale-105 bg-card border border-border"
+                className="p-6 text-center hover:shadow-card transition-smooth hover:scale-105 bg-card border-border/50"
               >
-                <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 bg-gradient-ocean rounded-full flex items-center justify-center mx-auto mb-4">
                   <feature.icon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-card-foreground mb-2">

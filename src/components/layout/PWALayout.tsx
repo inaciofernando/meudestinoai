@@ -8,7 +8,7 @@ interface PWALayoutProps {
 
 export const PWALayout = ({ children }: PWALayoutProps) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex flex-col">
+    <div className="min-h-screen bg-gradient-sky flex flex-col">
       <PWAHeader />
       <main className="flex-1 pb-20 pt-4">
         <div className="container px-4 mx-auto">

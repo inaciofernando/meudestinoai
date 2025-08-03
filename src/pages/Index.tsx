@@ -1,12 +1,7 @@
 import { TravelHero } from "@/components/TravelHero";
-import { PWALayout } from "@/components/layout/PWALayout";
 
 const Index = () => {
-  return (
-    <PWALayout>
-      <TravelHero />
-    </PWALayout>
-  );
+  return <TravelHero />;
 };
 
 export default Index;
