@@ -403,14 +403,16 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
               Adicionar Item
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>
-                {editingItem ? "Editar Item" : "Adicionar Item ao Orçamento"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="max-h-[70vh] overflow-y-auto pr-2">
-              <div className="space-y-4">
+          <DialogContent className="sm:max-w-[600px] p-0 gap-0 fixed bottom-0 left-0 right-0 top-auto rounded-t-xl border-t sm:relative sm:top-auto sm:bottom-auto sm:left-auto sm:right-auto sm:rounded-lg sm:border data-[state=open]:slide-in-from-bottom-80 data-[state=open]:sm:slide-in-from-bottom-0 data-[state=closed]:slide-out-to-bottom-80 data-[state=closed]:sm:slide-out-to-bottom-0 max-h-[85vh] sm:max-h-[90vh]">
+            <div className="flex flex-col max-h-full">
+              <DialogHeader className="p-6 pb-4 flex-shrink-0 border-b">
+                <div className="w-12 h-1 bg-muted rounded-full mx-auto mb-4 sm:hidden"></div>
+                <DialogTitle className="text-xl font-semibold">
+                  {editingItem ? "Editar Item" : "Adicionar Item ao Orçamento"}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto p-6 pt-4">
+                <div className="space-y-4">
               {/* Tipo de Gasto */}
               <div className="flex items-center space-x-2">
                 <Switch
@@ -590,11 +592,12 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
                    Cancelar
                  </Button>
                </div>
+               </div>
+               </div>
              </div>
-           </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+           </DialogContent>
+         </Dialog>
+       </div>
 
       {/* Budget Items List */}
       <div className="space-y-3">
