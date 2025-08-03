@@ -474,9 +474,6 @@ export default function RoteiroSimples() {
 
                          return (
                            <Card key={ponto.id} className="relative">
-                             {/* Timeline dot */}
-                             <div className="absolute -left-[29px] top-4 w-4 h-4 bg-background border-2 border-primary rounded-full"></div>
-                             
                              <CardContent className="p-4">
                                <div className="flex items-start gap-3">
                                  {/* Imagem à esquerda */}
