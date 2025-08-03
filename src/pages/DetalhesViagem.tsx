@@ -467,7 +467,7 @@ export default function DetalhesViagem() {
 
           {/* Galeria de Imagens no Topo - Estilo Airbnb */}
           {images.length > 0 && (
-            <div className="relative w-full">
+            <div className="relative w-full border-b border-border">
               {images.length === 1 ? (
                 <div className="aspect-[16/9] md:aspect-[21/9] max-h-[60vh] overflow-hidden w-full">
                   <img 
@@ -525,15 +525,64 @@ export default function DetalhesViagem() {
                   </div>
 
                   {/* Desktop: Grid layout estilo Airbnb */}
-                  <div className="hidden md:grid grid-cols-4 gap-2 max-h-[60vh] w-full">
+                  <div className="hidden md:grid grid-cols-4 gap-2 h-[400px] w-full">
                     {/* Imagem Principal */}
-                    <div className="col-span-2 aspect-square overflow-hidden rounded-l-2xl relative">
+                    <div className="col-span-2 h-full overflow-hidden rounded-l-2xl relative group">
                       <img 
-                        src={images[0]} 
+                        src={images[currentImageIndex]} 
                         alt="Imagem principal da viagem"
                         className="w-full h-full object-cover cursor-pointer hover:brightness-95 transition-all"
-                        onClick={() => setCurrentImageIndex(0)}
+                        onClick={() => {
+                          const nextIndex = currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1;
+                          setCurrentImageIndex(nextIndex);
+                        }}
                       />
+                      
+                      {/* Navegação da imagem principal */}
+                      {images.length > 1 && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              prevImage();
+                            }}
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              nextImage();
+                            }}
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                          
+                          {/* Indicadores */}
+                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                            {images.map((_, index) => (
+                              <div
+                                key={index}
+                                className={cn(
+                                  "w-2 h-2 rounded-full transition-all cursor-pointer",
+                                  index === currentImageIndex ? "bg-white" : "bg-white/50"
+                                )}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCurrentImageIndex(index);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+
                       {isEditing && images.length > 1 && (
                         <div className="absolute top-2 left-2 flex gap-1">
                           <Button
@@ -542,69 +591,57 @@ export default function DetalhesViagem() {
                             className="bg-white/80 hover:bg-white text-black rounded-full w-6 h-6 p-0"
                             onClick={(e) => {
                               e.stopPropagation();
-                              moveImage(0, 1);
+                              moveImage(currentImageIndex, currentImageIndex === 0 ? 1 : currentImageIndex - 1);
                             }}
                           >
-                            <ChevronRight className="w-3 h-3" />
+                            <Move className="w-3 h-3" />
                           </Button>
                         </div>
                       )}
                     </div>
                     
                     {/* Grid de Imagens Menores */}
-                    <div className="col-span-2 grid grid-cols-2 gap-2">
-                      {images.slice(1, 5).map((image, index) => (
-                        <div 
-                          key={index} 
-                          className={cn(
-                            "aspect-square overflow-hidden relative cursor-pointer hover:brightness-95 transition-all",
-                            index === 1 && "rounded-tr-2xl",
-                            index === 3 && "rounded-br-2xl"
-                          )}
-                          onClick={() => setCurrentImageIndex(index + 1)}
-                        >
-                          <img 
-                            src={image} 
-                            alt={`Imagem ${index + 2} da viagem`}
-                            className="w-full h-full object-cover"
-                          />
-                          {index === 3 && images.length > 5 && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-medium text-lg rounded-br-2xl">
-                              +{images.length - 4}
-                            </div>
-                          )}
-                          {isEditing && (
-                            <div className="absolute top-2 right-2 flex gap-1">
-                              {index + 1 > 1 && (
+                    <div className="col-span-2 grid grid-cols-2 gap-2 h-full">
+                      {images.slice(0, 4).filter((_, index) => index !== currentImageIndex).slice(0, 4).map((image, index) => {
+                        const originalIndex = images.findIndex(img => img === image);
+                        return (
+                          <div 
+                            key={originalIndex} 
+                            className={cn(
+                              "h-full overflow-hidden relative cursor-pointer hover:brightness-95 transition-all",
+                              index === 1 && "rounded-tr-2xl",
+                              index === 3 && "rounded-br-2xl"
+                            )}
+                            onClick={() => setCurrentImageIndex(originalIndex)}
+                          >
+                            <img 
+                              src={image} 
+                              alt={`Imagem ${originalIndex + 1} da viagem`}
+                              className="w-full h-full object-cover"
+                            />
+                            {index === 3 && images.length > 5 && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-medium text-lg rounded-br-2xl">
+                                +{images.length - 4}
+                              </div>
+                            )}
+                            {isEditing && (
+                              <div className="absolute top-2 right-2 flex gap-1">
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   className="bg-white/80 hover:bg-white text-black rounded-full w-6 h-6 p-0"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    moveImage(index + 1, index);
+                                    moveImage(originalIndex, originalIndex > 0 ? originalIndex - 1 : originalIndex + 1);
                                   }}
                                 >
-                                  <ChevronLeft className="w-3 h-3" />
+                                  <Move className="w-3 h-3" />
                                 </Button>
-                              )}
-                              {index + 1 < images.length - 1 && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="bg-white/80 hover:bg-white text-black rounded-full w-6 h-6 p-0"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    moveImage(index + 1, index + 2);
-                                  }}
-                                >
-                                  <ChevronRight className="w-3 h-3" />
-                                </Button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
