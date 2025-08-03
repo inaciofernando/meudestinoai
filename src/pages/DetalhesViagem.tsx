@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +33,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Move
+  Move,
+  Settings
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
@@ -83,6 +85,7 @@ export default function DetalhesViagem() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -237,6 +240,40 @@ export default function DetalhesViagem() {
       });
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!trip || !user) return;
+
+    setStatusUpdating(true);
+
+    try {
+      const { error } = await supabase
+        .from("trips")
+        .update({ status: newStatus })
+        .eq("id", trip.id)
+        .eq("user_id", user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      setTrip({ ...trip, status: newStatus });
+
+      toast({
+        title: "Sucesso!",
+        description: "Status da viagem atualizado com sucesso",
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao atualizar o status. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setStatusUpdating(false);
     }
   };
 
@@ -875,7 +912,26 @@ export default function DetalhesViagem() {
                 <CardContent className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Status</label>
-                    <p className="text-foreground">{getStatusText(trip.status)}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <Badge variant={getStatusColor(trip.status)}>
+                        {getStatusText(trip.status)}
+                      </Badge>
+                      <Select 
+                        value={trip.status || 'planned'} 
+                        onValueChange={handleStatusUpdate}
+                        disabled={statusUpdating}
+                      >
+                        <SelectTrigger className="w-[140px] h-8">
+                          <Settings className="w-3 h-3 mr-1" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="planned">Planejando</SelectItem>
+                          <SelectItem value="confirmed">Confirmada</SelectItem>
+                          <SelectItem value="completed">Concluída</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <Separator />
                   <div>
