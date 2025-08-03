@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,16 +29,29 @@ interface Accommodation {
   notes?: string;
 }
 
+interface AccommodationForm {
+  hotel_name: string;
+  check_in_date: Date | undefined;
+  check_out_date: Date | undefined;
+  hotel_image_url: string;
+  voucher_file_url: string;
+  voucher_file_name: string;
+  hotel_link: string;
+  reservation_amount: string;
+  notes: string;
+}
+
 export default function Hospedagem() {
   const { id: tripId } = useParams();
   const { user } = useAuth();
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newAccommodation, setNewAccommodation] = useState({
+  const [editingAccommodation, setEditingAccommodation] = useState<Accommodation | null>(null);
+  const [newAccommodation, setNewAccommodation] = useState<AccommodationForm>({
     hotel_name: "",
-    check_in_date: undefined as Date | undefined,
-    check_out_date: undefined as Date | undefined,
+    check_in_date: undefined,
+    check_out_date: undefined,
     hotel_image_url: "",
     voucher_file_url: "",
     voucher_file_name: "",
@@ -71,6 +84,36 @@ export default function Hospedagem() {
     }
   };
 
+  const resetForm = () => {
+    setNewAccommodation({
+      hotel_name: "",
+      check_in_date: undefined,
+      check_out_date: undefined,
+      hotel_image_url: "",
+      voucher_file_url: "",
+      voucher_file_name: "",
+      hotel_link: "",
+      reservation_amount: "",
+      notes: ""
+    });
+  };
+
+  const handleEditAccommodation = (accommodation: Accommodation) => {
+    setEditingAccommodation(accommodation);
+    setNewAccommodation({
+      hotel_name: accommodation.hotel_name,
+      check_in_date: new Date(accommodation.check_in_date),
+      check_out_date: new Date(accommodation.check_out_date),
+      hotel_image_url: accommodation.hotel_image_url || "",
+      voucher_file_url: accommodation.voucher_file_url || "",
+      voucher_file_name: accommodation.voucher_file_name || "",
+      hotel_link: accommodation.hotel_link || "",
+      reservation_amount: accommodation.reservation_amount?.toString() || "",
+      notes: accommodation.notes || ""
+    });
+    setShowAddForm(true);
+  };
+
   const handleSaveAccommodation = async () => {
     if (!user || !tripId) return;
 
@@ -94,30 +137,39 @@ export default function Hospedagem() {
         notes: newAccommodation.notes || null
       };
 
-      const { error } = await supabase
-        .from('accommodations')
-        .insert([accommodationData]);
+      if (editingAccommodation) {
+        // Atualizar hospedagem existente
+        const { error } = await supabase
+          .from('accommodations')
+          .update(accommodationData)
+          .eq('id', editingAccommodation.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success('Hospedagem atualizada com sucesso!');
+      } else {
+        // Criar nova hospedagem
+        const { error } = await supabase
+          .from('accommodations')
+          .insert([accommodationData]);
 
-      toast.success('Hospedagem adicionada com sucesso!');
+        if (error) throw error;
+        toast.success('Hospedagem adicionada com sucesso!');
+      }
+
       setShowAddForm(false);
-      setNewAccommodation({
-        hotel_name: "",
-        check_in_date: undefined,
-        check_out_date: undefined,
-        hotel_image_url: "",
-        voucher_file_url: "",
-        voucher_file_name: "",
-        hotel_link: "",
-        reservation_amount: "",
-        notes: ""
-      });
+      setEditingAccommodation(null);
+      resetForm();
       loadAccommodations();
     } catch (error) {
       console.error('Erro ao salvar hospedagem:', error);
       toast.error('Erro ao salvar hospedagem');
     }
+  };
+
+  const handleCancelEdit = () => {
+    setShowAddForm(false);
+    setEditingAccommodation(null);
+    resetForm();
   };
 
   const handleDeleteAccommodation = async (accommodationId: string) => {
@@ -214,7 +266,7 @@ export default function Hospedagem() {
         {showAddForm && (
           <Card>
             <CardHeader>
-              <CardTitle>Nova Hospedagem</CardTitle>
+              <CardTitle>{editingAccommodation ? 'Editar Hospedagem' : 'Nova Hospedagem'}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -343,9 +395,9 @@ export default function Hospedagem() {
               <div className="flex gap-2">
                 <Button onClick={handleSaveAccommodation} className="flex items-center gap-2">
                   <Save className="w-4 h-4" />
-                  Salvar
+                  {editingAccommodation ? 'Atualizar' : 'Salvar'}
                 </Button>
-                <Button variant="outline" onClick={() => setShowAddForm(false)}>
+                <Button variant="outline" onClick={handleCancelEdit}>
                   Cancelar
                 </Button>
               </div>
@@ -370,14 +422,25 @@ export default function Hospedagem() {
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <CardTitle>{accommodation.hotel_name}</CardTitle>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteAccommodation(accommodation.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditAccommodation(accommodation)}
+                        className="flex items-center gap-2"
+                      >
+                        <Edit className="w-4 h-4" />
+                        Editar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteAccommodation(accommodation.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
