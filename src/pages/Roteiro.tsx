@@ -126,21 +126,50 @@ export default function Roteiro() {
 
         setTrip(tripData);
 
-        // Fetch or create roteiro for this trip (get the most recent one)
-        let { data: roteiroData, error: roteiroError } = await supabase
+        // First try to find a roteiro that has points
+        const { data: roteirosWithPoints } = await supabase
           .from("roteiros")
-          .select("*")
+          .select("id, trip_id, title, description, total_days, created_at, user_id, updated_at")
           .eq("trip_id", tripData.id)
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .eq("user_id", user.id);
 
-        if (roteiroError && roteiroError.code !== 'PGRST116') {
-          console.error("Erro ao buscar roteiro:", roteiroError);
-          navigate("/viagens");
-          return;
+        // Check which roteiros have points
+        let roteiroData = null;
+        if (roteirosWithPoints && roteirosWithPoints.length > 0) {
+          for (const roteiro of roteirosWithPoints) {
+            const { data: pontosCount } = await supabase
+              .from("roteiro_pontos")
+              .select("id", { count: "exact" })
+              .eq("roteiro_id", roteiro.id)
+              .eq("user_id", user.id);
+            
+            if (pontosCount && pontosCount.length > 0) {
+              roteiroData = roteiro;
+              break;
+            }
+          }
         }
+
+        // If no roteiro with points found, get the most recent one
+        if (!roteiroData) {
+          const { data: latestRoteiro, error: roteiroError } = await supabase
+            .from("roteiros")
+            .select("*")
+            .eq("trip_id", tripData.id)
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          roteiroData = latestRoteiro;
+          
+          if (roteiroError && roteiroError.code !== 'PGRST116') {
+            console.error("Erro ao buscar roteiro:", roteiroError);
+            navigate("/viagens");
+            return;
+          }
+        }
+
 
         // Create roteiro if it doesn't exist
         if (!roteiroData) {
