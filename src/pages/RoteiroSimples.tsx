@@ -436,8 +436,8 @@ export default function RoteiroSimples() {
             </div>
           </div>
 
-          {/* Timeline vertical */}
-          <div className="px-4 space-y-4">
+          {/* Grid de pontos estilo Airbnb */}
+          <div className="px-4">
             {Object.keys(groupedPontos).length === 0 ? (
               <Card>
                 <CardContent className="text-center py-12">
@@ -450,9 +450,9 @@ export default function RoteiroSimples() {
               Object.entries(groupedPontos)
                 .sort(([dayA], [dayB]) => Number(dayA) - Number(dayB))
                 .map(([day, dayPontos]) => (
-                  <div key={day} className="space-y-3">
+                  <div key={day} className="space-y-4 mb-8">
                     {/* Day header */}
-                    <div className="flex items-center gap-3 py-2">
+                    <div className="flex items-center gap-3 py-2 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
                       <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
                         {day}
                       </div>
@@ -464,82 +464,102 @@ export default function RoteiroSimples() {
                       </div>
                     </div>
 
-                    {/* Day points */}
-                    <div className="ml-4 pl-4 border-l-2 border-muted space-y-3">
-                      {dayPontos.map((ponto, index) => {
+                    {/* Grid de cards estilo Airbnb */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {dayPontos.map((ponto) => {
                         const category = CATEGORY_CONFIG[ponto.category] || CATEGORY_CONFIG.activity;
                         const CategoryIcon = category.icon;
                         const period = TIME_PERIODS[getTimePeriod(ponto.time_start)];
                         const PeriodIcon = period.icon;
 
-                         return (
-                           <Card key={ponto.id} className="relative">
-                             <CardContent className="p-4">
-                               <div className="flex items-start gap-3">
-                                 {/* Imagem à esquerda */}
-                                 {ponto.images && ponto.images.length > 0 ? (
-                                   <div className="flex-shrink-0">
-                                     <img
-                                       src={ponto.images[0]}
-                                       alt={ponto.title}
-                                       className="w-20 h-16 object-cover rounded cursor-pointer"
-                                       onClick={() => openImageViewer(ponto.images!, 0)}
-                                     />
-                                   </div>
-                                 ) : (
-                                   <div className={`p-2 rounded-lg ${category.color} text-white flex-shrink-0 w-20 h-16 flex items-center justify-center`}>
-                                     <CategoryIcon className="w-6 h-6" />
-                                   </div>
+                        return (
+                          <Card key={ponto.id} className="group cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden border-0 shadow-md" onClick={() => navigate(`/roteiro/${id}/ponto/${ponto.id}`)}>
+                            <div className="relative">
+                              {/* Imagem de destaque */}
+                              {ponto.images && ponto.images.length > 0 ? (
+                                <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
+                                  <img
+                                    src={ponto.images[0]}
+                                    alt={ponto.title}
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                  />
+                                  {/* Gradient overlay */}
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                                  
+                                  {ponto.images.length > 1 && (
+                                    <div className="absolute top-3 right-3 bg-black/80 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                                      <span className="font-medium">+{ponto.images.length - 1}</span>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Floating time badge */}
+                                  <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                                    <Clock className="w-3 h-3 text-primary" />
+                                    <span className="text-xs font-semibold text-foreground">{ponto.time_start}</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className={`aspect-[4/3] ${category.color} rounded-t-lg flex items-center justify-center relative bg-gradient-to-br`}>
+                                  <CategoryIcon className="w-16 h-16 text-white/90" />
+                                  {/* Floating time badge */}
+                                  <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                                    <Clock className="w-3 h-3 text-primary" />
+                                    <span className="text-xs font-semibold text-foreground">{ponto.time_start}</span>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Floating action buttons */}
+                              <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                                <Button
+                                  size="icon"
+                                  variant="secondary"
+                                  className="w-9 h-9 bg-white/95 hover:bg-white shadow-lg rounded-full"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditPonto(ponto);
+                                  }}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="destructive"
+                                  className="w-9 h-9 bg-red-500/95 hover:bg-red-500 shadow-lg rounded-full"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    confirmDeletePonto(ponto);
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                             {/* Card content */}
+                             <CardContent className="p-4 space-y-2">
+                               <div className="flex items-start justify-between gap-2">
+                                 <h3 className="font-semibold text-foreground line-clamp-1">{ponto.title}</h3>
+                                 <Badge variant="outline" className="text-xs shrink-0">
+                                   <PeriodIcon className="w-3 h-3 mr-1" />
+                                   {period.name}
+                                 </Badge>
+                               </div>
+                               
+                               <p className="text-sm text-muted-foreground line-clamp-1 mb-1">
+                                 <MapPin className="w-3 h-3 inline mr-1" />
+                                 {ponto.location}
+                               </p>
+                               
+                               <div className="flex items-center justify-between">
+                                 <Badge variant="secondary" className="text-xs">
+                                   {category.name}
+                                 </Badge>
+                                 {ponto.images && ponto.images.length > 1 && (
+                                   <span className="text-xs text-muted-foreground">
+                                     +{ponto.images.length - 1} fotos
+                                   </span>
                                  )}
-                                 
-                                 {/* Conteúdo à direita */}
-                                 <div className="flex-1 min-w-0">
-                                   <div className="flex items-center gap-2 mb-1">
-                                     <h4 className="font-semibold truncate">{ponto.title}</h4>
-                                     <Badge variant="outline" className="text-xs">
-                                       <PeriodIcon className="w-3 h-3 mr-1" />
-                                       {ponto.time_start}
-                                     </Badge>
-                                   </div>
-                                   
-                                   <p className="text-sm text-muted-foreground truncate mb-1">
-                                     {ponto.location}
-                                   </p>
-                                   
-                                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                     <Badge variant="secondary" className="text-xs">
-                                       {category.name}
-                                     </Badge>
-                                     {ponto.images && ponto.images.length > 1 && (
-                                       <span>• +{ponto.images.length - 1} {ponto.images.length === 2 ? 'imagem' : 'imagens'}</span>
-                                     )}
-                                   </div>
-                                 </div>
-
-                                 <div className="flex flex-col gap-1">
-                                   <Button
-                                     variant="ghost"
-                                     size="icon"
-                                     className="h-8 w-8"
-                                     onClick={(e) => {
-                                       e.stopPropagation();
-                                       handleEditPonto(ponto);
-                                     }}
-                                   >
-                                     <Edit className="w-4 h-4" />
-                                   </Button>
-                                   <Button
-                                     variant="ghost"
-                                     size="icon"
-                                     className="h-8 w-8 text-destructive hover:text-destructive"
-                                     onClick={(e) => {
-                                       e.stopPropagation();
-                                       confirmDeletePonto(ponto);
-                                     }}
-                                   >
-                                     <Trash2 className="w-4 h-4" />
-                                   </Button>
-                                 </div>
                                </div>
                              </CardContent>
                            </Card>
