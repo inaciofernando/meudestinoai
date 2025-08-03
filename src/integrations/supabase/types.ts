@@ -109,6 +109,7 @@ export type Database = {
           description: string | null
           estimated_cost: number | null
           id: string
+          images: string[] | null
           location: string
           notes: string | null
           order_index: number
@@ -127,6 +128,7 @@ export type Database = {
           description?: string | null
           estimated_cost?: number | null
           id?: string
+          images?: string[] | null
           location: string
           notes?: string | null
           order_index?: number
@@ -145,6 +147,7 @@ export type Database = {
           description?: string | null
           estimated_cost?: number | null
           id?: string
+          images?: string[] | null
           location?: string
           notes?: string | null
           order_index?: number

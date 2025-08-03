@@ -29,6 +29,7 @@ import {
   BookOpen,
   Star
 } from "lucide-react";
+import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 
 interface Trip {
   id: string;
@@ -52,6 +53,7 @@ interface RoteiroPonto {
   notes?: string;
   order_index: number;
   created_at: string;
+  images?: string[];
 }
 
 interface Roteiro {
@@ -102,7 +104,8 @@ export default function Roteiro() {
     description: "",
     location: "",
     category: "attraction" as keyof typeof CATEGORY_CONFIG,
-    notes: ""
+    notes: "",
+    images: [] as string[]
   });
 
   useEffect(() => {
@@ -289,6 +292,7 @@ export default function Roteiro() {
           location: newPonto.location,
           category: newPonto.category,
           notes: newPonto.notes,
+          images: newPonto.images,
           order_index: getDayPontos(newPonto.day_number).length,
           user_id: user!.id
         })
@@ -317,7 +321,8 @@ export default function Roteiro() {
         description: "",
         location: "",
         category: "attraction",
-        notes: ""
+        notes: "",
+        images: []
       });
       
       setIsAddingPonto(false);
@@ -524,6 +529,15 @@ export default function Roteiro() {
                           />
                         </div>
 
+                        <div>
+                          <Label>Imagens</Label>
+                          <ItineraryImageUpload
+                            images={newPonto.images}
+                            onImagesChange={(images) => setNewPonto({...newPonto, images})}
+                            maxImages={5}
+                          />
+                        </div>
+
                         <div className="flex gap-2">
                           <Button 
                             variant="outline" 
@@ -608,6 +622,24 @@ export default function Roteiro() {
                                       {ponto.description && (
                                         <p className="text-sm text-muted-foreground">{ponto.description}</p>
                                       )}
+                                      
+                                      {ponto.images && ponto.images.length > 0 && (
+                                        <div className="flex gap-2 mt-3">
+                                          {ponto.images.slice(0, 3).map((image, imgIndex) => (
+                                            <img
+                                              key={imgIndex}
+                                              src={image}
+                                              alt={`${ponto.title} ${imgIndex + 1}`}
+                                              className="w-12 h-12 object-cover rounded-lg border"
+                                            />
+                                          ))}
+                                          {ponto.images.length > 3 && (
+                                            <div className="w-12 h-12 bg-gray-100 rounded-lg border flex items-center justify-center text-xs text-gray-500">
+                                              +{ponto.images.length - 3}
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -668,6 +700,22 @@ export default function Roteiro() {
                       <div>
                         <h4 className="font-medium mb-2">Notas</h4>
                         <p className="text-sm text-muted-foreground">{selectedPonto.notes}</p>
+                      </div>
+                    )}
+
+                    {selectedPonto.images && selectedPonto.images.length > 0 && (
+                      <div>
+                        <h4 className="font-medium mb-2">Imagens</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          {selectedPonto.images.map((image, imgIndex) => (
+                            <img
+                              key={imgIndex}
+                              src={image}
+                              alt={`${selectedPonto.title} ${imgIndex + 1}`}
+                              className="w-full h-24 object-cover rounded-lg border"
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
