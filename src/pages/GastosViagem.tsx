@@ -587,9 +587,8 @@ export default function GastosViagem() {
             </div>
             <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-ocean hover:shadow-travel transition-all duration-300">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Novo Gasto
+                <Button size="icon" className="bg-gradient-ocean hover:shadow-travel transition-all duration-300">
+                  <Plus className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
