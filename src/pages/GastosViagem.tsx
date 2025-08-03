@@ -95,6 +95,7 @@ export default function GastosViagem() {
   const [isEditingExpense, setIsEditingExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isAnalyzingReceipt, setIsAnalyzingReceipt] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState<string>("");
   const [activeTab, setActiveTab] = useState("overview");
 
   // Form states for budget editing
@@ -409,22 +410,30 @@ export default function GastosViagem() {
     }
 
     setIsAnalyzingReceipt(true);
+    setAnalysisStep("🔍 Preparando imagem...");
 
     try {
       // Convert file to base64
       const reader = new FileReader();
       reader.onload = async (e) => {
+        setAnalysisStep("📤 Enviando para análise...");
         const base64 = e.target?.result as string;
         const imageBase64 = base64.split(',')[1]; // Remove data:image/jpeg;base64, prefix
 
         try {
+          setAnalysisStep("🤖 IA analisando o cupom...");
+          
           const { data, error } = await supabase.functions.invoke('analyze-receipt', {
             body: { imageBase64 }
           });
 
-          if (error) throw error;
+          if (error) {
+            console.error('Supabase function error:', error);
+            throw new Error(`Erro na função: ${error.message}`);
+          }
 
           if (data.success && data.data) {
+            setAnalysisStep("✅ Preenchendo formulário...");
             const extractedData = data.data;
             
             // Auto-fill the form with extracted data
@@ -442,28 +451,38 @@ export default function GastosViagem() {
               description: "Os dados do cupom foram extraídos e preenchidos automaticamente.",
             });
           } else {
-            throw new Error(data.error || 'Erro na análise do cupom');
+            throw new Error(data.error || 'Erro na análise do cupom - resposta inválida');
           }
-        } catch (analysisError) {
+        } catch (analysisError: any) {
           console.error('Error analyzing receipt:', analysisError);
           toast({
             title: "Erro na análise",
-            description: "Não foi possível analisar o cupom fiscal. Tente novamente.",
+            description: `Não foi possível analisar o cupom fiscal: ${analysisError.message}`,
             variant: "destructive"
           });
         }
       };
 
+      reader.onerror = () => {
+        console.error('FileReader error');
+        toast({
+          title: "Erro",
+          description: "Erro ao processar a imagem. Verifique o formato do arquivo.",
+          variant: "destructive"
+        });
+      };
+
       reader.readAsDataURL(newExpense.receiptFile);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing file:', error);
       toast({
         title: "Erro",
-        description: "Erro ao processar a imagem. Tente novamente.",
+        description: `Erro ao processar a imagem: ${error.message}`,
         variant: "destructive"
       });
     } finally {
       setIsAnalyzingReceipt(false);
+      setAnalysisStep("");
     }
   };
 
@@ -624,10 +643,10 @@ export default function GastosViagem() {
                           className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200"
                         >
                           {isAnalyzingReceipt ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mr-2" />
-                              Analisando cupom...
-                            </>
+                            <div className="flex flex-col items-center">
+                              <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mb-2" />
+                              <span className="text-xs">{analysisStep || "Processando..."}</span>
+                            </div>
                           ) : (
                             <>
                               <Bot className="w-4 h-4 mr-2 text-purple-600" />
