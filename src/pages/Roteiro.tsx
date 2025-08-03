@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,7 +33,9 @@ import {
   ChevronRight,
   Move,
   Edit,
-  X
+  X,
+  Trash2,
+  Save
 } from "lucide-react";
 import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 
@@ -101,6 +104,16 @@ export default function Roteiro() {
   const [selectedPonto, setSelectedPonto] = useState<RoteiroPonto | null>(null);
   const [isEditingPonto, setIsEditingPonto] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [editPonto, setEditPonto] = useState({
+    title: "",
+    description: "",
+    location: "",
+    category: "attraction" as keyof typeof CATEGORY_CONFIG,
+    notes: "",
+    time_start: "09:00",
+    time_end: "10:00",
+    images: [] as string[]
+  });
 
   // Form states
   const [newPonto, setNewPonto] = useState({
@@ -352,6 +365,112 @@ export default function Roteiro() {
     setSelectedPonto(ponto);
     setCurrentImageIndex(0);
     setIsEditingPonto(false);
+    // Preencher formulário de edição
+    setEditPonto({
+      title: ponto.title,
+      description: ponto.description || "",
+      location: ponto.location,
+      category: ponto.category,
+      notes: ponto.notes || "",
+      time_start: ponto.time_start,
+      time_end: ponto.time_end || "",
+      images: ponto.images || []
+    });
+  };
+
+  const handleEditPonto = async () => {
+    if (!selectedPonto || !editPonto.title || !editPonto.location) {
+      toast({
+        title: "Erro",
+        description: "Preencha pelo menos o título e local do ponto.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("roteiro_pontos")
+        .update({
+          title: editPonto.title,
+          description: editPonto.description,
+          location: editPonto.location,
+          category: editPonto.category,
+          notes: editPonto.notes,
+          time_start: editPonto.time_start,
+          time_end: editPonto.time_end || null,
+          images: editPonto.images
+        })
+        .eq("id", selectedPonto.id)
+        .eq("user_id", user!.id);
+
+      if (error) {
+        console.error("Erro ao atualizar ponto:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível atualizar o ponto. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Atualizar estado local
+      const updatedPonto = { ...selectedPonto, ...editPonto };
+      setSelectedPonto(updatedPonto);
+      setPontos(prev => prev.map(p => p.id === selectedPonto.id ? updatedPonto as RoteiroPonto : p));
+      
+      setIsEditingPonto(false);
+
+      toast({
+        title: "Ponto atualizado! ✅",
+        description: `${editPonto.title} foi atualizado com sucesso.`,
+      });
+    } catch (error) {
+      console.error("Erro ao editar ponto:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o ponto. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeletePonto = async () => {
+    if (!selectedPonto) return;
+
+    try {
+      const { error } = await supabase
+        .from("roteiro_pontos")
+        .delete()
+        .eq("id", selectedPonto.id)
+        .eq("user_id", user!.id);
+
+      if (error) {
+        console.error("Erro ao excluir ponto:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível excluir o ponto. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Remover do estado local
+      setPontos(prev => prev.filter(p => p.id !== selectedPonto.id));
+      setSelectedPonto(null);
+
+      toast({
+        title: "Ponto excluído! 🗑️",
+        description: `${selectedPonto.title} foi removido do roteiro.`,
+      });
+    } catch (error) {
+      console.error("Erro ao excluir ponto:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o ponto. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Funções de movimentação de imagens
@@ -719,178 +838,326 @@ export default function Roteiro() {
               {selectedPonto && (
                 <>
                   <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      {(() => {
-                        const category = CATEGORY_CONFIG[selectedPonto.category];
-                        const CategoryIcon = category.icon;
-                        return (
-                          <>
-                            <div className={`w-8 h-8 ${category.color} rounded-full flex items-center justify-center`}>
-                              <CategoryIcon className="w-4 h-4 text-white" />
-                            </div>
-                            {selectedPonto.title}
-                          </>
-                        );
-                      })()}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        {selectedPonto.location}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="w-4 h-4" />
-                        {selectedPonto.time_start}
-                        {selectedPonto.time_end && ` - ${selectedPonto.time_end}`}
+                    <div className="flex items-center justify-between">
+                      <DialogTitle className="flex items-center gap-2">
+                        {(() => {
+                          const category = CATEGORY_CONFIG[selectedPonto.category];
+                          const CategoryIcon = category.icon;
+                          return (
+                            <>
+                              <div className={`w-8 h-8 ${category.color} rounded-full flex items-center justify-center`}>
+                                <CategoryIcon className="w-4 h-4 text-white" />
+                              </div>
+                              {selectedPonto.title}
+                            </>
+                          );
+                        })()}
+                      </DialogTitle>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsEditingPonto(!isEditingPonto)}
+                          className="h-8"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          {isEditingPonto ? "Cancelar" : "Editar"}
+                        </Button>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Excluir
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir ponto do roteiro?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta ação não pode ser desfeita. O ponto "{selectedPonto.title}" será removido permanentemente do seu roteiro.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={handleDeletePonto}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
-                    
-                    {selectedPonto.description && (
-                      <div>
-                        <h4 className="font-medium mb-2">Descrição</h4>
-                        <p className="text-sm text-muted-foreground">{selectedPonto.description}</p>
-                      </div>
-                    )}
-
-                    {selectedPonto.notes && (
-                      <div>
-                        <h4 className="font-medium mb-2">Notas</h4>
-                        <p className="text-sm text-muted-foreground">{selectedPonto.notes}</p>
-                      </div>
-                    )}
-
-                    {selectedPonto.images && selectedPonto.images.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium">Imagens ({selectedPonto.images.length})</h4>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsEditingPonto(!isEditingPonto)}
-                            className="text-sm"
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {/* Formulário de Edição */}
+                    {isEditingPonto ? (
+                      <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
+                        <h4 className="font-medium text-sm text-muted-foreground">Editando ponto</h4>
+                        
+                        <div>
+                          <Label>Categoria</Label>
+                          <select
+                            value={editPonto.category}
+                            onChange={(e) => setEditPonto({...editPonto, category: e.target.value as keyof typeof CATEGORY_CONFIG})}
+                            className="w-full p-2 border rounded-md"
                           >
-                            <Edit className="w-4 h-4 mr-1" />
-                            {isEditingPonto ? "Finalizar" : "Reordenar"}
+                            {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
+                              <option key={key} value={key}>{config.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label>Horário Início</Label>
+                            <Input
+                              type="time"
+                              value={editPonto.time_start}
+                              onChange={(e) => setEditPonto({...editPonto, time_start: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label>Horário Fim</Label>
+                            <Input
+                              type="time"
+                              value={editPonto.time_end}
+                              onChange={(e) => setEditPonto({...editPonto, time_end: e.target.value})}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>Título *</Label>
+                          <Input
+                            value={editPonto.title}
+                            onChange={(e) => setEditPonto({...editPonto, title: e.target.value})}
+                            placeholder="Ex: Visita ao Cristo Redentor"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Local *</Label>
+                          <Input
+                            value={editPonto.location}
+                            onChange={(e) => setEditPonto({...editPonto, location: e.target.value})}
+                            placeholder="Ex: Corcovado, Rio de Janeiro"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Descrição</Label>
+                          <Textarea
+                            value={editPonto.description}
+                            onChange={(e) => setEditPonto({...editPonto, description: e.target.value})}
+                            placeholder="Descreva o que fazer neste local..."
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Notas</Label>
+                          <Textarea
+                            value={editPonto.notes}
+                            onChange={(e) => setEditPonto({...editPonto, notes: e.target.value})}
+                            placeholder="Dicas, observações, lembretes..."
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Imagens</Label>
+                          <ItineraryImageUpload
+                            images={editPonto.images}
+                            onImagesChange={(images) => setEditPonto({...editPonto, images})}
+                            maxImages={5}
+                          />
+                        </div>
+
+                        <div className="flex gap-2 pt-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setIsEditingPonto(false)}
+                            className="flex-1"
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            onClick={handleEditPonto} 
+                            className="flex-1"
+                          >
+                            <Save className="w-4 h-4 mr-1" />
+                            Salvar
                           </Button>
                         </div>
-                        
-                        {/* Mobile: Carrossel */}
-                        <div className="md:hidden">
-                          <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                            <img
-                              src={selectedPonto.images[currentImageIndex]}
-                              alt={`${selectedPonto.title} ${currentImageIndex + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                            
-                            {selectedPonto.images.length > 1 && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0"
-                                  onClick={prevImage}
-                                >
-                                  <ChevronLeft className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0"
-                                  onClick={nextImage}
-                                >
-                                  <ChevronRight className="w-4 h-4" />
-                                </Button>
-                              </>
-                            )}
-                            
-                            {/* Indicadores */}
-                            {selectedPonto.images.length > 1 && (
-                              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                                {selectedPonto.images.map((_, index) => (
-                                  <div
-                                    key={index}
-                                    className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
-                                      index === currentImageIndex
-                                        ? "bg-white"
-                                        : "bg-white/50"
-                                    }`}
-                                    onClick={() => setCurrentImageIndex(index)}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                            
-                            {/* Botão mover no modo edição - Mobile */}
-                            {isEditingPonto && selectedPonto.images.length > 1 && (
-                              <div className="absolute top-2 left-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0"
-                                  onClick={() => {
-                                    const targetIndex = currentImageIndex === 0 ? 1 : currentImageIndex - 1;
-                                    moveImageInPonto(currentImageIndex, targetIndex);
-                                  }}
-                                >
-                                  <Move className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            )}
+                      </div>
+                    ) : (
+                      <>
+                        {/* Visualização Normal */}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="w-4 h-4" />
+                            {selectedPonto.location}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                            {selectedPonto.time_start}
+                            {selectedPonto.time_end && ` - ${selectedPonto.time_end}`}
                           </div>
                         </div>
                         
-                        {/* Desktop: Grid layout */}
-                        <div className="hidden md:block">
-                          <div className="grid grid-cols-2 gap-2">
-                            {selectedPonto.images.map((image, imgIndex) => (
-                              <div key={imgIndex} className="relative group">
+                        {selectedPonto.description && (
+                          <div>
+                            <h4 className="font-medium mb-2">Descrição</h4>
+                            <p className="text-sm text-muted-foreground">{selectedPonto.description}</p>
+                          </div>
+                        )}
+
+                        {selectedPonto.notes && (
+                          <div>
+                            <h4 className="font-medium mb-2">Notas</h4>
+                            <p className="text-sm text-muted-foreground">{selectedPonto.notes}</p>
+                          </div>
+                        )}
+
+                        {selectedPonto.images && selectedPonto.images.length > 0 && (
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium">Imagens ({selectedPonto.images.length})</h4>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setIsEditingPonto(!isEditingPonto)}
+                                className="text-sm"
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                {isEditingPonto ? "Finalizar" : "Reordenar"}
+                              </Button>
+                            </div>
+                            
+                            {/* Mobile: Carrossel */}
+                            <div className="md:hidden">
+                              <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
                                 <img
-                                  src={image}
-                                  alt={`${selectedPonto.title} ${imgIndex + 1}`}
-                                  className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-75 transition-opacity"
-                                  onClick={() => setCurrentImageIndex(imgIndex)}
+                                  src={selectedPonto.images[currentImageIndex]}
+                                  alt={`${selectedPonto.title} ${currentImageIndex + 1}`}
+                                  className="w-full h-full object-cover"
                                 />
                                 
-                                {/* Botão mover no modo edição - Desktop */}
-                                {isEditingPonto && selectedPonto.images.length > 1 && (
-                                  <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {selectedPonto.images.length > 1 && (
+                                  <>
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="bg-white/80 hover:bg-white text-black rounded-full w-6 h-6 p-0"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        const targetIndex = imgIndex > 0 ? imgIndex - 1 : imgIndex + 1;
-                                        moveImageInPonto(imgIndex, targetIndex);
-                                      }}
+                                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0"
+                                      onClick={prevImage}
                                     >
-                                      <Move className="w-3 h-3" />
+                                      <ChevronLeft className="w-4 h-4" />
                                     </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0"
+                                      onClick={nextImage}
+                                    >
+                                      <ChevronRight className="w-4 h-4" />
+                                    </Button>
+                                  </>
+                                )}
+                                
+                                {/* Indicadores */}
+                                {selectedPonto.images.length > 1 && (
+                                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                                    {selectedPonto.images.map((_, index) => (
+                                      <div
+                                        key={index}
+                                        className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
+                                          index === currentImageIndex
+                                            ? "bg-white"
+                                            : "bg-white/50"
+                                        }`}
+                                        onClick={() => setCurrentImageIndex(index)}
+                                      />
+                                    ))}
                                   </div>
                                 )}
                                 
-                                {/* Indicador de imagem atual */}
-                                {imgIndex === currentImageIndex && (
-                                  <div className="absolute inset-0 border-2 border-primary rounded-lg pointer-events-none" />
+                                {/* Botão mover no modo edição - Mobile */}
+                                {isEditingPonto && selectedPonto.images.length > 1 && (
+                                  <div className="absolute top-2 left-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0"
+                                      onClick={() => {
+                                        const targetIndex = currentImageIndex === 0 ? 1 : currentImageIndex - 1;
+                                        moveImageInPonto(currentImageIndex, targetIndex);
+                                      }}
+                                    >
+                                      <Move className="w-4 h-4" />
+                                    </Button>
+                                  </div>
                                 )}
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        {/* Instrução de reordenação */}
-                        {isEditingPonto && selectedPonto.images.length > 1 && (
-                          <div className="mt-2 p-2 bg-muted rounded-lg">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Move className="w-4 h-4" />
-                              <span>Clique no ícone de mover para reordenar as imagens</span>
                             </div>
+                            
+                            {/* Desktop: Grid layout */}
+                            <div className="hidden md:block">
+                              <div className="grid grid-cols-2 gap-2">
+                                {selectedPonto.images.map((image, imgIndex) => (
+                                  <div key={imgIndex} className="relative group">
+                                    <img
+                                      src={image}
+                                      alt={`${selectedPonto.title} ${imgIndex + 1}`}
+                                      className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-75 transition-opacity"
+                                      onClick={() => setCurrentImageIndex(imgIndex)}
+                                    />
+                                    
+                                    {/* Botão mover no modo edição - Desktop */}
+                                    {isEditingPonto && selectedPonto.images.length > 1 && (
+                                      <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="bg-white/80 hover:bg-white text-black rounded-full w-6 h-6 p-0"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const targetIndex = imgIndex > 0 ? imgIndex - 1 : imgIndex + 1;
+                                            moveImageInPonto(imgIndex, targetIndex);
+                                          }}
+                                        >
+                                          <Move className="w-3 h-3" />
+                                        </Button>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Indicador de imagem atual */}
+                                    {imgIndex === currentImageIndex && (
+                                      <div className="absolute inset-0 border-2 border-primary rounded-lg pointer-events-none" />
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {/* Instrução de reordenação */}
+                            {isEditingPonto && selectedPonto.images.length > 1 && (
+                              <div className="mt-2 p-2 bg-muted rounded-lg">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Move className="w-4 h-4" />
+                                  <span>Clique no ícone de mover para reordenar as imagens</span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
-                      </div>
+                      </>
                     )}
                   </div>
                 </>
