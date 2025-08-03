@@ -129,9 +129,11 @@ export default function Roteiro() {
   });
 
   useEffect(() => {
-  const fetchData = async () => {
+    console.time("⏱️ Roteiro useEffect total");
+    const fetchData = async () => {
     if (!user || !id) return;
 
+      console.time("⏱️ Trip fetch");
       try {
         // Fetch trip details
         const { data: tripData, error: tripError } = await supabase
@@ -141,6 +143,7 @@ export default function Roteiro() {
           .eq("user_id", user.id)
           .single();
 
+        console.timeEnd("⏱️ Trip fetch");
         if (tripError) {
           console.error("Erro ao buscar viagem:", tripError);
           navigate("/viagens");
@@ -217,8 +220,10 @@ export default function Roteiro() {
           roteiroData = newRoteiro;
         }
         
+        console.timeEnd("⏱️ Roteiro fetch/create");
         setRoteiro(roteiroData);
 
+        console.time("⏱️ Pontos fetch");
         // Fetch roteiro pontos efficiently
         const { data: pontosData, error: pontosError } = await supabase
           .from("roteiro_pontos")
@@ -227,6 +232,7 @@ export default function Roteiro() {
           .eq("user_id", user.id)
           .order("day_number, order_index");
         
+        console.timeEnd("⏱️ Pontos fetch");
         if (pontosError) {
           console.error("Erro ao buscar pontos do roteiro:", pontosError);
         } else {
@@ -238,6 +244,7 @@ export default function Roteiro() {
         console.error("Erro ao carregar dados:", error);
         navigate("/viagens");
       } finally {
+        console.timeEnd("⏱️ Roteiro useEffect total");
         setLoading(false);
       }
     };
