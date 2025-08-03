@@ -27,7 +27,12 @@ import {
   Coffee,
   Map,
   BookOpen,
-  Star
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  Move,
+  Edit,
+  X
 } from "lucide-react";
 import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 
@@ -94,6 +99,8 @@ export default function Roteiro() {
   const [selectedDay, setSelectedDay] = useState(1);
   const [isAddingPonto, setIsAddingPonto] = useState(false);
   const [selectedPonto, setSelectedPonto] = useState<RoteiroPonto | null>(null);
+  const [isEditingPonto, setIsEditingPonto] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Form states
   const [newPonto, setNewPonto] = useState({
@@ -343,6 +350,67 @@ export default function Roteiro() {
 
   const handlePontoClick = (ponto: RoteiroPonto) => {
     setSelectedPonto(ponto);
+    setCurrentImageIndex(0);
+    setIsEditingPonto(false);
+  };
+
+  // Funções de movimentação de imagens
+  const moveImageInPonto = async (fromIndex: number, toIndex: number) => {
+    if (!selectedPonto) return;
+
+    const newImages = [...(selectedPonto.images || [])];
+    const [movedImage] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, movedImage);
+
+    // Atualizar no banco de dados
+    try {
+      const { error } = await supabase
+        .from("roteiro_pontos")
+        .update({ images: newImages })
+        .eq("id", selectedPonto.id)
+        .eq("user_id", user!.id);
+
+      if (error) {
+        console.error("Erro ao atualizar ordem das imagens:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível reordenar as imagens. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Atualizar estado local
+      const updatedPonto = { ...selectedPonto, images: newImages };
+      setSelectedPonto(updatedPonto);
+      
+      // Atualizar lista de pontos
+      setPontos(prev => prev.map(p => p.id === selectedPonto.id ? updatedPonto : p));
+
+      toast({
+        title: "Imagem movida! 🖼️",
+        description: "A ordem das imagens foi atualizada.",
+      });
+    } catch (error) {
+      console.error("Erro ao mover imagem:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível reordenar as imagens. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const nextImage = () => {
+    if (selectedPonto?.images && selectedPonto.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % selectedPonto.images!.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (selectedPonto?.images && selectedPonto.images.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + selectedPonto.images!.length) % selectedPonto.images!.length);
+    }
   };
 
   if (loading) {
@@ -695,17 +763,133 @@ export default function Roteiro() {
 
                     {selectedPonto.images && selectedPonto.images.length > 0 && (
                       <div>
-                        <h4 className="font-medium mb-2">Imagens</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          {selectedPonto.images.map((image, imgIndex) => (
-                            <img
-                              key={imgIndex}
-                              src={image}
-                              alt={`${selectedPonto.title} ${imgIndex + 1}`}
-                              className="w-full h-24 object-cover rounded-lg border"
-                            />
-                          ))}
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium">Imagens ({selectedPonto.images.length})</h4>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsEditingPonto(!isEditingPonto)}
+                            className="text-sm"
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            {isEditingPonto ? "Finalizar" : "Reordenar"}
+                          </Button>
                         </div>
+                        
+                        {/* Mobile: Carrossel */}
+                        <div className="md:hidden">
+                          <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                            <img
+                              src={selectedPonto.images[currentImageIndex]}
+                              alt={`${selectedPonto.title} ${currentImageIndex + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            
+                            {selectedPonto.images.length > 1 && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0"
+                                  onClick={prevImage}
+                                >
+                                  <ChevronLeft className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0"
+                                  onClick={nextImage}
+                                >
+                                  <ChevronRight className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
+                            
+                            {/* Indicadores */}
+                            {selectedPonto.images.length > 1 && (
+                              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                                {selectedPonto.images.map((_, index) => (
+                                  <div
+                                    key={index}
+                                    className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
+                                      index === currentImageIndex
+                                        ? "bg-white"
+                                        : "bg-white/50"
+                                    }`}
+                                    onClick={() => setCurrentImageIndex(index)}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                            
+                            {/* Botão mover no modo edição - Mobile */}
+                            {isEditingPonto && selectedPonto.images.length > 1 && (
+                              <div className="absolute top-2 left-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0"
+                                  onClick={() => {
+                                    const targetIndex = currentImageIndex === 0 ? 1 : currentImageIndex - 1;
+                                    moveImageInPonto(currentImageIndex, targetIndex);
+                                  }}
+                                >
+                                  <Move className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Desktop: Grid layout */}
+                        <div className="hidden md:block">
+                          <div className="grid grid-cols-2 gap-2">
+                            {selectedPonto.images.map((image, imgIndex) => (
+                              <div key={imgIndex} className="relative group">
+                                <img
+                                  src={image}
+                                  alt={`${selectedPonto.title} ${imgIndex + 1}`}
+                                  className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-75 transition-opacity"
+                                  onClick={() => setCurrentImageIndex(imgIndex)}
+                                />
+                                
+                                {/* Botão mover no modo edição - Desktop */}
+                                {isEditingPonto && selectedPonto.images.length > 1 && (
+                                  <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="bg-white/80 hover:bg-white text-black rounded-full w-6 h-6 p-0"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        const targetIndex = imgIndex > 0 ? imgIndex - 1 : imgIndex + 1;
+                                        moveImageInPonto(imgIndex, targetIndex);
+                                      }}
+                                    >
+                                      <Move className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                )}
+                                
+                                {/* Indicador de imagem atual */}
+                                {imgIndex === currentImageIndex && (
+                                  <div className="absolute inset-0 border-2 border-primary rounded-lg pointer-events-none" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Instrução de reordenação */}
+                        {isEditingPonto && selectedPonto.images.length > 1 && (
+                          <div className="mt-2 p-2 bg-muted rounded-lg">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Move className="w-4 h-4" />
+                              <span>Clique no ícone de mover para reordenar as imagens</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
