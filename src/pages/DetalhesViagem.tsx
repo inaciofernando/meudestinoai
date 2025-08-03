@@ -29,7 +29,10 @@ import {
   Edit,
   Trash2,
   Save,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Move
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
@@ -77,6 +80,7 @@ export default function DetalhesViagem() {
   const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -287,6 +291,25 @@ export default function DetalhesViagem() {
     return "Datas não definidas";
   };
 
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    const newImages = [...images];
+    const [movedImage] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, movedImage);
+    setImages(newImages);
+  };
+
+  const nextImage = () => {
+    if (images.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (images.length > 0) {
+      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -322,9 +345,9 @@ export default function DetalhesViagem() {
   return (
     <ProtectedRoute>
       <PWALayout>
-        <div className="space-y-6">
+        <div className="space-y-0">
           {/* Header */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 p-4 md:p-6">
             <Button
               variant="ghost"
               size="sm"
@@ -412,6 +435,121 @@ export default function DetalhesViagem() {
               )}
             </div>
           </div>
+
+          {/* Galeria de Imagens no Topo - Estilo Airbnb */}
+          {images.length > 0 && (
+            <div className="relative">
+              {images.length === 1 ? (
+                <div className="aspect-[16/9] md:aspect-[21/9] max-h-[60vh] overflow-hidden">
+                  <img 
+                    src={images[0]} 
+                    alt="Imagem da viagem"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4 max-h-[60vh]">
+                  {/* Imagem Principal */}
+                  <div className="md:col-span-2 aspect-[16/9] md:aspect-square overflow-hidden rounded-none md:rounded-l-2xl relative">
+                    <img 
+                      src={images[currentImageIndex]} 
+                      alt="Imagem principal da viagem"
+                      className="w-full h-full object-cover cursor-pointer hover:brightness-95 transition-all"
+                      onClick={() => setCurrentImageIndex(0)}
+                    />
+                    {images.length > 1 && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0 md:hidden"
+                          onClick={prevImage}
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-black rounded-full w-8 h-8 p-0 md:hidden"
+                          onClick={nextImage}
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Grid de Imagens Menores */}
+                  <div className="hidden md:grid md:col-span-2 grid-cols-2 gap-2">
+                    {images.slice(1, 5).map((image, index) => (
+                      <div 
+                        key={index} 
+                        className={cn(
+                          "aspect-square overflow-hidden relative cursor-pointer hover:brightness-95 transition-all",
+                          index === 1 && "rounded-tr-2xl",
+                          index === 3 && "rounded-br-2xl"
+                        )}
+                        onClick={() => setCurrentImageIndex(index + 1)}
+                      >
+                        <img 
+                          src={image} 
+                          alt={`Imagem ${index + 2} da viagem`}
+                          className="w-full h-full object-cover"
+                        />
+                        {index === 3 && images.length > 5 && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-medium text-lg rounded-br-2xl">
+                            +{images.length - 4}
+                          </div>
+                        )}
+                        {isEditing && (
+                          <div className="absolute top-2 right-2 flex gap-1">
+                            {index + 1 > 1 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="bg-white/80 hover:bg-white text-black rounded-full w-6 h-6 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  moveImage(index + 1, index);
+                                }}
+                              >
+                                <ChevronLeft className="w-3 h-3" />
+                              </Button>
+                            )}
+                            {index + 1 < images.length - 1 && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="bg-white/80 hover:bg-white text-black rounded-full w-6 h-6 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  moveImage(index + 1, index + 2);
+                                }}
+                              >
+                                <ChevronRight className="w-3 h-3" />
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Modo de Edição - Controles de Reordenar */}
+              {isEditing && images.length > 1 && (
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <Move className="w-4 h-4" />
+                    <span>Clique nas setas para reordenar</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="p-4 md:p-6 space-y-6">
 
           {/* Informações Principais */}
           {isEditing ? (
@@ -580,6 +718,13 @@ export default function DetalhesViagem() {
                       onImagesChange={setImages}
                       maxImages={5}
                     />
+                    {images.length > 1 && (
+                      <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          💡 Dica: Arraste as imagens para reordenar ou use as setas nas imagens em miniatura na visualização acima.
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </form>
@@ -641,51 +786,6 @@ export default function DetalhesViagem() {
             </div>
           )}
 
-          {/* Galeria de Imagens */}
-          {!isEditing && trip.images && trip.images.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Galeria de Imagens</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {trip.images.length === 1 ? (
-                  <div className="rounded-lg overflow-hidden">
-                    <img 
-                      src={trip.images[0]} 
-                      alt="Imagem da viagem"
-                      className="w-full h-64 md:h-96 object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="rounded-lg overflow-hidden">
-                      <img 
-                        src={trip.images[0]} 
-                        alt="Imagem principal da viagem"
-                        className="w-full h-64 md:h-80 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {trip.images.slice(1, 5).map((image, index) => (
-                        <div key={index} className="rounded-lg overflow-hidden relative">
-                          <img 
-                            src={image} 
-                            alt={`Imagem ${index + 2} da viagem`}
-                            className="w-full h-[calc(50%-4px)] md:h-[calc((20rem-8px)/2)] object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                          />
-                          {index === 3 && trip.images!.length > 5 && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-medium">
-                              +{trip.images!.length - 4} fotos
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           {/* Descrição */}
           {!isEditing && trip.description && (
@@ -717,6 +817,7 @@ export default function DetalhesViagem() {
               </Button>
             </div>
           )}
+          </div>
         </div>
       </PWALayout>
     </ProtectedRoute>
