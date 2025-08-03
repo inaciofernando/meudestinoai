@@ -11,7 +11,6 @@ import {
   MapPin, 
   Calendar, 
   Wallet, 
-  TrendingUp, 
   Clock,
   Plane
 } from "lucide-react";
@@ -141,20 +140,6 @@ export default function Dashboard() {
       change: "2 este mês",
       icon: Calendar,
       color: "text-primary"
-    },
-    {
-      title: "Orçamento Total",
-      value: "R$ 15.400",
-      change: "+12% vs último ano",
-      icon: Wallet,
-      color: "text-highlight"
-    },
-    {
-      title: "Economia",
-      value: "R$ 2.100",
-      change: "vs orçamento planejado",
-      icon: TrendingUp,
-      color: "text-accent"
     }
   ];
 
@@ -178,7 +163,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+      <div className="grid grid-cols-2 gap-3 md:gap-6">
         {stats.map((stat, index) => (
           <Card key={index} className="hover:shadow-card transition-smooth">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
