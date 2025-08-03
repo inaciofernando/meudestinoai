@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, Calendar, Wallet, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-travel.jpg";
 
 export const TravelHero = () => {
+  const navigate = useNavigate();
+  
   const features = [
     {
       icon: MapPin,
@@ -49,7 +52,12 @@ export const TravelHero = () => {
             Tudo que você precisa para planejar, organizar e aproveitar suas aventuras ao máximo
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="hero" variant="travel" className="shadow-float">
+            <Button 
+              size="hero" 
+              variant="travel" 
+              className="shadow-float"
+              onClick={() => navigate('/viagens')}
+            >
               Começar Agora
             </Button>
             <Button size="hero" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white/20">
