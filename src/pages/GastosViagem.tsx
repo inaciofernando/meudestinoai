@@ -334,6 +334,11 @@ export default function GastosViagem() {
     }
   };
 
+  const handleViewExpenseDetails = (expense: Expense) => {
+    // Navegar para a página de detalhes do gasto
+    navigate(`/viagem/${trip?.id}/gasto/${expense.id}`);
+  };
+
   const handleEditExpense = (expense: Expense) => {
     setEditingExpense(expense);
     setEditForm({
@@ -1226,10 +1231,10 @@ export default function GastosViagem() {
                           const CategoryIcon = category.icon;
                           
                           return (
-                            <div 
-                              key={expense.id} 
-                              className="border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                              onClick={() => handleEditExpense(expense)}
+            <div 
+              key={expense.id} 
+              className="border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+              onClick={() => handleViewExpenseDetails(expense)}
                             >
                               <div className="flex items-center justify-between p-4">
                                 <div className="flex items-center gap-3">
@@ -1295,7 +1300,7 @@ export default function GastosViagem() {
                                 className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded cursor-pointer hover:bg-muted/70 transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleEditExpense(expense);
+                                  handleViewExpenseDetails(expense);
                                 }}
                               >
                                 <div>
