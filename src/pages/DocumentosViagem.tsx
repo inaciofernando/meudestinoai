@@ -493,10 +493,12 @@ export default function DocumentosViagem() {
                               
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between gap-4">
-                                  <div className="flex-1">
+                                  <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 mb-1">
-                                      <h4 className="font-semibold text-lg">{document.title}</h4>
-                                      <Badge variant="outline" className="text-xs">
+                                      <h4 className="font-semibold text-lg truncate pr-2" title={document.title}>
+                                        {document.title}
+                                      </h4>
+                                      <Badge variant="outline" className="text-xs flex-shrink-0">
                                         {category.name}
                                       </Badge>
                                     </div>
