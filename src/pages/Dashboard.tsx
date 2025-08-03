@@ -112,13 +112,15 @@ export default function Dashboard() {
     }
     
     if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      // Parse das datas como UTC para evitar problemas de fuso horário
+      const start = new Date(startDate + 'T00:00:00');
+      const end = new Date(endDate + 'T00:00:00');
       return `${format(start, "dd")} - ${format(end, "dd MMM", { locale: ptBR })}`;
     }
     
     if (startDate) {
-      const start = new Date(startDate);
+      // Parse da data como UTC para evitar problemas de fuso horário
+      const start = new Date(startDate + 'T00:00:00');
       return `A partir de ${format(start, "dd MMM", { locale: ptBR })}`;
     }
     
