@@ -59,7 +59,12 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isBudgetDialogOpen, setIsBudgetDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<BudgetItem | null>(null);
+  
+  // Budget editing states
+  const [editBudgetAmount, setEditBudgetAmount] = useState(totalBudget.toString());
+  const [editBudgetCurrency, setEditBudgetCurrency] = useState(budgetCurrency);
   
   // Form states
   const [title, setTitle] = useState("");
@@ -227,6 +232,44 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
     }
   };
 
+  const handleBudgetUpdate = async () => {
+    if (!user || !editBudgetAmount) {
+      toast({
+        title: "Erro",
+        description: "Preencha o valor do orçamento",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("trips")
+        .update({ 
+          total_budget: parseFloat(editBudgetAmount),
+          budget_currency: editBudgetCurrency
+        })
+        .eq("id", tripId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Orçamento da viagem atualizado com sucesso",
+      });
+
+      setIsBudgetDialogOpen(false);
+      onBudgetUpdate?.();
+    } catch (error) {
+      console.error("Erro ao atualizar orçamento:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar orçamento da viagem",
+        variant: "destructive",
+      });
+    }
+  };
+
   const totalPlanned = budgetItems.reduce((sum, item) => sum + item.planned_amount, 0);
   const totalSpent = budgetItems
     .filter(item => item.is_confirmed && item.actual_amount)
@@ -241,42 +284,110 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL",
   return (
     <div className="space-y-6">
       {/* Budget Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm text-muted-foreground">Orçamento Total</div>
-            <div className="text-2xl font-bold text-primary">
-              {selectedCurrency.symbol} {totalBudget.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Resumo do Orçamento</h3>
+          <Dialog open={isBudgetDialogOpen} onOpenChange={setIsBudgetDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setEditBudgetAmount(totalBudget.toString());
+                  setEditBudgetCurrency(budgetCurrency);
+                }}
+              >
+                <Edit2 className="h-4 w-4 mr-2" />
+                Editar Orçamento
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Editar Orçamento da Viagem</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="budget-amount">Orçamento Total *</Label>
+                  <Input
+                    id="budget-amount"
+                    type="number"
+                    step="0.01"
+                    value={editBudgetAmount}
+                    onChange={(e) => setEditBudgetAmount(e.target.value)}
+                    placeholder="0.00"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="budget-currency">Moeda</Label>
+                  <Select value={editBudgetCurrency} onValueChange={setEditBudgetCurrency}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a moeda" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map(currency => (
+                        <SelectItem key={currency.code} value={currency.code}>
+                          {currency.symbol} - {currency.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button onClick={handleBudgetUpdate} className="flex-1">
+                    Salvar Orçamento
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsBudgetDialogOpen(false)}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
         
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm text-muted-foreground">Planejado</div>
-            <div className="text-2xl font-bold">
-              {selectedCurrency.symbol} {totalPlanned.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm text-muted-foreground">Gasto</div>
-            <div className="text-2xl font-bold text-destructive">
-              {selectedCurrency.symbol} {totalSpent.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-sm text-muted-foreground">Restante</div>
-            <div className={`text-2xl font-bold ${remainingBudget >= 0 ? 'text-green-600' : 'text-destructive'}`}>
-              {selectedCurrency.symbol} {remainingBudget.toFixed(2)}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Orçamento Total</div>
+              <div className="text-2xl font-bold text-primary">
+                {selectedCurrency.symbol} {totalBudget.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Planejado</div>
+              <div className="text-2xl font-bold">
+                {selectedCurrency.symbol} {totalPlanned.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Gasto</div>
+              <div className="text-2xl font-bold text-destructive">
+                {selectedCurrency.symbol} {totalSpent.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-sm text-muted-foreground">Restante</div>
+              <div className={`text-2xl font-bold ${remainingBudget >= 0 ? 'text-green-600' : 'text-destructive'}`}>
+                {selectedCurrency.symbol} {remainingBudget.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Add Item Button */}
