@@ -119,6 +119,29 @@ export default function DetalhesViagem() {
           return;
         }
 
+        // Check if trip has expired and should be marked as completed
+        if (data.end_date && data.status !== 'completed') {
+          const today = new Date();
+          const endDate = new Date(data.end_date);
+          
+          if (endDate < today) {
+            // Trip has expired, update status to completed
+            const { error: updateError } = await supabase
+              .from('trips')
+              .update({ status: 'completed' })
+              .eq('id', id)
+              .eq('user_id', user.id);
+              
+            if (!updateError) {
+              data.status = 'completed';
+              toast({
+                title: "Status atualizado",
+                description: "Viagem marcada como realizada automaticamente",
+              });
+            }
+          }
+        }
+
         setTrip(data);
         setImages(data.images || []);
         

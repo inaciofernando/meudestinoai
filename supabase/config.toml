@@ -1,1 +1,4 @@
 project_id = "sqbdqqbvxrmxnmrlqynu"
+
+[functions.auto-complete-trips]
+verify_jwt = false
