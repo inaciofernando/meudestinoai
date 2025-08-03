@@ -1342,9 +1342,9 @@ export default function GastosViagem() {
                                     </div>
                                     <div>
                                       <p className="font-medium">{expense.location || 'Local não informado'}</p>
-                                      <p className="text-sm text-muted-foreground">
-                                        {category.name} • {new Date(expense.date).toLocaleDateString('pt-BR')}
-                                      </p>
+                                       <p className="text-sm text-muted-foreground">
+                                         {category.name} • {new Date(expense.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                                       </p>
                                     </div>
                                   </div>
                                   <div className="text-right">
@@ -1405,9 +1405,9 @@ export default function GastosViagem() {
                               >
                                 <div>
                                   <p className="font-medium">{expense.location || 'Local não informado'}</p>
-                                  <p className="text-muted-foreground text-xs">
-                                    {new Date(expense.date).toLocaleDateString('pt-BR')}
-                                  </p>
+                                   <p className="text-muted-foreground text-xs">
+                                     {new Date(expense.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                                   </p>
                                 </div>
                                 <span className="font-medium">
                                   {selectedCurrency.symbol} {expense.amount.toFixed(2)}
