@@ -499,13 +499,56 @@ export default function GastosViagem() {
                   Novo Gasto
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Adicionar Novo Gasto</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
+                  {/* Cupom Fiscal - Início do formulário */}
                   <div>
-                    <Label>Categoria</Label>
+                    <Label htmlFor="receipt" className="flex items-center gap-2">
+                      <Camera className="w-4 h-4" />
+                      Cupom Fiscal (Opcional)
+                    </Label>
+                    <div className="mt-2">
+                      <div className="flex items-center justify-center w-full">
+                        <label htmlFor="receipt" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/10 hover:bg-muted/20 transition-colors">
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            {newExpense.receiptFile ? (
+                              <>
+                                <Receipt className="w-8 h-8 mb-2 text-green-600" />
+                                <p className="text-sm text-green-600 font-medium">{newExpense.receiptFile.name}</p>
+                                <p className="text-xs text-muted-foreground">Clique para alterar</p>
+                              </>
+                            ) : (
+                              <>
+                                <Camera className="w-8 h-8 mb-2 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">
+                                  <span className="font-semibold">Clique para anexar</span> o cupom fiscal
+                                </p>
+                                <p className="text-xs text-muted-foreground">PNG, JPG até 10MB</p>
+                              </>
+                            )}
+                          </div>
+                          <Input
+                            id="receipt"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setNewExpense({...newExpense, receiptFile: file});
+                              }
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Categoria *</Label>
                     <Select value={newExpense.category} onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione uma categoria" />
@@ -539,16 +582,30 @@ export default function GastosViagem() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label>Descrição *</Label>
+                    <Textarea
+                      value={newExpense.description}
+                      onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
+                      placeholder="Ex: Almoço no restaurante, táxi para o hotel..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label>Valor</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={newExpense.amount}
-                        onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
-                        placeholder="0,00"
-                      />
+                      <Label>Valor *</Label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={newExpense.amount}
+                          onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
+                          placeholder="0,00"
+                          className="pl-10"
+                        />
+                      </div>
                     </div>
                     <div>
                       <Label>Moeda</Label>
@@ -567,56 +624,37 @@ export default function GastosViagem() {
                     </div>
                   </div>
 
-                  <div>
-                    <Label>Descrição</Label>
-                    <Textarea
-                      value={newExpense.description}
-                      onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
-                      placeholder="Descreva o gasto..."
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label>Data</Label>
+                      <Label>Data *</Label>
                       <Input
                         type="date"
                         value={newExpense.date}
                         onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
                       />
                     </div>
-                  <div>
-                    <Label>Local</Label>
-                    <Input
-                      value={newExpense.location}
-                      onChange={(e) => setNewExpense({...newExpense, location: e.target.value})}
-                      placeholder="Ex: Restaurante Central, Hotel Plaza..."
-                    />
+                    <div>
+                      <Label>Local</Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          value={newExpense.location}
+                          onChange={(e) => setNewExpense({...newExpense, location: e.target.value})}
+                          placeholder="Onde foi o gasto?"
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <Label htmlFor="receipt">Cupom Fiscal (Opcional)</Label>
-                  <Input
-                    id="receipt"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setNewExpense({...newExpense, receiptFile: file});
-                      }
-                    }}
-                    className="cursor-pointer"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Adicione uma foto do cupom fiscal para arquivar
-                  </p>
-                </div>
-
-                <Button onClick={handleAddExpense} className="w-full">
-                  Adicionar Gasto
-                </Button>
+                  <Button 
+                    onClick={handleAddExpense} 
+                    className="w-full"
+                    disabled={!newExpense.category || !newExpense.description || !newExpense.amount}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Adicionar Gasto
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -806,27 +844,67 @@ export default function GastosViagem() {
                     )}
 
                     <div>
-                      <Label htmlFor="edit-receipt">
+                      <Label htmlFor="edit-receipt" className="flex items-center gap-2">
+                        <Camera className="w-4 h-4" />
                         {editingExpense.receipt_url ? 'Substituir Cupom Fiscal' : 'Adicionar Cupom Fiscal'}
                       </Label>
-                      <Input
-                        id="edit-receipt"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setEditForm({...editForm, receiptFile: file});
-                          }
-                        }}
-                        className="cursor-pointer"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {editingExpense.receipt_url 
-                          ? 'Selecione uma nova imagem para substituir a atual'
-                          : 'Adicione uma foto do cupom fiscal para arquivar'
-                        }
-                      </p>
+                      <div className="mt-2">
+                        <div className="flex items-center justify-center w-full">
+                          <label htmlFor="edit-receipt" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/10 hover:bg-muted/20 transition-colors">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              {editForm.receiptFile ? (
+                                <>
+                                  <Receipt className="w-8 h-8 mb-2 text-green-600" />
+                                  <p className="text-sm text-green-600 font-medium">{editForm.receiptFile.name}</p>
+                                  <p className="text-xs text-muted-foreground">Clique para alterar</p>
+                                </>
+                              ) : editingExpense.receipt_url ? (
+                                <>
+                                  <Receipt className="w-8 h-8 mb-2 text-blue-600" />
+                                  <p className="text-sm text-blue-600 font-medium">Cupom atual anexado</p>
+                                  <p className="text-xs text-muted-foreground">Clique para substituir</p>
+                                </>
+                              ) : (
+                                <>
+                                  <Camera className="w-8 h-8 mb-2 text-muted-foreground" />
+                                  <p className="text-sm text-muted-foreground">
+                                    <span className="font-semibold">Clique para anexar</span> o cupom fiscal
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">PNG, JPG até 10MB</p>
+                                </>
+                              )}
+                            </div>
+                            <Input
+                              id="edit-receipt"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setEditForm({...editForm, receiptFile: file});
+                                }
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                      {editingExpense.receipt_url && !editForm.receiptFile && (
+                        <div className="mt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              const { data } = supabase.storage.from('receipts').getPublicUrl(editingExpense.receipt_url!);
+                              window.open(data.publicUrl, '_blank');
+                            }}
+                            className="text-xs"
+                          >
+                            <Receipt className="w-3 h-3 mr-1" />
+                            Visualizar cupom atual
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2">
