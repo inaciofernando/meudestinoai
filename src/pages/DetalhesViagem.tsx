@@ -438,12 +438,7 @@ export default function DetalhesViagem() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold">{trip.title}</h1>
-                <Badge variant={getStatusColor(trip.status)}>
-                  {getStatusText(trip.status)}
-                </Badge>
-              </div>
+              <h1 className="text-2xl font-bold mb-2">{trip.title}</h1>
               <p className="text-muted-foreground flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 {trip.destination}
