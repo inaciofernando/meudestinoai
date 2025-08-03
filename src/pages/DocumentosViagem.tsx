@@ -140,8 +140,24 @@ export default function DocumentosViagem() {
 
       setTrip(tripData);
 
-      // Por enquanto, inicializar com array vazio - implementação simplificada
-      setDocuments([]);
+      // Buscar documentos da viagem
+      const { data: documentsData, error: documentsError } = await supabase
+        .from("trip_documents")
+        .select("*")
+        .eq("trip_id", id)
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
+
+      if (documentsError) {
+        console.error("Erro ao buscar documentos:", documentsError);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os documentos.",
+          variant: "destructive"
+        });
+      } else {
+        setDocuments(documentsData as Document[] || []);
+      }
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
     } finally {
@@ -187,28 +203,26 @@ export default function DocumentosViagem() {
 
     try {
       setUploading(true);
-      const uploadedDocs: Document[] = [];
+      const docsToInsert = [];
 
       for (const file of newDocuments.files) {
         const fileUrl = await uploadDocument(file);
         if (fileUrl) {
-          const tempDoc: Document = {
-            id: `${Date.now()}-${Math.random()}`,
+          const docData = {
             trip_id: id!,
+            user_id: user!.id,
             title: file.name.split('.')[0], // Use filename as default title
             description: "",
             category: newDocuments.category,
             file_url: fileUrl,
             file_name: file.name,
-            file_type: file.type,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            file_type: file.type
           };
-          uploadedDocs.push(tempDoc);
+          docsToInsert.push(docData);
         }
       }
 
-      if (uploadedDocs.length === 0) {
+      if (docsToInsert.length === 0) {
         toast({
           title: "Erro",
           description: "Falha no upload dos arquivos. Tente novamente.",
@@ -217,11 +231,28 @@ export default function DocumentosViagem() {
         return;
       }
 
-      setDocuments(prev => [...uploadedDocs, ...prev]);
+      // Salvar documentos no banco de dados
+      const { data: savedDocs, error: insertError } = await supabase
+        .from("trip_documents")
+        .insert(docsToInsert)
+        .select();
+
+      if (insertError) {
+        console.error("Erro ao salvar documentos:", insertError);
+        toast({
+          title: "Erro",
+          description: "Não foi possível salvar os documentos. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Atualizar lista local
+      setDocuments(prev => [...(savedDocs as Document[]), ...prev]);
 
       toast({
         title: "Documentos adicionados! 📄",
-        description: `${uploadedDocs.length} documento${uploadedDocs.length > 1 ? 's' : ''} ${uploadedDocs.length > 1 ? 'foram salvos' : 'foi salvo'} com sucesso.`,
+        description: `${savedDocs?.length || 0} documento${(savedDocs?.length || 0) > 1 ? 's' : ''} ${(savedDocs?.length || 0) > 1 ? 'foram salvos' : 'foi salvo'} com sucesso.`,
       });
 
       // Reset form
@@ -245,7 +276,33 @@ export default function DocumentosViagem() {
 
   const handleDeleteDocument = async (document: Document) => {
     try {
-      // Simplificado: remover do estado local
+      // Deletar do banco de dados
+      const { error: deleteError } = await supabase
+        .from("trip_documents")
+        .delete()
+        .eq("id", document.id)
+        .eq("user_id", user!.id);
+
+      if (deleteError) {
+        console.error("Erro ao excluir documento:", deleteError);
+        toast({
+          title: "Erro",
+          description: "Não foi possível excluir o documento. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Opcional: deletar arquivo do storage também
+      const fileName = document.file_url.split('/').pop();
+      if (fileName) {
+        const filePath = `${user!.id}/${id}/${fileName}`;
+        await supabase.storage
+          .from('trip-documents')
+          .remove([filePath]);
+      }
+
+      // Remover do estado local
       setDocuments(prev => prev.filter(doc => doc.id !== document.id));
 
       toast({
