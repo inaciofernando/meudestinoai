@@ -185,7 +185,7 @@ export function ExpenseForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-md mx-auto p-0 gap-0 fixed bottom-0 left-1/2 -translate-x-1/2 rounded-t-3xl border-t shadow-2xl max-h-[90vh] sm:relative sm:bottom-auto sm:left-auto sm:transform-none sm:rounded-xl sm:border data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-full data-[state=open]:sm:slide-in-from-bottom-0 data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-full">
+      <DialogContent className="w-[95vw] max-w-lg mx-auto p-0 gap-0 fixed bottom-0 left-1/2 -translate-x-1/2 rounded-t-3xl border-t shadow-2xl max-h-[95vh] sm:relative sm:bottom-auto sm:left-auto sm:transform-none sm:rounded-xl sm:border sm:max-w-2xl data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom-full data-[state=open]:sm:slide-in-from-bottom-0 data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom-full z-50">
         
         {/* Header */}
         <div className="relative p-6 pb-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-t-3xl sm:rounded-t-xl border-b">
