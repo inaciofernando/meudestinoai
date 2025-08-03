@@ -15,6 +15,7 @@ import Hospedagem from "./pages/Hospedagem";
 import Hotel from "./pages/Hotel";
 import Restaurantes from "./pages/Restaurantes";
 import Planejamento from "./pages/Planejamento";
+import Perfil from "./pages/Perfil";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/viagem/:id/hotel" element={<Hotel />} />
           <Route path="/viagem/:id/restaurantes" element={<Restaurantes />} />
           <Route path="/planejamento" element={<Planejamento />} />
+          <Route path="/perfil" element={<Perfil />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

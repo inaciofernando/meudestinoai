@@ -2,8 +2,7 @@ import {
   Home, 
   Map, 
   Calendar, 
-  Wallet, 
-  MapPin 
+  User 
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -13,7 +12,7 @@ const navigation = [
   { title: "Viagens", url: "/minhas-viagens", icon: Map, key: "trips" },
   { title: "Planos", url: "/planejamento", icon: Calendar, key: "planning" },
   
-  { title: "Pontos", url: "/pontos", icon: MapPin, key: "places" },
+  { title: "Perfil", url: "/perfil", icon: User, key: "profile" },
 ];
 
 export const PWAFooter = () => {
