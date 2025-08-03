@@ -472,91 +472,75 @@ export default function RoteiroSimples() {
                         const period = TIME_PERIODS[getTimePeriod(ponto.time_start)];
                         const PeriodIcon = period.icon;
 
-                        return (
-                          <Card key={ponto.id} className="relative">
-                            {/* Timeline dot */}
-                            <div className="absolute -left-[29px] top-4 w-4 h-4 bg-background border-2 border-primary rounded-full"></div>
-                            
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-3">
-                                <div className={`p-2 rounded-lg ${category.color} text-white flex-shrink-0`}>
-                                  <CategoryIcon className="w-4 h-4" />
-                                </div>
-                                
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="font-semibold truncate">{ponto.title}</h4>
-                                    <Badge variant="outline" className="text-xs">
-                                      <PeriodIcon className="w-3 h-3 mr-1" />
-                                      {ponto.time_start}
-                                    </Badge>
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                                    <MapPin className="w-3 h-3" />
-                                    <span className="truncate">{ponto.location}</span>
-                                  </div>
-                                  
-                                   {ponto.description && (
-                                     <p className="text-sm text-muted-foreground line-clamp-2">
-                                       {ponto.description}
-                                     </p>
-                                   )}
+                         return (
+                           <Card key={ponto.id} className="relative">
+                             {/* Timeline dot */}
+                             <div className="absolute -left-[29px] top-4 w-4 h-4 bg-background border-2 border-primary rounded-full"></div>
+                             
+                             <CardContent className="p-4">
+                               <div className="flex items-start gap-3">
+                                 <div className={`p-2 rounded-lg ${category.color} text-white flex-shrink-0`}>
+                                   <CategoryIcon className="w-4 h-4" />
+                                 </div>
+                                 
+                                 <div className="flex-1 min-w-0">
+                                   <div className="flex items-center gap-2 mb-1">
+                                     <h4 className="font-semibold truncate">{ponto.title}</h4>
+                                     <Badge variant="outline" className="text-xs">
+                                       <PeriodIcon className="w-3 h-3 mr-1" />
+                                       {ponto.time_start}
+                                     </Badge>
+                                   </div>
+                                   
+                                   <p className="text-sm text-muted-foreground truncate mb-2">
+                                     {ponto.location}
+                                   </p>
                                    
                                    {ponto.images && ponto.images.length > 0 && (
                                      <div className="mt-2">
-                                       <div className="flex gap-2 overflow-x-auto pb-1">
-                                         {ponto.images.slice(0, 3).map((image, imgIndex) => (
-                                           <div
-                                             key={imgIndex}
-                                             className="relative flex-shrink-0 cursor-pointer"
-                                             onClick={() => openImageViewer(ponto.images!, imgIndex)}
-                                           >
-                                             <img
-                                               src={image}
-                                               alt={`${ponto.title} ${imgIndex + 1}`}
-                                               className="w-16 h-12 object-cover rounded border"
-                                             />
-                                             {imgIndex === 2 && ponto.images.length > 3 && (
-                                               <div className="absolute inset-0 bg-black/50 rounded flex items-center justify-center text-white text-xs font-medium">
-                                                 +{ponto.images.length - 3}
-                                               </div>
-                                             )}
-                                           </div>
-                                         ))}
-                                       </div>
+                                       <img
+                                         src={ponto.images[0]}
+                                         alt={ponto.title}
+                                         className="w-full h-32 object-cover rounded cursor-pointer"
+                                         onClick={() => openImageViewer(ponto.images!, 0)}
+                                       />
+                                       {ponto.images.length > 1 && (
+                                         <div className="mt-1 text-xs text-muted-foreground">
+                                           +{ponto.images.length - 1} {ponto.images.length === 2 ? 'imagem' : 'imagens'}
+                                         </div>
+                                       )}
                                      </div>
                                    )}
                                  </div>
 
-                                <div className="flex flex-col gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEditPonto(ponto);
-                                    }}
-                                  >
-                                    <Edit className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive hover:text-destructive"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      confirmDeletePonto(ponto);
-                                    }}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
+                                 <div className="flex flex-col gap-1">
+                                   <Button
+                                     variant="ghost"
+                                     size="icon"
+                                     className="h-8 w-8"
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       handleEditPonto(ponto);
+                                     }}
+                                   >
+                                     <Edit className="w-4 h-4" />
+                                   </Button>
+                                   <Button
+                                     variant="ghost"
+                                     size="icon"
+                                     className="h-8 w-8 text-destructive hover:text-destructive"
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       confirmDeletePonto(ponto);
+                                     }}
+                                   >
+                                     <Trash2 className="w-4 h-4" />
+                                   </Button>
+                                 </div>
+                               </div>
+                             </CardContent>
+                           </Card>
+                         );
                       })}
                     </div>
                   </div>
