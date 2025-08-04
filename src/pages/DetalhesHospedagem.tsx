@@ -122,12 +122,13 @@ export default function DetalhesHospedagem() {
       // Upload do novo voucher se fornecido
       if (voucherFile) {
         const fileExt = voucherFile.name.split('.').pop();
-        const fileName = `voucher_${Date.now()}.${fileExt}`;
+        const fileName = `${user.id}/voucher_${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('trip-documents')
           .upload(fileName, voucherFile);
 
         if (uploadError) {
+          console.error('Erro no upload do voucher:', uploadError);
           toast.error('Erro ao fazer upload do voucher');
           return;
         }
