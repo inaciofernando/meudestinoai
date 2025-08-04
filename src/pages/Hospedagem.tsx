@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,7 @@ interface AccommodationForm {
 
 export default function Hospedagem() {
   const { id: tripId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
   const [trip, setTrip] = useState<any>(null);
@@ -497,7 +498,8 @@ export default function Hospedagem() {
                       <img
                         src={accommodation.hotel_image_url}
                         alt="Hotel"
-                        className="w-full h-48 object-cover rounded-lg mt-2"
+                        className="w-full h-48 object-cover rounded-lg mt-2 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => navigate(`/viagem/${tripId}/hospedagem/${accommodation.id}`)}
                       />
                     </div>
                   )}
@@ -532,11 +534,6 @@ export default function Hospedagem() {
                     </div>
                   )}
 
-                  {accommodation.reservation_amount && (
-                    <div>
-                      <strong>Valor da Reserva:</strong> {formatCurrency(accommodation.reservation_amount, "R$")}
-                    </div>
-                  )}
 
                   {accommodation.notes && (
                     <div>
