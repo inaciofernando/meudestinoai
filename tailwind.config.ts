@@ -19,15 +19,15 @@ export default {
 		},
 		extend: {
 			backgroundImage: {
-				'gradient-ocean': 'var(--gradient-ocean)',
-				'gradient-sunset': 'var(--gradient-sunset)',
-				'gradient-nature': 'var(--gradient-nature)',
-				'gradient-sky': 'var(--gradient-sky)',
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-warm': 'var(--gradient-warm)',
+				'gradient-teal': 'var(--gradient-teal)',
+				'gradient-background': 'var(--gradient-background)',
 			},
 			boxShadow: {
-				'travel': 'var(--shadow-travel)',
+				'airbnb': 'var(--shadow-airbnb)',
 				'card': 'var(--shadow-card)',
-				'float': 'var(--shadow-float)',
+				'hover': 'var(--shadow-hover)',
 			},
 			transitionTimingFunction: {
 				'smooth': 'var(--transition-smooth)',

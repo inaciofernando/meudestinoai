@@ -474,7 +474,7 @@ export default function RoteiroSimples() {
                         const PeriodIcon = period.icon;
 
                         return (
-                          <Card key={ponto.id} className="group cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden border-0 shadow-md" onClick={() => navigate(`/roteiro/${currentId}/ponto/${ponto.id}`)}>
+                          <Card key={ponto.id} className="group cursor-pointer hover:shadow-hover transition-all duration-300 overflow-hidden border-0 shadow-airbnb" onClick={() => navigate(`/roteiro/${currentId}/ponto/${ponto.id}`)}>
                             <div className="relative">
                               {/* Imagem de destaque */}
                               {ponto.images && ponto.images.length > 0 ? (
