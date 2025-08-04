@@ -157,6 +157,12 @@ export default function GastosViagem() {
           total_budget: (tripData.total_budget || 0).toString(),
           budget_currency: tripData.budget_currency || "BRL"
         });
+
+        // Set default currency for new expenses based on trip currency
+        setNewExpense(prev => ({
+          ...prev,
+          currency: tripData.budget_currency || "BRL"
+        }));
         
         // Fetch expenses for this trip
         const { data: expenseData, error: expenseError } = await supabase
@@ -587,12 +593,32 @@ export default function GastosViagem() {
         budget_currency: budgetForm.budget_currency
       });
 
+      // Update all existing expenses to use the new currency
+      const { error: updateExpensesError } = await supabase
+        .from("budget_items")
+        .update({ currency: budgetForm.budget_currency })
+        .eq("trip_id", trip.id)
+        .eq("user_id", user.id);
+
+      if (updateExpensesError) {
+        console.error("Erro ao atualizar moeda dos gastos:", updateExpensesError);
+      }
+
+      // Update new expense form currency
+      setNewExpense(prev => ({
+        ...prev,
+        currency: budgetForm.budget_currency
+      }));
+
       setIsEditingBudget(false);
 
       toast({
         title: "Sucesso!",
-        description: "Orçamento atualizado com sucesso",
+        description: "Orçamento e moeda atualizados com sucesso. Todos os gastos foram convertidos para a nova moeda.",
       });
+
+      // Refresh expenses to show new currency
+      fetchExpenses();
     } catch (error) {
       console.error("Erro ao atualizar orçamento:", error);
       toast({
@@ -864,6 +890,12 @@ export default function GastosViagem() {
                   <DialogTitle>Editar Orçamento da Viagem</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
+                  <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      <strong>Atenção:</strong> Alterar a moeda irá converter todos os gastos existentes para a nova moeda selecionada.
+                    </p>
+                  </div>
+                  
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label>Orçamento Total</Label>
@@ -876,7 +908,7 @@ export default function GastosViagem() {
                       />
                     </div>
                     <div>
-                      <Label>Moeda</Label>
+                      <Label>Moeda da Viagem</Label>
                       <Select 
                         value={budgetForm.budget_currency} 
                         onValueChange={(value) => setBudgetForm({...budgetForm, budget_currency: value})}
@@ -1130,6 +1162,9 @@ export default function GastosViagem() {
                     <p className="text-2xl font-bold text-primary">
                       {selectedCurrency.symbol} {(trip.total_budget || 0).toFixed(2)}
                     </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Moeda: {selectedCurrency.name}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -1137,6 +1172,7 @@ export default function GastosViagem() {
                       size="sm"
                       onClick={() => setIsEditingBudget(true)}
                       className="h-8 w-8 p-0"
+                      title="Editar orçamento e moeda"
                     >
                       <Edit2 className="w-4 h-4" />
                     </Button>
