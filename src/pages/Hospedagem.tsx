@@ -459,28 +459,7 @@ export default function Hospedagem() {
             accommodations.map((accommodation) => (
               <Card key={accommodation.id}>
                 <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <CardTitle>{accommodation.hotel_name}</CardTitle>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditAccommodation(accommodation)}
-                        className="flex items-center gap-2"
-                      >
-                        <Edit className="w-4 h-4" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteAccommodation(accommodation.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
+                  <CardTitle>{accommodation.hotel_name}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
