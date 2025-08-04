@@ -97,8 +97,8 @@ export function AppSidebar() {
         <div className="mt-auto p-4 border-t border-border">
           <SidebarMenuButton asChild>
             <NavLink 
-              to="/configuracoes" 
-              className={getNavClass(isActive("/configuracoes"))}
+              to="/perfil" 
+              className={getNavClass(isActive("/perfil"))}
             >
               <Settings className="w-5 h-5" />
               {!isCollapsed && <span>Configurações</span>}
