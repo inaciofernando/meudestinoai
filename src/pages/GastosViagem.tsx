@@ -1256,9 +1256,6 @@ export default function GastosViagem() {
                             >
                               <div className="flex items-center justify-between p-4">
                                 <div className="flex items-center gap-3">
-                                  <div className={`p-2 rounded-full ${category.color} text-white`}>
-                                    <CategoryIcon className="w-4 h-4" />
-                                  </div>
                                   <div>
                                     <p className="font-medium">{expense.location || 'Local não informado'}</p>
                                     <p className="text-sm text-muted-foreground">
