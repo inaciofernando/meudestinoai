@@ -335,8 +335,8 @@ export default function GastosViagem() {
   };
 
   const handleViewExpenseDetails = (expense: Expense) => {
-    // Navegar para a página de detalhes do gasto
-    navigate(`/viagem/${trip?.id}/gasto/${expense.id}`);
+    // Abrir modal de edição do gasto
+    handleEditExpense(expense);
   };
 
   const handleEditExpense = (expense: Expense) => {
