@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ImageUpload";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 interface Restaurant {
   id: string;
@@ -587,7 +587,7 @@ export default function Restaurantes() {
 
                   {restaurant.estimated_amount && (
                     <div>
-                      <strong>Valor Estimado:</strong> R$ {restaurant.estimated_amount.toFixed(2)}
+                      <strong>Valor Estimado:</strong> {formatCurrency(restaurant.estimated_amount, "R$")}
                     </div>
                   )}
 

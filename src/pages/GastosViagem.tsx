@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatCurrency } from "@/lib/utils";
 import { useParams, useNavigate } from "react-router-dom";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -1160,7 +1161,7 @@ export default function GastosViagem() {
                   <div>
                     <p className="text-sm text-muted-foreground">Orçamento Total</p>
                     <p className="text-2xl font-bold text-primary">
-                      {selectedCurrency.symbol} {(trip.total_budget || 0).toFixed(2)}
+                      {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Moeda: {selectedCurrency.name}
@@ -1188,7 +1189,7 @@ export default function GastosViagem() {
                   <div>
                     <p className="text-sm text-muted-foreground">Total Gasto</p>
                     <p className="text-2xl font-bold text-destructive">
-                      {selectedCurrency.symbol} {getTotalExpenses().toFixed(2)}
+                      {formatCurrency(getTotalExpenses(), selectedCurrency.symbol)}
                     </p>
                   </div>
                   <TrendingUp className="w-8 h-8 text-destructive/50" />
@@ -1202,7 +1203,7 @@ export default function GastosViagem() {
                   <div>
                     <p className="text-sm text-muted-foreground">Restante</p>
                     <p className="text-2xl font-bold text-green-600">
-                      {selectedCurrency.symbol} {Math.max(0, (trip.total_budget || 0) - getTotalExpenses()).toFixed(2)}
+                      {formatCurrency(Math.max(0, (trip.total_budget || 0) - getTotalExpenses()), selectedCurrency.symbol)}
                     </p>
                   </div>
                   <div className="flex items-center">
@@ -1265,7 +1266,7 @@ export default function GastosViagem() {
                                 </div>
                                 <div className="text-right">
                                   <p className="font-bold text-destructive">
-                                    {CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$'} {expense.amount.toFixed(2)}
+                                    {formatCurrency(expense.amount, CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$')}
                                   </p>
                                   {expense.receipt_url && (
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
@@ -1300,7 +1301,7 @@ export default function GastosViagem() {
                           <div className="flex-1">
                             <h3 className="font-medium">{category.name}</h3>
                             <p className="text-sm text-muted-foreground">
-                              {selectedCurrency.symbol} {category.total.toFixed(2)}
+                              {formatCurrency(category.total, selectedCurrency.symbol)}
                             </p>
                           </div>
                           <Badge variant="outline">{category.count}</Badge>
@@ -1325,7 +1326,7 @@ export default function GastosViagem() {
                                    </p>
                                 </div>
                                 <span className="font-medium">
-                                  {selectedCurrency.symbol} {expense.amount.toFixed(2)}
+                                  {formatCurrency(expense.amount, selectedCurrency.symbol)}
                                 </span>
                               </div>
                             ))}

@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ImageUpload";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 
 interface Hotel {
   id: string;
@@ -534,7 +534,7 @@ export default function Hotel() {
 
                   {hotel.reservation_amount && (
                     <div>
-                      <strong>Valor da Reserva:</strong> R$ {hotel.reservation_amount.toFixed(2)}
+                      <strong>Valor da Reserva:</strong> {formatCurrency(hotel.reservation_amount, "R$")}
                     </div>
                   )}
 

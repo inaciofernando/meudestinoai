@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { PlusCircle } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 interface BudgetManagerProps {
   tripId: string;
@@ -32,7 +33,7 @@ export function BudgetManager({ tripId, totalBudget = 0, budgetCurrency = "BRL" 
             <CardContent className="p-6">
               <div className="text-sm text-muted-foreground mb-2">Orçamento Total</div>
               <div className="text-3xl font-bold text-primary">
-                {selectedCurrency.symbol} {totalBudget.toFixed(2)}
+                {formatCurrency(totalBudget, selectedCurrency.symbol)}
               </div>
             </CardContent>
           </Card>
