@@ -31,21 +31,33 @@ export default function DetalhesHospedagem() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!tripId || !hospedagemId) return;
+    console.log("DetalhesHospedagem - useEffect", { tripId, hospedagemId, user });
+    if (!tripId || !hospedagemId) {
+      console.log("Missing tripId or hospedagemId");
+      return;
+    }
     fetchAccommodation();
-  }, [tripId, hospedagemId]);
+  }, [tripId, hospedagemId, user]);
 
   const fetchAccommodation = async () => {
-    if (!user || !tripId || !hospedagemId) return;
+    console.log("fetchAccommodation called", { user, tripId, hospedagemId });
+    if (!user || !tripId || !hospedagemId) {
+      console.log("Missing user, tripId, or hospedagemId", { user: !!user, tripId, hospedagemId });
+      setLoading(false);
+      return;
+    }
 
     try {
+      console.log("Fetching accommodation data...");
       const { data, error } = await supabase
         .from("accommodations")
         .select("*")
         .eq("id", hospedagemId)
         .eq("trip_id", tripId)
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
+
+      console.log("Supabase response:", { data, error });
 
       if (error) {
         console.error("Erro ao buscar hospedagem:", error);
