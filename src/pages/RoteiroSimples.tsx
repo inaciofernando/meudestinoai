@@ -77,7 +77,8 @@ const TIME_PERIODS = {
 };
 
 export default function RoteiroSimples() {
-  const { id } = useParams<{ id: string }>();
+  const { id, tripId } = useParams<{ id?: string; tripId?: string }>();
+  const currentId = tripId || id; // Suporta ambas as rotas
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -117,8 +118,8 @@ export default function RoteiroSimples() {
   };
 
   useEffect(() => {
-    console.log("🚀 RoteiroSimples carregando - otimizado");
-    if (!user?.id || !id) return;
+    console.log("🚀 RoteiroSimples useEffect executado - currentID:", currentId, "User:", user?.id);
+    if (!user?.id || !currentId) return;
     
     const fetchData = async () => {
       try {
@@ -127,13 +128,13 @@ export default function RoteiroSimples() {
           supabase
             .from("trips")
             .select("id, title, destination, start_date, end_date")
-            .eq("id", id)
+            .eq("id", currentId)
             .eq("user_id", user.id)
             .single(),
           supabase
             .from("roteiros")
             .select("*")
-            .eq("trip_id", id)
+            .eq("trip_id", currentId)
             .eq("user_id", user.id)
             .maybeSingle()
         ]);
@@ -194,12 +195,12 @@ export default function RoteiroSimples() {
     };
 
     // Evita execução desnecessária se já temos os dados
-    if (!trip || !roteiro || trip.id !== id) {
+    if (!trip || !roteiro || trip.id !== currentId) {
       fetchData();
     } else {
       setLoading(false);
     }
-  }, [user?.id, id]);
+  }, [user?.id, currentId]);
 
   const fetchPontos = async () => {
     if (!roteiro) return;
@@ -430,7 +431,7 @@ export default function RoteiroSimples() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(`/viagem/${id}`)}
+              onClick={() => navigate(`/viagem/${currentId}`)}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
@@ -477,7 +478,7 @@ export default function RoteiroSimples() {
                         const PeriodIcon = period.icon;
 
                         return (
-                          <Card key={ponto.id} className="group cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden border-0 shadow-md" onClick={() => navigate(`/roteiro/${id}/ponto/${ponto.id}`)}>
+                          <Card key={ponto.id} className="group cursor-pointer hover:shadow-xl transition-all duration-300 overflow-hidden border-0 shadow-md" onClick={() => navigate(`/roteiro/${currentId}/ponto/${ponto.id}`)}>
                             <div className="relative">
                               {/* Imagem de destaque */}
                               {ponto.images && ponto.images.length > 0 ? (

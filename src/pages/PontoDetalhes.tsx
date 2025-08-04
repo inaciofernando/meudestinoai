@@ -212,7 +212,10 @@ export default function PontoDetalhes() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(`/roteiro/${tripId}`)}
+              onClick={() => {
+                console.log("🔙 Voltando para roteiro:", tripId);
+                navigate(`/roteiro/${tripId}`, { replace: true });
+              }}
               className="rounded-full"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -392,7 +395,10 @@ export default function PontoDetalhes() {
               </Button>
               <Button
                 className="flex-1"
-                onClick={() => navigate(`/roteiro/${tripId}`)}
+                onClick={() => {
+                  console.log("🔙 Footer - Voltando para roteiro:", tripId);
+                  navigate(`/roteiro/${tripId}`, { replace: true });
+                }}
               >
                 Voltar ao Roteiro
               </Button>
