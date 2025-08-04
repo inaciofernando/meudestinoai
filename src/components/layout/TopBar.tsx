@@ -9,8 +9,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useNavigate } from "react-router-dom";
 
 export const TopBar = () => {
+  const navigate = useNavigate();
+
+  const handleConfigurationsClick = () => {
+    navigate("/perfil");
+  };
+
   return (
     <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
@@ -42,8 +49,8 @@ export const TopBar = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Perfil</DropdownMenuItem>
-            <DropdownMenuItem>Configurações</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/perfil")}>Perfil</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleConfigurationsClick}>Configurações</DropdownMenuItem>
             <DropdownMenuItem>Sair</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
