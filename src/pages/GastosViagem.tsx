@@ -1180,24 +1180,6 @@ export default function GastosViagem() {
           </div>
 
           {/* AI Assistant Promotion */}
-          <Card className="mx-4 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">Agente de IA para Gastos</h3>
-                  <p className="text-muted-foreground">
-                    Em breve: Nosso assistente de IA analisará seus gastos, categorizará automaticamente e fornecerá insights inteligentes sobre seu orçamento de viagem.
-                  </p>
-                </div>
-                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                  Em Breve
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Tabs for different views */}
           <div className="px-4">
