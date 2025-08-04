@@ -194,12 +194,8 @@ export default function RoteiroSimples() {
       }
     };
 
-    // Evita execução desnecessária se já temos os dados
-    if (!trip || !roteiro || trip.id !== currentId) {
-      fetchData();
-    } else {
-      setLoading(false);
-    }
+    // Sempre executa o fetch para garantir dados atualizados
+    fetchData();
   }, [user?.id, currentId]);
 
   const fetchPontos = async () => {
