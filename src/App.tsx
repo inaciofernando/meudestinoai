@@ -48,6 +48,7 @@ const App: React.FC = () => (
           <Route path="/viagem/:id/restaurantes" element={<Restaurantes />} />
           <Route path="/planejamento" element={<Planejamento />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/configuracoes" element={<Perfil />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
