@@ -617,26 +617,31 @@ export default function GastosViagem() {
                               setAnalysisStep("");
                             }
                           }}
-                          disabled={isAnalyzingReceipt}
+                          disabled={isAnalyzingReceipt || !newExpense.receiptFile}
                           variant="outline"
-                          className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200"
+                          className={`w-full transition-all duration-300 ${
+                            isAnalyzingReceipt 
+                              ? 'bg-gradient-to-r from-purple-100 to-blue-100 border-purple-300 cursor-not-allowed opacity-90' 
+                              : 'bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 hover:border-purple-300 hover:shadow-md'
+                          }`}
                         >
                           {isAnalyzingReceipt ? (
-                            <div className="flex items-center justify-center gap-3 py-1">
+                            <div className="flex items-center justify-center gap-3 py-2">
                               <div className="relative flex items-center justify-center">
-                                <Bot className="w-5 h-5 text-purple-600 animate-bounce z-10" />
-                                <div className="absolute inset-0 w-7 h-7 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                                <Bot className="w-6 h-6 text-purple-600 animate-pulse z-10" />
+                                <div className="absolute inset-0 w-8 h-8 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                                <div className="absolute inset-0 w-10 h-10 border border-purple-100 border-t-purple-300 rounded-full animate-spin animate-reverse" style={{ animationDuration: '1.5s' }} />
                               </div>
                               <div className="flex flex-col items-start">
-                                <span className="text-sm font-medium text-purple-700">Analisando...</span>
-                                <span className="text-xs text-purple-500">{analysisStep}</span>
+                                <span className="text-sm font-semibold text-purple-700 animate-fade-in">Analisando...</span>
+                                <span className="text-xs text-purple-600 animate-pulse">{analysisStep}</span>
                               </div>
                             </div>
                           ) : (
-                            <>
-                              <Bot className="w-4 h-4 mr-2 text-purple-600" />
-                              Analisar com IA
-                            </>
+                            <div className="flex items-center justify-center py-1 transition-all duration-200 hover:scale-105">
+                              <Bot className="w-5 h-5 mr-2 text-purple-600 transition-transform duration-200 group-hover:animate-bounce" />
+                              <span className="font-medium text-purple-700">Analisar com IA</span>
+                            </div>
                           )}
                         </Button>
                       </div>
