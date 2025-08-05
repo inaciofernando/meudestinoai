@@ -494,7 +494,7 @@ export default function RoteiroSimples() {
                                   )}
                                   
                                   {/* Floating time badge */}
-                                  <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                                   <div className="absolute bottom-3 left-3 bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg border border-border/50">
                                     <Clock className="w-3 h-3 text-primary" />
                                     <span className="text-xs font-semibold text-foreground">{ponto.time_start}</span>
                                   </div>
@@ -503,7 +503,7 @@ export default function RoteiroSimples() {
                                 <div className={`aspect-[4/3] ${category.color} rounded-t-lg flex items-center justify-center relative bg-gradient-to-br`}>
                                   <CategoryIcon className="w-16 h-16 text-white/90" />
                                   {/* Floating time badge */}
-                                  <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                                  <div className="absolute bottom-3 left-3 bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg border border-border/50">
                                     <Clock className="w-3 h-3 text-primary" />
                                     <span className="text-xs font-semibold text-foreground">{ponto.time_start}</span>
                                   </div>
