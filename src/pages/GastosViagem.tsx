@@ -38,7 +38,9 @@ import {
   Edit2,
   Calendar,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Bot,
+  MoreVertical
 } from "lucide-react";
 
 interface Trip {
@@ -94,6 +96,10 @@ export default function GastosViagem() {
   const [loading, setLoading] = useState(true);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [isEditingExpense, setIsEditingExpense] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [isAnalyzingReceipt, setIsAnalyzingReceipt] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState<string>("");
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isViewingExpense, setIsViewingExpense] = useState(false);
@@ -112,6 +118,18 @@ export default function GastosViagem() {
     currency: "BRL",
     description: "",
     date: new Date().toISOString().split('T')[0],
+    location: "",
+    receiptFile: null as File | null
+  });
+
+  // Form states for editing expense
+  const [editForm, setEditForm] = useState({
+    category: "",
+    subcategory: "",
+    amount: "",
+    currency: "BRL",
+    description: "",
+    date: "",
     location: "",
     receiptFile: null as File | null
   });
@@ -480,9 +498,91 @@ export default function GastosViagem() {
                     <DialogTitle>Adicionar Gasto</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
+                    {/* Upload de Comprovante */}
+                    <div>
+                      <Label htmlFor="receipt" className="flex items-center gap-2">
+                        <Camera className="w-4 h-4" />
+                        Comprovante (Opcional)
+                      </Label>
+                      <div className="mt-2">
+                        <div className="flex items-center justify-center w-full">
+                          <label htmlFor="receipt" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/10 hover:bg-muted/20 transition-colors">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              {newExpense.receiptFile ? (
+                                <>
+                                  <Receipt className="w-8 h-8 mb-2 text-green-600" />
+                                  <p className="text-sm text-green-600 font-medium">{newExpense.receiptFile.name}</p>
+                                  <p className="text-xs text-muted-foreground">Clique para alterar</p>
+                                </>
+                              ) : (
+                                <>
+                                  <Camera className="w-8 h-8 mb-2 text-muted-foreground" />
+                                  <p className="text-sm text-muted-foreground">
+                                    <span className="font-semibold">Clique para anexar</span> o comprovante
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">PNG, JPG até 10MB</p>
+                                </>
+                              )}
+                            </div>
+                            <Input
+                              id="receipt"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setNewExpense({...newExpense, receiptFile: file});
+                                }
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Análise com IA */}
+                    {newExpense.receiptFile && (
+                      <div className="mt-3">
+                        <Button 
+                          onClick={() => {
+                            // Implementar análise de IA aqui
+                            setIsAnalyzingReceipt(true);
+                            setAnalysisStep("Processando imagem...");
+                            // Simular processo
+                            setTimeout(() => {
+                              setIsAnalyzingReceipt(false);
+                              setAnalysisStep("");
+                            }, 3000);
+                          }}
+                          disabled={isAnalyzingReceipt}
+                          variant="outline"
+                          className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200"
+                        >
+                          {isAnalyzingReceipt ? (
+                            <div className="flex items-center justify-center gap-3 py-1">
+                              <div className="relative flex items-center justify-center">
+                                <Bot className="w-5 h-5 text-purple-600 animate-bounce z-10" />
+                                <div className="absolute inset-0 w-7 h-7 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                              </div>
+                              <div className="flex flex-col items-start">
+                                <span className="text-sm font-medium text-purple-700">Analisando...</span>
+                                <span className="text-xs text-purple-500">{analysisStep}</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <Bot className="w-4 h-4 mr-2 text-purple-600" />
+                              Analisar com IA
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+
                     <div>
                       <Label>Categoria *</Label>
-                      <Select value={newExpense.category} onValueChange={(value) => setNewExpense({...newExpense, category: value})}>
+                      <Select value={newExpense.category} onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione uma categoria" />
                         </SelectTrigger>
@@ -499,13 +599,30 @@ export default function GastosViagem() {
                       </Select>
                     </div>
 
+                    {/* Subcategoria */}
+                    {newExpense.category && (
+                      <div>
+                        <Label>Subcategoria</Label>
+                        <Select value={newExpense.subcategory} onValueChange={(value) => setNewExpense({...newExpense, subcategory: value})}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma subcategoria" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {EXPENSE_CATEGORIES.find(c => c.id === newExpense.category)?.subcategories.map(sub => (
+                              <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
                     <div>
                       <Label>Descrição *</Label>
                       <Textarea
                         value={newExpense.description}
                         onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
-                        placeholder="Ex: Almoço no restaurante"
-                        rows={2}
+                        placeholder="Ex: Almoço no restaurante, táxi para o hotel..."
+                        rows={3}
                       />
                     </div>
 
@@ -525,11 +642,37 @@ export default function GastosViagem() {
                         </div>
                       </div>
                       <div>
+                        <Label>Moeda</Label>
+                        <Select value={newExpense.currency} onValueChange={(value) => setNewExpense({...newExpense, currency: value})}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CURRENCIES.map(currency => (
+                              <SelectItem key={currency.code} value={currency.code}>
+                                {currency.symbol} {currency.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
                         <Label>Data</Label>
                         <Input
                           type="date"
                           value={newExpense.date}
                           onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>Local (Opcional)</Label>
+                        <Input
+                          value={newExpense.location}
+                          onChange={(e) => setNewExpense({...newExpense, location: e.target.value})}
+                          placeholder="Ex: Restaurante XYZ"
                         />
                       </div>
                     </div>
@@ -547,7 +690,7 @@ export default function GastosViagem() {
                         disabled={!newExpense.category || !newExpense.description || !newExpense.amount}
                         className="flex-1 c6-button-primary"
                       >
-                        Adicionar
+                        Adicionar Gasto
                       </Button>
                     </div>
                   </div>
@@ -869,12 +1012,200 @@ export default function GastosViagem() {
                     </div>
                   </div>
 
-                  <Button 
-                    onClick={() => setIsViewingExpense(false)}
-                    className="w-full c6-button-primary"
-                  >
-                    Fechar
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => {
+                        setEditingExpense(selectedExpense);
+                        setEditForm({
+                          category: selectedExpense.category,
+                          subcategory: "",
+                          amount: selectedExpense.amount.toString(),
+                          currency: selectedExpense.currency,
+                          description: selectedExpense.description,
+                          date: selectedExpense.date.split('T')[0],
+                          location: selectedExpense.location || "",
+                          receiptFile: null
+                        });
+                        setIsViewingExpense(false);
+                        setIsEditingExpense(true);
+                      }}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      <Edit2 className="w-4 h-4 mr-2" />
+                      Editar
+                    </Button>
+                    <Button 
+                      onClick={() => setIsViewingExpense(false)}
+                      className="flex-1 c6-button-primary"
+                    >
+                      Fechar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Dialog para editar gasto */}
+          <Dialog open={isEditingExpense} onOpenChange={setIsEditingExpense}>
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Editar Gasto</DialogTitle>
+              </DialogHeader>
+              {editingExpense && (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Categoria *</Label>
+                    <Select value={editForm.category} onValueChange={(value) => setEditForm({...editForm, category: value, subcategory: ""})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EXPENSE_CATEGORIES.map(category => (
+                          <SelectItem key={category.id} value={category.id}>
+                            <div className="flex items-center gap-2">
+                              <category.icon className="w-4 h-4" />
+                              {category.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {editForm.category && (
+                    <div>
+                      <Label>Subcategoria</Label>
+                      <Select value={editForm.subcategory} onValueChange={(value) => setEditForm({...editForm, subcategory: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione uma subcategoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EXPENSE_CATEGORIES.find(c => c.id === editForm.category)?.subcategories.map(sub => (
+                            <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div>
+                    <Label>Descrição *</Label>
+                    <Textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                      placeholder="Ex: Almoço no restaurante, táxi para o hotel..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Valor *</Label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={editForm.amount}
+                          onChange={(e) => setEditForm({...editForm, amount: e.target.value})}
+                          placeholder="0,00"
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Moeda</Label>
+                      <Select value={editForm.currency} onValueChange={(value) => setEditForm({...editForm, currency: value})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CURRENCIES.map(currency => (
+                            <SelectItem key={currency.code} value={currency.code}>
+                              {currency.symbol} {currency.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Data</Label>
+                      <Input
+                        type="date"
+                        value={editForm.date}
+                        onChange={(e) => setEditForm({...editForm, date: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label>Local (Opcional)</Label>
+                      <Input
+                        value={editForm.location}
+                        onChange={(e) => setEditForm({...editForm, location: e.target.value})}
+                        placeholder="Ex: Restaurante XYZ"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => {
+                        setIsEditingExpense(false);
+                        setEditingExpense(null);
+                      }}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      onClick={async () => {
+                        if (!user || !trip || !editingExpense) return;
+
+                        try {
+                          const { error } = await supabase
+                            .from('budget_items')
+                            .update({
+                              title: editForm.description,
+                              category: editForm.category,
+                              actual_amount: parseFloat(editForm.amount),
+                              planned_amount: parseFloat(editForm.amount),
+                              currency: editForm.currency,
+                              expense_date: editForm.date,
+                              location: editForm.location
+                            })
+                            .eq('id', editingExpense.id)
+                            .eq('user_id', user.id);
+
+                          if (error) throw error;
+
+                          toast({
+                            title: "Gasto atualizado!",
+                            description: "Suas alterações foram salvas com sucesso.",
+                          });
+
+                          setIsEditingExpense(false);
+                          setEditingExpense(null);
+                          fetchExpenses();
+                        } catch (error) {
+                          console.error('Error updating expense:', error);
+                          toast({
+                            title: "Erro",
+                            description: "Não foi possível atualizar o gasto. Tente novamente.",
+                            variant: "destructive"
+                          });
+                        }
+                      }}
+                      disabled={!editForm.category || !editForm.description || !editForm.amount}
+                      className="flex-1 c6-button-primary"
+                    >
+                      Salvar Alterações
+                    </Button>
+                  </div>
                 </div>
               )}
             </DialogContent>
