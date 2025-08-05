@@ -1007,8 +1007,8 @@ export default function GastosViagem() {
                             className="bg-muted rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/80 transition-colors"
                             onClick={() => {
                               // Abrir comprovante
-                              const url = `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${selectedExpense.receipt_url}`;
-                              window.open(url, '_blank');
+                              const { data } = supabase.storage.from('trip-documents').getPublicUrl(selectedExpense.receipt_url!);
+                              window.open(data.publicUrl, '_blank');
                             }}
                           >
                             <div className="flex items-center">
@@ -1082,8 +1082,8 @@ export default function GastosViagem() {
                           <div 
                             className="bg-muted rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/80 transition-colors"
                             onClick={() => {
-                              const url = `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${editingExpense.receipt_url}`;
-                              window.open(url, '_blank');
+                              const { data } = supabase.storage.from('trip-documents').getPublicUrl(editingExpense.receipt_url!);
+                              window.open(data.publicUrl, '_blank');
                             }}
                           >
                             <div className="flex items-center">
