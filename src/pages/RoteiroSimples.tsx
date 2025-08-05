@@ -362,8 +362,8 @@ export default function RoteiroSimples() {
                       </div>
                     </div>
 
-                    {/* Grid responsivo estilo catálogo */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+                    {/* Grid responsivo estilo catálogo - máximo 4 colunas */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                       {dayPontos.map((ponto) => {
                         const category = CATEGORY_CONFIG[ponto.category] || CATEGORY_CONFIG.activity;
                         const CategoryIcon = category.icon;
