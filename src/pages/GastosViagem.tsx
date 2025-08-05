@@ -567,11 +567,11 @@ export default function GastosViagem() {
                                 
                                 if (error) {
                                   console.error('Erro na análise:', error);
-                                  toast({
-                                    title: "Erro na análise",
-                                    description: "Não foi possível analisar o cupom. Tente novamente.",
-                                    variant: "destructive",
-                                  });
+                                  setAnalysisStep("Erro na análise");
+                                  setTimeout(() => {
+                                    setIsAnalyzingReceipt(false);
+                                    setAnalysisStep("");
+                                  }, 2000);
                                   return;
                                 }
                                 
@@ -590,16 +590,19 @@ export default function GastosViagem() {
                                     date: extractedData.date || prev.date
                                   }));
                                   
-                                  toast({
-                                    title: "Análise concluída!",
-                                    description: "Campos preenchidos automaticamente. Verifique as informações.",
-                                  });
+                                  setAnalysisStep("Análise concluída!");
+                                  
+                                  // Aguardar um pouco antes de fechar
+                                  setTimeout(() => {
+                                    setIsAnalyzingReceipt(false);
+                                    setAnalysisStep("");
+                                  }, 2500);
                                 } else {
-                                  toast({
-                                    title: "Erro na análise",
-                                    description: data.error || "Não foi possível extrair dados do cupom.",
-                                    variant: "destructive",
-                                  });
+                                  setAnalysisStep("Erro: " + (data.error || "Não foi possível extrair dados"));
+                                  setTimeout(() => {
+                                    setIsAnalyzingReceipt(false);
+                                    setAnalysisStep("");
+                                  }, 3000);
                                 }
                               };
                               
@@ -607,45 +610,123 @@ export default function GastosViagem() {
                               
                             } catch (error) {
                               console.error('Erro na análise:', error);
-                              toast({
-                                title: "Erro na análise",
-                                description: "Erro interno. Tente novamente.",
-                                variant: "destructive",
-                              });
-                            } finally {
-                              setIsAnalyzingReceipt(false);
-                              setAnalysisStep("");
+                              setAnalysisStep("Erro interno");
+                              setTimeout(() => {
+                                setIsAnalyzingReceipt(false);
+                                setAnalysisStep("");
+                              }, 2000);
                             }
                           }}
                           disabled={isAnalyzingReceipt || !newExpense.receiptFile}
                           variant="outline"
-                          className={`w-full transition-all duration-300 ${
+                          className={`w-full transition-all duration-300 group ${
                             isAnalyzingReceipt 
                               ? 'bg-gradient-to-r from-purple-100 to-blue-100 border-purple-300 cursor-not-allowed opacity-90' 
                               : 'bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 hover:border-purple-300 hover:shadow-md'
                           }`}
                         >
-                          {isAnalyzingReceipt ? (
-                            <div className="flex items-center justify-center gap-3 py-2">
-                              <div className="relative flex items-center justify-center">
-                                <Bot className="w-6 h-6 text-purple-600 animate-pulse z-10" />
-                                <div className="absolute inset-0 w-8 h-8 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
-                                <div className="absolute inset-0 w-10 h-10 border border-purple-100 border-t-purple-300 rounded-full animate-spin animate-reverse" style={{ animationDuration: '1.5s' }} />
-                              </div>
-                              <div className="flex flex-col items-start">
-                                <span className="text-sm font-semibold text-purple-700 animate-fade-in">Analisando...</span>
-                                <span className="text-xs text-purple-600 animate-pulse">{analysisStep}</span>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center py-1 transition-all duration-200 hover:scale-105">
-                              <Bot className="w-5 h-5 mr-2 text-purple-600 transition-transform duration-200 group-hover:animate-bounce" />
-                              <span className="font-medium text-purple-700">Analisar com IA</span>
-                            </div>
-                          )}
+                          <div className="flex items-center justify-center py-1 transition-all duration-200 hover:scale-105">
+                            <Bot className="w-5 h-5 mr-2 text-purple-600 transition-transform duration-200 group-hover:animate-bounce" />
+                            <span className="font-medium text-purple-700">Analisar com IA</span>
+                          </div>
                         </Button>
                       </div>
                     )}
+
+                    {/* Modal de Progresso da IA */}
+                    <Dialog open={isAnalyzingReceipt} onOpenChange={() => {}}>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-2">
+                            <Bot className="w-5 h-5 text-purple-600" />
+                            {analysisStep.includes("Análise concluída") ? "Análise Concluída!" : "Processando com IA"}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <div className="flex flex-col items-center justify-center py-8 space-y-6">
+                          {analysisStep.includes("Análise concluída") ? (
+                            // Estado de sucesso
+                            <div className="flex flex-col items-center space-y-4">
+                              <div className="relative">
+                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                                  <svg
+                                    className="w-8 h-8 text-green-600 animate-scale-in"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                </div>
+                              </div>
+                              <div className="text-center space-y-2">
+                                <h3 className="text-lg font-semibold text-green-700">Sucesso!</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  Dados extraídos e campos preenchidos automaticamente.
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Verifique as informações antes de salvar.
+                                </p>
+                              </div>
+                            </div>
+                          ) : analysisStep.includes("Erro") ? (
+                            // Estado de erro
+                            <div className="flex flex-col items-center space-y-4">
+                              <div className="relative">
+                                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                                  <svg
+                                    className="w-8 h-8 text-red-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M6 18L18 6M6 6l12 12"
+                                    />
+                                  </svg>
+                                </div>
+                              </div>
+                              <div className="text-center space-y-2">
+                                <h3 className="text-lg font-semibold text-red-700">Erro na Análise</h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {analysisStep}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Tente novamente ou preencha manualmente.
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            // Estado de processamento
+                            <div className="flex flex-col items-center space-y-4">
+                              <div className="relative">
+                                <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+                                <div className="absolute inset-2 border-2 border-purple-100 border-t-purple-400 rounded-full animate-spin animate-reverse" style={{ animationDuration: '1.5s' }} />
+                                <Bot className="absolute inset-0 m-auto w-6 h-6 text-purple-600 animate-pulse" />
+                              </div>
+                              <div className="text-center space-y-2">
+                                <h3 className="text-lg font-semibold text-purple-700">Analisando Cupom</h3>
+                                <p className="text-sm text-purple-600 animate-pulse">
+                                  {analysisStep}
+                                </p>
+                                <div className="flex justify-center space-x-1">
+                                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
 
                     <div>
                       <Label>Categoria *</Label>
