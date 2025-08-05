@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Clock } from "lucide-react";
 import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
+import { VoucherUpload } from "@/components/VoucherUpload";
 
 interface RoteiroPonto {
   id: string;
@@ -26,6 +27,12 @@ interface RoteiroPonto {
   category: string;
   order_index: number;
   images?: string[];
+  voucher_files?: Array<{
+    url: string;
+    name: string;
+    type: string;
+    description?: string;
+  }>;
 }
 
 const CATEGORIES = [
@@ -53,7 +60,13 @@ export default function EditarPonto() {
     description: "",
     location: "",
     category: "activity",
-    images: [] as string[]
+    images: [] as string[],
+    vouchers: [] as Array<{
+      url: string;
+      name: string;
+      type: string;
+      description?: string;
+    }>
   });
 
   useEffect(() => {
@@ -74,7 +87,28 @@ export default function EditarPonto() {
           return;
         }
 
-        setPonto(data);
+        // Parse voucher_files se existir e converter para o tipo correto
+        const voucherFiles = data.voucher_files;
+        const parsedVoucherFiles = Array.isArray(voucherFiles) 
+          ? voucherFiles as Array<{ url: string; name: string; type: string; description?: string; }>
+          : [];
+
+        const pontoData: RoteiroPonto = {
+          id: data.id,
+          roteiro_id: data.roteiro_id,
+          day_number: data.day_number,
+          time_start: data.time_start,
+          time_end: data.time_end || undefined,
+          title: data.title,
+          description: data.description || undefined,
+          location: data.location,
+          category: data.category,
+          order_index: data.order_index,
+          images: data.images || [],
+          voucher_files: parsedVoucherFiles
+        };
+
+        setPonto(pontoData);
         setFormData({
           day_number: data.day_number,
           time_start: data.time_start,
@@ -83,7 +117,8 @@ export default function EditarPonto() {
           description: data.description || "",
           location: data.location,
           category: data.category,
-          images: data.images || []
+          images: data.images || [],
+          vouchers: parsedVoucherFiles
         });
       } catch (error) {
         console.error("Erro ao carregar ponto:", error);
@@ -123,7 +158,8 @@ export default function EditarPonto() {
           description: formData.description,
           location: formData.location,
           category: formData.category,
-          images: formData.images
+          images: formData.images,
+          voucher_files: formData.vouchers
         })
         .eq("id", ponto.id)
         .eq("user_id", user.id);
@@ -150,6 +186,10 @@ export default function EditarPonto() {
 
   const handleImagesChange = (images: string[]) => {
     setFormData(prev => ({ ...prev, images }));
+  };
+
+  const handleVouchersChange = (vouchers: Array<{ url: string; name: string; type: string; description?: string; }>) => {
+    setFormData(prev => ({ ...prev, vouchers }));
   };
 
   if (loading) {
@@ -296,6 +336,15 @@ export default function EditarPonto() {
                 <ItineraryImageUpload
                   images={formData.images}
                   onImagesChange={handleImagesChange}
+                />
+              </div>
+
+              {/* Upload de vouchers */}
+              <div className="space-y-2">
+                <Label>Vouchers e Documentos</Label>
+                <VoucherUpload
+                  vouchers={formData.vouchers}
+                  onVouchersChange={handleVouchersChange}
                 />
               </div>
 

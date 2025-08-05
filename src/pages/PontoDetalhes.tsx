@@ -45,7 +45,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  FileText,
+  Download
 } from "lucide-react";
 
 interface RoteiroPonto {
@@ -60,6 +62,12 @@ interface RoteiroPonto {
   category: string;
   order_index: number;
   images?: string[];
+  voucher_files?: Array<{
+    url: string;
+    name: string;
+    type: string;
+    description?: string;
+  }>;
 }
 
 interface Trip {
@@ -134,7 +142,29 @@ export default function PontoDetalhes() {
         }
 
         setTrip(tripResult.data);
-        setPonto(pontoResult.data);
+        
+        // Parse voucher_files se existir e converter para o tipo correto
+        const voucherFiles = pontoResult.data.voucher_files;
+        const parsedVoucherFiles = Array.isArray(voucherFiles) 
+          ? voucherFiles as Array<{ url: string; name: string; type: string; description?: string; }>
+          : [];
+        
+        const pontoData: RoteiroPonto = {
+          id: pontoResult.data.id,
+          roteiro_id: pontoResult.data.roteiro_id,
+          day_number: pontoResult.data.day_number,
+          time_start: pontoResult.data.time_start,
+          time_end: pontoResult.data.time_end || undefined,
+          title: pontoResult.data.title,
+          description: pontoResult.data.description || undefined,
+          location: pontoResult.data.location,
+          category: pontoResult.data.category,
+          order_index: pontoResult.data.order_index,
+          images: pontoResult.data.images || [],
+          voucher_files: parsedVoucherFiles
+        };
+        
+        setPonto(pontoData);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
         toast({
@@ -217,6 +247,28 @@ export default function PontoDetalhes() {
       });
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const downloadVoucher = async (url: string, fileName: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Erro ao baixar voucher:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível baixar o arquivo.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -434,6 +486,39 @@ export default function PontoDetalhes() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Vouchers e Documentos */}
+              {ponto.voucher_files && ponto.voucher_files.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Vouchers e Documentos</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {ponto.voucher_files.map((voucher, index) => (
+                      <div key={index} className="flex items-center justify-between gap-3 p-3 border rounded-lg">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <FileText className="w-5 h-5 text-primary flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{voucher.name}</p>
+                            {voucher.description && (
+                              <p className="text-xs text-muted-foreground truncate">{voucher.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadVoucher(voucher.url, voucher.name)}
+                          className="flex items-center gap-2 flex-shrink-0"
+                        >
+                          <Download className="w-4 h-4" />
+                          Baixar
+                        </Button>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Ações Rápidas */}
               <Card>

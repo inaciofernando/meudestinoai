@@ -234,6 +234,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          voucher_files: Json | null
         }
         Insert: {
           category: string
@@ -253,6 +254,7 @@ export type Database = {
           title: string
           updated_at?: string
           user_id: string
+          voucher_files?: Json | null
         }
         Update: {
           category?: string
@@ -272,6 +274,7 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          voucher_files?: Json | null
         }
         Relationships: []
       }
