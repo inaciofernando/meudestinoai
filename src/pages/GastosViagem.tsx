@@ -1003,9 +1003,24 @@ export default function GastosViagem() {
                       {selectedExpense.receipt_url && (
                         <div>
                           <span className="c6-text-secondary block mb-2">Comprovante:</span>
-                          <div className="bg-muted rounded-lg p-3 flex items-center justify-center">
-                            <Receipt className="w-8 h-8 text-muted-foreground" />
-                            <span className="ml-2 c6-text-secondary text-sm">Comprovante anexado</span>
+                          <div 
+                            className="bg-muted rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/80 transition-colors"
+                            onClick={() => {
+                              // Abrir comprovante
+                              const url = `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${selectedExpense.receipt_url}`;
+                              window.open(url, '_blank');
+                            }}
+                          >
+                            <div className="flex items-center">
+                              <Receipt className="w-8 h-8 text-primary mr-3" />
+                              <div>
+                                <p className="c6-text-primary text-sm font-medium">Comprovante anexado</p>
+                                <p className="c6-text-secondary text-xs">Clique para visualizar</p>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="sm">
+                              Ver
+                            </Button>
                           </div>
                         </div>
                       )}
@@ -1055,6 +1070,78 @@ export default function GastosViagem() {
               </DialogHeader>
               {editingExpense && (
                 <div className="space-y-4">
+                  {/* Upload de Comprovante para Edição */}
+                  <div>
+                    <Label htmlFor="editReceipt" className="flex items-center gap-2">
+                      <Camera className="w-4 h-4" />
+                      Comprovante
+                    </Label>
+                    <div className="mt-2">
+                      {editingExpense.receipt_url && !editForm.receiptFile ? (
+                        <div className="space-y-2">
+                          <div 
+                            className="bg-muted rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/80 transition-colors"
+                            onClick={() => {
+                              const url = `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${editingExpense.receipt_url}`;
+                              window.open(url, '_blank');
+                            }}
+                          >
+                            <div className="flex items-center">
+                              <Receipt className="w-6 h-6 text-primary mr-3" />
+                              <div>
+                                <p className="c6-text-primary text-sm font-medium">Comprovante atual</p>
+                                <p className="c6-text-secondary text-xs">Clique para visualizar</p>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="sm">Ver</Button>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => document.getElementById('editReceipt')?.click()}
+                            className="w-full"
+                          >
+                            <Camera className="w-4 h-4 mr-2" />
+                            Alterar Comprovante
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center w-full">
+                          <label htmlFor="editReceipt" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/10 hover:bg-muted/20 transition-colors">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              {editForm.receiptFile ? (
+                                <>
+                                  <Receipt className="w-8 h-8 mb-2 text-green-600" />
+                                  <p className="text-sm text-green-600 font-medium">{editForm.receiptFile.name}</p>
+                                  <p className="text-xs text-muted-foreground">Clique para alterar</p>
+                                </>
+                              ) : (
+                                <>
+                                  <Camera className="w-8 h-8 mb-2 text-muted-foreground" />
+                                  <p className="text-sm text-muted-foreground">
+                                    <span className="font-semibold">Clique para anexar</span> um comprovante
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">PNG, JPG até 10MB</p>
+                                </>
+                              )}
+                            </div>
+                          </label>
+                        </div>
+                      )}
+                      <Input
+                        id="editReceipt"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setEditForm({...editForm, receiptFile: file});
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </div>
+                  </div>
                   <div>
                     <Label>Categoria *</Label>
                     <Select value={editForm.category} onValueChange={(value) => setEditForm({...editForm, category: value, subcategory: ""})}>
@@ -1167,6 +1254,24 @@ export default function GastosViagem() {
                         if (!user || !trip || !editingExpense) return;
 
                         try {
+                          let receiptUrl = editingExpense.receipt_url;
+
+                          // Upload new receipt if provided
+                          if (editForm.receiptFile) {
+                            const fileExt = editForm.receiptFile.name.split('.').pop();
+                            const fileName = `${user.id}/${trip.id}/${Date.now()}.${fileExt}`;
+                            
+                            const { data: uploadData, error: uploadError } = await supabase.storage
+                              .from('trip-documents')
+                              .upload(fileName, editForm.receiptFile);
+
+                            if (uploadError) {
+                              throw uploadError;
+                            }
+
+                            receiptUrl = uploadData.path;
+                          }
+
                           const { error } = await supabase
                             .from('budget_items')
                             .update({
@@ -1176,7 +1281,8 @@ export default function GastosViagem() {
                               planned_amount: parseFloat(editForm.amount),
                               currency: editForm.currency,
                               expense_date: editForm.date,
-                              location: editForm.location
+                              location: editForm.location,
+                              receipt_image_url: receiptUrl
                             })
                             .eq('id', editingExpense.id)
                             .eq('user_id', user.id);
