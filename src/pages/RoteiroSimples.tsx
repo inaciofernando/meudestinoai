@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,8 +27,6 @@ import {
   Moon,
   Coffee,
   Map,
-  Edit,
-  Trash2,
   Save,
   Image as ImageIcon,
   X
@@ -88,10 +85,6 @@ export default function RoteiroSimples() {
   const [pontos, setPontos] = useState<RoteiroPonto[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingPonto, setIsAddingPonto] = useState(false);
-  const [isEditingPonto, setIsEditingPonto] = useState(false);
-  const [editingPonto, setEditingPonto] = useState<RoteiroPonto | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [pontoToDelete, setPontoToDelete] = useState<RoteiroPonto | null>(null);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -271,102 +264,6 @@ export default function RoteiroSimples() {
     }
   };
 
-  const handleEditPonto = (ponto: RoteiroPonto) => {
-    setEditingPonto(ponto);
-    setFormData({
-      day_number: ponto.day_number,
-      time_start: ponto.time_start,
-      time_end: ponto.time_end || "",
-      title: ponto.title,
-      description: ponto.description || "",
-      location: ponto.location,
-      category: ponto.category,
-      images: ponto.images || []
-    });
-    setIsEditingPonto(true);
-  };
-
-  const handleUpdatePonto = async () => {
-    if (!editingPonto || !user || !formData.title || !formData.location) {
-      toast({
-        title: "Erro",
-        description: "Preencha pelo menos o título e local do ponto.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from("roteiro_pontos")
-        .update({
-          day_number: formData.day_number,
-          time_start: formData.time_start,
-          time_end: formData.time_end || null,
-          title: formData.title,
-          description: formData.description,
-          location: formData.location,
-          category: formData.category,
-          images: formData.images
-        })
-        .eq('id', editingPonto.id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Ponto atualizado!",
-        description: "As alterações foram salvas com sucesso.",
-      });
-
-      setIsEditingPonto(false);
-      setEditingPonto(null);
-      fetchPontos();
-    } catch (error) {
-      console.error('Error updating ponto:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível atualizar o ponto. Tente novamente.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const confirmDeletePonto = (ponto: RoteiroPonto) => {
-    setPontoToDelete(ponto);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeletePonto = async () => {
-    if (!pontoToDelete || !user) return;
-
-    try {
-      const { error } = await supabase
-        .from("roteiro_pontos")
-        .delete()
-        .eq('id', pontoToDelete.id)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Ponto excluído!",
-        description: "O ponto foi removido do roteiro.",
-      });
-
-      setDeleteDialogOpen(false);
-      setPontoToDelete(null);
-      fetchPontos();
-    } catch (error) {
-      console.error('Error deleting ponto:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível excluir o ponto. Tente novamente.",
-        variant: "destructive"
-      });
-    }
-  };
-
   const getTimePeriod = (time: string): keyof typeof TIME_PERIODS => {
     const hour = parseInt(time.split(':')[0]);
     if (hour < 12) return 'morning';
@@ -510,31 +407,7 @@ export default function RoteiroSimples() {
                                 </div>
                               )}
                               
-                              {/* Floating action buttons */}
-                              <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-                                <Button
-                                  size="icon"
-                                  variant="secondary"
-                                  className="w-9 h-9 bg-white/95 hover:bg-white shadow-lg rounded-full"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEditPonto(ponto);
-                                  }}
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="destructive"
-                                  className="w-9 h-9 bg-red-500/95 hover:bg-red-500 shadow-lg rounded-full"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    confirmDeletePonto(ponto);
-                                  }}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
+                              {/* Floating action buttons removed - now only available in PDP */}
                             </div>
                             
                              {/* Card content */}
@@ -693,143 +566,7 @@ export default function RoteiroSimples() {
           </DialogContent>
         </Dialog>
 
-        {/* Edit Ponto Dialog */}
-        <Dialog open={isEditingPonto} onOpenChange={setIsEditingPonto}>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Editar Ponto do Roteiro</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Dia</Label>
-                  <Select value={formData.day_number.toString()} onValueChange={(value) => setFormData({...formData, day_number: parseInt(value)})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({length: roteiro?.total_days || 7}, (_, i) => (
-                        <SelectItem key={i + 1} value={(i + 1).toString()}>
-                          Dia {i + 1}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Categoria</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
-                        <SelectItem key={key} value={key}>
-                          {config.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Hora Início</Label>
-                  <Input
-                    type="time"
-                    value={formData.time_start}
-                    onChange={(e) => setFormData({...formData, time_start: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label>Hora Fim (opcional)</Label>
-                  <Input
-                    type="time"
-                    value={formData.time_end}
-                    onChange={(e) => setFormData({...formData, time_end: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label>Título *</Label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  placeholder="Nome do local ou atividade"
-                />
-              </div>
-
-              <div>
-                <Label>Local *</Label>
-                <Input
-                  value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  placeholder="Endereço ou nome do local"
-                />
-              </div>
-
-               <div>
-                 <Label>Descrição</Label>
-                 <Textarea
-                   value={formData.description}
-                   onChange={(e) => setFormData({...formData, description: e.target.value})}
-                   placeholder="Detalhes sobre o local ou atividade"
-                   rows={3}
-                 />
-               </div>
-
-               <div>
-                 <Label>Imagens</Label>
-                 <ItineraryImageUpload
-                   images={formData.images}
-                   onImagesChange={(images) => setFormData({...formData, images})}
-                   maxImages={5}
-                 />
-               </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button variant="outline" onClick={() => setIsEditingPonto(false)} className="flex-1">
-                  Cancelar
-                </Button>
-                <Button onClick={handleUpdatePonto} className="flex-1">
-                  <Save className="w-4 h-4 mr-2" />
-                  Atualizar
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja excluir este ponto do roteiro? Esta ação não pode ser desfeita.
-                {pontoToDelete && (
-                  <div className="mt-2 p-2 bg-muted rounded">
-                    <p className="font-medium">{pontoToDelete.title}</p>
-                    <p className="text-sm text-muted-foreground">{pontoToDelete.location}</p>
-                  </div>
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleDeletePonto}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-           </AlertDialogContent>
-         </AlertDialog>
-
-         {/* Image Viewer Dialog */}
+        {/* Image Viewer Dialog */}
          <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
            <DialogContent className="max-w-4xl max-h-[90vh] p-0">
              <div className="relative">
