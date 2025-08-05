@@ -276,7 +276,7 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               className="w-full justify-start gap-2 text-sm"
-              onClick={() => setShowDestinationSelector(true)}
+              onClick={() => navigate("/nova-viagem")}
             >
               <MapPin className="w-4 h-4" />
               Adicionar Destino
