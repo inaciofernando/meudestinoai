@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +13,8 @@ import {
   Calendar, 
   Wallet, 
   Clock,
-  Plane
+  Plane,
+  CheckCircle
 } from "lucide-react";
 
 interface Trip {
@@ -34,6 +36,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showTripSelector, setShowTripSelector] = useState(false);
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -272,7 +275,11 @@ export default function Dashboard() {
               <MapPin className="w-4 h-4" />
               Adicionar Destino
             </Button>
-            <Button variant="outline" className="w-full justify-start gap-2 text-sm">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start gap-2 text-sm"
+              onClick={() => setShowTripSelector(true)}
+            >
               <Wallet className="w-4 h-4" />
               Registrar Gasto
             </Button>
@@ -283,6 +290,84 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal de Seleção de Viagem para Gasto */}
+      <Dialog open={showTripSelector} onOpenChange={setShowTripSelector}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-primary" />
+              Selecionar Viagem para o Gasto
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {trips.length === 0 ? (
+              <div className="text-center py-8">
+                <Plane className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-4">Nenhuma viagem encontrada</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Você precisa criar uma viagem antes de registrar gastos.
+                </p>
+                <Button 
+                  onClick={() => {
+                    setShowTripSelector(false);
+                    navigate("/nova-viagem");
+                  }}
+                  className="bg-gradient-ocean hover:shadow-travel transition-all duration-300"
+                >
+                  Criar Primeira Viagem
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {trips.map((trip) => (
+                  <button
+                    key={trip.id}
+                    onClick={() => {
+                      setShowTripSelector(false);
+                      navigate(`/viagem/${trip.id}/gastos`);
+                    }}
+                    className="w-full p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors text-left group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                          {trip.destination}
+                        </h4>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {trip.description || trip.title}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <Clock className="w-3 h-3" />
+                          {formatDateRange(trip.start_date, trip.end_date)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={getStatusColor(trip.status)}
+                          className="text-xs"
+                        >
+                          {getStatusText(trip.status)}
+                        </Badge>
+                        <CheckCircle className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2 mt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowTripSelector(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
