@@ -1006,9 +1006,11 @@ export default function GastosViagem() {
                           <div 
                             className="bg-muted rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/80 transition-colors"
                             onClick={() => {
-                              // Abrir comprovante
-                              const { data } = supabase.storage.from('trip-documents').getPublicUrl(selectedExpense.receipt_url!);
-                              window.open(data.publicUrl, '_blank');
+                              // Abrir comprovante - usar URL construída manualmente pois pode ter diferentes formatos de path
+                              const url = selectedExpense.receipt_url!.startsWith('http') 
+                                ? selectedExpense.receipt_url!
+                                : `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${selectedExpense.receipt_url}`;
+                              window.open(url, '_blank');
                             }}
                           >
                             <div className="flex items-center">
@@ -1082,8 +1084,10 @@ export default function GastosViagem() {
                           <div 
                             className="bg-muted rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/80 transition-colors"
                             onClick={() => {
-                              const { data } = supabase.storage.from('trip-documents').getPublicUrl(editingExpense.receipt_url!);
-                              window.open(data.publicUrl, '_blank');
+                              const url = editingExpense.receipt_url!.startsWith('http') 
+                                ? editingExpense.receipt_url!
+                                : `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${editingExpense.receipt_url}`;
+                              window.open(url, '_blank');
                             }}
                           >
                             <div className="flex items-center">
