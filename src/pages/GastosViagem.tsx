@@ -863,119 +863,100 @@ export default function GastosViagem() {
             </div>
           </div>
 
-          {/* KPIs estilo C6 Bank - Cards organizados em grade */}
-          <div className="px-4 space-y-6">
-            {/* Grid responsivo com 2 colunas */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* KPIs essenciais - Layout simplificado */}
+          <div className="px-4">
+            {/* Grade 2x2 responsiva - sempre 2 colunas mesmo no mobile */}
+            <div className="grid grid-cols-2 gap-3">
               {/* Card Orçamento */}
-              <div className="c6-card bg-gradient-to-br from-background to-muted/20">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex-1">
-                    <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium">ORÇAMENTO</p>
-                    <p className="text-2xl md:text-3xl font-bold text-foreground mt-2">
-                      {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
-                    </p>
-                    <p className="c6-text-secondary text-sm mt-1">
-                      Gasto: {formatCurrency(getTotalExpenses(), selectedCurrency.symbol)}
-                    </p>
-                  </div>
+              <div className="c6-card p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium">ORÇAMENTO</p>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsEditingBudget(true)}
-                    className="h-9 w-9 p-0 hover:bg-muted/50 rounded-full shrink-0"
+                    className="h-7 w-7 p-0 hover:bg-muted/50 rounded-full shrink-0"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <Edit2 className="w-3 h-3" />
                   </Button>
                 </div>
+                <p className="text-lg sm:text-2xl font-bold text-foreground mb-2">
+                  {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
+                </p>
+                <p className="c6-text-secondary text-xs mb-3">
+                  Gasto: {formatCurrency(getTotalExpenses(), selectedCurrency.symbol)}
+                </p>
                 
-                {/* Barra de progresso aprimorada */}
-                <div className="space-y-3">
-                  <div className="w-full bg-muted/40 rounded-full h-3 overflow-hidden">
+                {/* Barra de progresso compacta */}
+                <div className="space-y-2">
+                  <div className="w-full bg-muted/40 rounded-full h-2">
                     <div 
-                      className={`h-full rounded-full transition-all duration-700 ease-out ${
-                        budgetStatus.status === "over-budget" ? "bg-gradient-to-r from-destructive to-red-600" :
-                        budgetStatus.status === "warning" ? "bg-gradient-to-r from-orange-500 to-orange-600" : 
-                        "bg-gradient-to-r from-primary to-blue-600"
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        budgetStatus.status === "over-budget" ? "bg-destructive" :
+                        budgetStatus.status === "warning" ? "bg-orange-500" : "bg-primary"
                       }`}
                       style={{ width: `${Math.min(100, budgetStatus.percentage)}%` }}
                     />
                   </div>
-                  <p className="c6-text-secondary text-xs font-medium">
-                    {budgetStatus.percentage.toFixed(1)}% do orçamento utilizado
+                  <p className="c6-text-secondary text-xs">
+                    {budgetStatus.percentage.toFixed(1)}% utilizado
                   </p>
                 </div>
               </div>
 
               {/* Card Saldo Disponível */}
-              <div className="c6-card bg-gradient-to-br from-background to-muted/20">
-                <div className="flex items-center justify-between h-full">
-                  <div className="flex-1">
-                    <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium">SALDO DISPONÍVEL</p>
-                    <p className={`text-2xl md:text-3xl font-bold mt-2 ${
-                      budgetStatus.status === "over-budget" ? "text-destructive" :
-                      budgetStatus.status === "warning" ? "text-orange-600" : "text-green-600"
-                    }`}>
-                      {formatCurrency(Math.max(0, (trip.total_budget || 0) - getTotalExpenses()), selectedCurrency.symbol)}
-                    </p>
-                    <Badge 
-                      variant="outline"
-                      className={`text-xs mt-3 font-medium px-3 py-1 ${
-                        budgetStatus.status === "over-budget" ? "border-destructive/30 text-destructive bg-destructive/5" :
-                        budgetStatus.status === "warning" ? "border-orange-500/30 text-orange-600 bg-orange-50 dark:bg-orange-900/20" : 
-                        "border-green-500/30 text-green-600 bg-green-50 dark:bg-green-900/20"
-                      }`}
-                    >
-                      {budgetStatus.status === "over-budget" ? "Orçamento Excedido" :
-                       budgetStatus.status === "warning" ? "Atenção ao Limite" : "No controle"}
-                    </Badge>
-                  </div>
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 ml-4 ${
-                    budgetStatus.status === "over-budget" ? "bg-destructive/10 ring-2 ring-destructive/20" :
-                    budgetStatus.status === "warning" ? "bg-orange-100 dark:bg-orange-900/30 ring-2 ring-orange-200 dark:ring-orange-800" :
-                    "bg-green-100 dark:bg-green-900/30 ring-2 ring-green-200 dark:ring-green-800"
+              <div className="c6-card p-4">
+                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">SALDO DISPONÍVEL</p>
+                <p className={`text-lg sm:text-2xl font-bold mb-2 ${
+                  budgetStatus.status === "over-budget" ? "text-destructive" :
+                  budgetStatus.status === "warning" ? "text-orange-600" : "text-green-600"
+                }`}>
+                  {formatCurrency(Math.max(0, (trip.total_budget || 0) - getTotalExpenses()), selectedCurrency.symbol)}
+                </p>
+                <div className="flex items-center justify-between">
+                  <Badge 
+                    variant="outline"
+                    className={`text-xs font-medium px-2 py-1 ${
+                      budgetStatus.status === "over-budget" ? "border-destructive/30 text-destructive bg-destructive/5" :
+                      budgetStatus.status === "warning" ? "border-orange-500/30 text-orange-600 bg-orange-50 dark:bg-orange-900/20" : 
+                      "border-green-500/30 text-green-600 bg-green-50 dark:bg-green-900/20"
+                    }`}
+                  >
+                    {budgetStatus.status === "over-budget" ? "Excedido" :
+                     budgetStatus.status === "warning" ? "Atenção" : "No controle"}
+                  </Badge>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    budgetStatus.status === "over-budget" ? "bg-destructive/10" :
+                    budgetStatus.status === "warning" ? "bg-orange-100 dark:bg-orange-900/30" :
+                    "bg-green-100 dark:bg-green-900/30"
                   }`}>
                     {budgetStatus.status === "over-budget" ? (
-                      <AlertCircle className="w-7 h-7 text-destructive" />
+                      <AlertCircle className="w-4 h-4 text-destructive" />
                     ) : budgetStatus.status === "warning" ? (
-                      <AlertCircle className="w-7 h-7 text-orange-600" />
+                      <AlertCircle className="w-4 h-4 text-orange-600" />
                     ) : (
-                      <CheckCircle className="w-7 h-7 text-green-600" />
+                      <CheckCircle className="w-4 h-4 text-green-600" />
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Card Média Diária */}
-              <div className="c6-card bg-gradient-to-br from-background to-muted/20">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium">MÉDIA DIÁRIA</p>
-                    <p className="text-2xl md:text-3xl font-bold text-primary mt-2">
-                      {formatCurrency(getDailyAverage(), selectedCurrency.symbol)}
-                    </p>
-                    <p className="c6-text-secondary text-sm mt-1">Por dia de viagem</p>
-                  </div>
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 ml-4">
-                    <Calendar className="w-6 h-6 text-primary" />
-                  </div>
-                </div>
+              <div className="c6-card p-4">
+                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">MÉDIA DIÁRIA</p>
+                <p className="text-lg sm:text-2xl font-bold text-primary mb-1">
+                  {formatCurrency(getDailyAverage(), selectedCurrency.symbol)}
+                </p>
+                <p className="c6-text-secondary text-xs">Por dia de viagem</p>
               </div>
 
               {/* Card Projeção Total */}
-              <div className="c6-card bg-gradient-to-br from-background to-muted/20">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium">PROJEÇÃO TOTAL</p>
-                    <p className="text-2xl md:text-3xl font-bold text-purple-600 mt-2">
-                      {formatCurrency(getProjectedTotal(), selectedCurrency.symbol)}
-                    </p>
-                    <p className="c6-text-secondary text-sm mt-1">Baseado no padrão atual</p>
-                  </div>
-                  <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0 ml-4">
-                    <TrendingUp className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
+              <div className="c6-card p-4">
+                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">PROJEÇÃO TOTAL</p>
+                <p className="text-lg sm:text-2xl font-bold text-purple-600 mb-1">
+                  {formatCurrency(getProjectedTotal(), selectedCurrency.symbol)}
+                </p>
+                <p className="c6-text-secondary text-xs">Baseado no padrão atual</p>
               </div>
             </div>
           </div>
