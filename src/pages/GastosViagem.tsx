@@ -63,6 +63,7 @@ interface Expense {
   currency: string;
   description: string;
   date: string;
+  establishment?: string;
   receipt_image_url?: string;
   created_at: string;
 }
@@ -136,6 +137,7 @@ export default function GastosViagem() {
     currency: "BRL",
     description: "",
     date: "",
+    establishment: "",
     receiptFile: null as File | null
   });
 
@@ -194,6 +196,7 @@ export default function GastosViagem() {
             category: item.category || 'miscellaneous',
             amount: item.actual_amount || 0,
             currency: item.currency,
+            establishment: item.establishment,
             description: item.title,
             date: item.expense_date || item.created_at,
         receipt_image_url: item.receipt_image_url,
@@ -310,6 +313,7 @@ export default function GastosViagem() {
         category: item.category || 'miscellaneous',
         amount: item.actual_amount || 0,
         currency: item.currency,
+        establishment: item.establishment,
         description: item.title,
         date: item.expense_date || item.created_at,
         receipt_image_url: item.receipt_image_url,
@@ -1143,6 +1147,25 @@ export default function GastosViagem() {
                         </span>
                       </div>
 
+                      {selectedExpense.establishment && (
+                        <div className="flex justify-between">
+                          <span className="c6-text-secondary">Estabelecimento:</span>
+                          <span className="c6-text-primary">{selectedExpense.establishment}</span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between">
+                        <span className="c6-text-secondary">Categoria:</span>
+                        <span className="c6-text-primary">
+                          {EXPENSE_CATEGORIES.find(cat => cat.id === selectedExpense.category)?.name || 'Outros'}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="c6-text-secondary">Descrição:</span>
+                        <span className="c6-text-primary">{selectedExpense.description}</span>
+                      </div>
+
 
                       {selectedExpense.receipt_image_url && (
                         <div>
@@ -1183,9 +1206,10 @@ export default function GastosViagem() {
                           subcategory: "",
                           amount: selectedExpense.amount.toString(),
                           currency: selectedExpense.currency,
-          description: selectedExpense.description,
-          date: selectedExpense.date.split('T')[0],
-          receiptFile: null
+                          establishment: selectedExpense.establishment || "",
+                          description: selectedExpense.description,
+                          date: selectedExpense.date.split('T')[0],
+                          receiptFile: null
                         });
                         setIsViewingExpense(false);
                         setIsEditingExpense(true);
@@ -1386,6 +1410,15 @@ export default function GastosViagem() {
                   )}
 
                   <div>
+                    <Label>Estabelecimento</Label>
+                    <Input
+                      value={editForm.establishment}
+                      onChange={(e) => setEditForm({...editForm, establishment: e.target.value})}
+                      placeholder="Ex: Restaurante Villa Rosa, Hotel Copacabana..."
+                    />
+                  </div>
+
+                  <div>
                     <Label>Descrição *</Label>
                     <Textarea
                       value={editForm.description}
@@ -1477,6 +1510,7 @@ export default function GastosViagem() {
                             .update({
                               title: editForm.description,
                               category: editForm.category,
+                              establishment: editForm.establishment,
                               actual_amount: parseFloat(editForm.amount),
                               planned_amount: parseFloat(editForm.amount),
                               currency: editForm.currency,
