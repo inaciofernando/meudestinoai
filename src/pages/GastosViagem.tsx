@@ -63,7 +63,7 @@ interface Expense {
   description: string;
   date: string;
   location?: string;
-  receipt_url?: string;
+  receipt_image_url?: string;
   created_at: string;
 }
 
@@ -183,7 +183,7 @@ export default function GastosViagem() {
             description: item.title,
             date: item.expense_date || item.created_at,
             location: item.location,
-            receipt_url: item.receipt_image_url,
+        receipt_image_url: item.receipt_image_url,
             created_at: item.created_at
           }));
 
@@ -300,7 +300,7 @@ export default function GastosViagem() {
         description: item.title,
         date: item.expense_date || item.created_at,
         location: item.location,
-        receipt_url: item.receipt_image_url,
+        receipt_image_url: item.receipt_image_url,
         created_at: item.created_at
       }));
 
@@ -1000,16 +1000,16 @@ export default function GastosViagem() {
                         </div>
                       )}
 
-                      {selectedExpense.receipt_url && (
+                      {selectedExpense.receipt_image_url && (
                         <div>
                           <span className="c6-text-secondary block mb-2">Comprovante:</span>
                           <div 
                             className="bg-muted rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/80 transition-colors"
                             onClick={() => {
                               // Abrir comprovante - usar URL construída manualmente pois pode ter diferentes formatos de path
-                              const url = selectedExpense.receipt_url!.startsWith('http') 
-                                ? selectedExpense.receipt_url!
-                                : `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${selectedExpense.receipt_url}`;
+                              const url = selectedExpense.receipt_image_url!.startsWith('http') 
+                                ? selectedExpense.receipt_image_url!
+                                : `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${selectedExpense.receipt_image_url}`;
                               window.open(url, '_blank');
                             }}
                           >
@@ -1079,14 +1079,14 @@ export default function GastosViagem() {
                       Comprovante
                     </Label>
                     <div className="mt-2">
-                      {editingExpense.receipt_url && !editForm.receiptFile ? (
+                      {editingExpense.receipt_image_url && !editForm.receiptFile ? (
                         <div className="space-y-2">
                           <div 
                             className="bg-muted rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/80 transition-colors"
                             onClick={() => {
-                              const url = editingExpense.receipt_url!.startsWith('http') 
-                                ? editingExpense.receipt_url!
-                                : `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${editingExpense.receipt_url}`;
+                              const url = editingExpense.receipt_image_url!.startsWith('http') 
+                                ? editingExpense.receipt_image_url!
+                                : `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${editingExpense.receipt_image_url}`;
                               window.open(url, '_blank');
                             }}
                           >
@@ -1258,7 +1258,7 @@ export default function GastosViagem() {
                         if (!user || !trip || !editingExpense) return;
 
                         try {
-                          let receiptUrl = editingExpense.receipt_url;
+                          let receiptUrl = editingExpense.receipt_image_url;
 
                           // Upload new receipt if provided
                           if (editForm.receiptFile) {
