@@ -14,6 +14,8 @@ import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { format, addDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   ArrowLeft,
   Plus,
@@ -36,6 +38,8 @@ interface Trip {
   id: string;
   title: string;
   destination: string;
+  start_date: string | null;
+  end_date: string | null;
 }
 
 interface Roteiro {
@@ -165,14 +169,14 @@ export default function RoteiroSimples() {
 
         setRoteiro(roteiroData);
 
-        // Busca pontos do roteiro
+        // Busca pontos do roteiro ordenados por dia e horário
         const { data: pontosData, error: pontosError } = await supabase
           .from("roteiro_pontos")
           .select("*")
           .eq("roteiro_id", roteiroData.id)
           .eq("user_id", user.id)
           .order("day_number", { ascending: true })
-          .order("order_index", { ascending: true });
+          .order("time_start", { ascending: true }); // Ordenação por horário
 
         if (pontosError) {
           console.error("Erro ao buscar pontos:", pontosError);
@@ -200,10 +204,24 @@ export default function RoteiroSimples() {
       .eq("roteiro_id", roteiro.id)
       .eq("user_id", user!.id)
       .order("day_number", { ascending: true })
-      .order("order_index", { ascending: true });
+      .order("time_start", { ascending: true }); // Ordenação por horário
 
     if (!pontosError && pontosData) {
       setPontos(pontosData);
+    }
+  };
+
+  // Função para calcular a data de cada dia do roteiro
+  const getDayDate = (dayNumber: number): string => {
+    if (!trip?.start_date) return "";
+    
+    try {
+      const startDate = new Date(trip.start_date + 'T00:00:00');
+      const dayDate = addDays(startDate, dayNumber - 1);
+      return format(dayDate, "dd/MM - EEEE", { locale: ptBR });
+    } catch (error) {
+      console.error("Erro ao calcular data do dia:", error);
+      return "";
     }
   };
 
@@ -349,16 +367,18 @@ export default function RoteiroSimples() {
                 .sort(([dayA], [dayB]) => Number(dayA) - Number(dayB))
                 .map(([day, dayPontos]) => (
                   <div key={day} className="space-y-4 mb-8">
-                    {/* Day header */}
-                    <div className="flex items-center gap-3 py-2 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
-                      <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+                    {/* Day header com data e dia da semana */}
+                    <div className="flex items-center gap-3 py-3 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 border-b border-border/20">
+                      <div className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
                         {day}
                       </div>
-                      <div>
-                        <h3 className="font-semibold">Dia {day}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {dayPontos.length} {dayPontos.length === 1 ? 'ponto' : 'pontos'}
-                        </p>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">Dia {day}</h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>{getDayDate(Number(day))}</span>
+                          <span>•</span>
+                          <span>{dayPontos.length} {dayPontos.length === 1 ? 'ponto' : 'pontos'}</span>
+                        </div>
                       </div>
                     </div>
 
