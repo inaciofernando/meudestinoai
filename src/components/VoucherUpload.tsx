@@ -35,7 +35,16 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `voucher_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `vouchers/${fileName}`;
+      
+      // Usar o ID do usuário no caminho para organizar os arquivos
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+      
+      const filePath = `${user.id}/${fileName}`;
+
+      console.log('Fazendo upload para:', filePath);
 
       const { error: uploadError } = await supabase.storage
         .from('trip-documents')
@@ -48,6 +57,8 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
 
       const { data } = supabase.storage.from('trip-documents').getPublicUrl(filePath);
 
+      console.log('Upload concluído:', data.publicUrl);
+
       return {
         url: data.publicUrl,
         name: file.name,
@@ -56,6 +67,11 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
       };
     } catch (error) {
       console.error('Erro no upload:', error);
+      toast({
+        title: "Erro no upload",
+        description: `Falha ao fazer upload de ${file.name}: ${error.message || 'Erro desconhecido'}`,
+        variant: "destructive"
+      });
       return null;
     }
   };
@@ -63,6 +79,8 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || disabled) return;
+
+    console.log('Iniciando upload de', files.length, 'arquivo(s)');
 
     if (vouchers.length + files.length > maxFiles) {
       toast({
@@ -76,9 +94,28 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
     setUploading(true);
 
     try {
-      const uploadPromises = Array.from(files).map(uploadFile);
-      const uploadedFiles = await Promise.all(uploadPromises);
-      const successfulUploads = uploadedFiles.filter(file => file !== null) as VoucherFile[];
+      const uploadResults = [];
+      
+      // Upload sequencial para melhor controle de erros
+      for (const file of Array.from(files)) {
+        console.log('Fazendo upload de:', file.name, 'Tamanho:', file.size, 'Tipo:', file.type);
+        
+        // Validar tamanho do arquivo (máx 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          toast({
+            title: "Arquivo muito grande",
+            description: `${file.name} excede o limite de 10MB.`,
+            variant: "destructive"
+          });
+          continue;
+        }
+        
+        const result = await uploadFile(file);
+        uploadResults.push(result);
+      }
+
+      const successfulUploads = uploadResults.filter(file => file !== null) as VoucherFile[];
+      const failedUploads = uploadResults.filter(file => file === null).length;
 
       if (successfulUploads.length > 0) {
         onVouchersChange([...vouchers, ...successfulUploads]);
@@ -89,15 +126,15 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
         setNewDescription('');
       }
 
-      if (successfulUploads.length !== files.length) {
+      if (failedUploads > 0) {
         toast({
           title: "Alguns uploads falharam",
-          description: "Tente novamente com os arquivos que falharam.",
+          description: `${failedUploads} arquivo(s) não puderam ser enviados. Verifique o console para detalhes.`,
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error('Erro no upload:', error);
+      console.error('Erro geral no upload:', error);
       toast({
         title: "Erro no upload",
         description: "Não foi possível fazer upload dos arquivos.",
