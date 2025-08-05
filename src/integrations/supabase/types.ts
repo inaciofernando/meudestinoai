@@ -72,10 +72,10 @@ export type Database = {
           created_at: string
           currency: string
           description: string | null
+          establishment: string | null
           expense_date: string | null
           id: string
           is_confirmed: boolean
-          location: string | null
           notes: string | null
           payment_method: string | null
           planned_amount: number
@@ -91,10 +91,10 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          establishment?: string | null
           expense_date?: string | null
           id?: string
           is_confirmed?: boolean
-          location?: string | null
           notes?: string | null
           payment_method?: string | null
           planned_amount: number
@@ -110,10 +110,10 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          establishment?: string | null
           expense_date?: string | null
           id?: string
           is_confirmed?: boolean
-          location?: string | null
           notes?: string | null
           payment_method?: string | null
           planned_amount?: number

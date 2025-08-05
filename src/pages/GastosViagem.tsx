@@ -63,7 +63,6 @@ interface Expense {
   currency: string;
   description: string;
   date: string;
-  location?: string;
   receipt_image_url?: string;
   created_at: string;
 }
@@ -126,7 +125,6 @@ export default function GastosViagem() {
     description: "",
     establishment: "",
     date: new Date().toISOString().split('T')[0],
-    location: "",
     receiptFile: null as File | null
   });
 
@@ -138,7 +136,6 @@ export default function GastosViagem() {
     currency: "BRL",
     description: "",
     date: "",
-    location: "",
     receiptFile: null as File | null
   });
 
@@ -199,7 +196,6 @@ export default function GastosViagem() {
             currency: item.currency,
             description: item.title,
             date: item.expense_date || item.created_at,
-            location: item.location,
         receipt_image_url: item.receipt_image_url,
             created_at: item.created_at
           }));
@@ -316,7 +312,6 @@ export default function GastosViagem() {
         currency: item.currency,
         description: item.title,
         date: item.expense_date || item.created_at,
-        location: item.location,
         receipt_image_url: item.receipt_image_url,
         created_at: item.created_at
       }));
@@ -361,7 +356,6 @@ export default function GastosViagem() {
           planned_amount: parseFloat(newExpense.amount),
           currency: newExpense.currency,
           expense_date: newExpense.date,
-          location: newExpense.location,
           receipt_image_url: receiptUrl,
           is_confirmed: true
         });
@@ -382,7 +376,6 @@ export default function GastosViagem() {
         description: "",
         establishment: "",
         date: new Date().toISOString().split('T')[0],
-        location: "",
         receiptFile: null
       });
       
@@ -601,7 +594,6 @@ export default function GastosViagem() {
                                     ...prev,
                                     amount: extractedData.amount?.toString() || prev.amount,
                                     description: extractedData.description || prev.description,
-                                    location: extractedData.location || prev.location,
                                     category: extractedData.category || prev.category,
                                     subcategory: extractedData.subcategory || prev.subcategory,
                                     date: extractedData.date || prev.date
@@ -841,14 +833,6 @@ export default function GastosViagem() {
                           onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
                         />
                       </div>
-                      <div>
-                        <Label>Local (Opcional)</Label>
-                        <Input
-                          value={newExpense.location}
-                          onChange={(e) => setNewExpense({...newExpense, location: e.target.value})}
-                          placeholder="Ex: Restaurante XYZ"
-                        />
-                      </div>
                     </div>
 
                     <div className="flex gap-2">
@@ -1051,7 +1035,6 @@ export default function GastosViagem() {
                                       </p>
                                       <p className="c6-text-secondary text-xs">
                                         {expenseCategory?.name || 'Outros'}
-                                        {expense.location && ` • ${expense.location}`}
                                       </p>
                                     </div>
                                   </div>
@@ -1160,12 +1143,6 @@ export default function GastosViagem() {
                         </span>
                       </div>
 
-                      {selectedExpense.location && (
-                        <div className="flex justify-between">
-                          <span className="c6-text-secondary">Local:</span>
-                          <span className="c6-text-primary">{selectedExpense.location}</span>
-                        </div>
-                      )}
 
                       {selectedExpense.receipt_image_url && (
                         <div>
@@ -1206,10 +1183,9 @@ export default function GastosViagem() {
                           subcategory: "",
                           amount: selectedExpense.amount.toString(),
                           currency: selectedExpense.currency,
-                          description: selectedExpense.description,
-                          date: selectedExpense.date.split('T')[0],
-                          location: selectedExpense.location || "",
-                          receiptFile: null
+          description: selectedExpense.description,
+          date: selectedExpense.date.split('T')[0],
+          receiptFile: null
                         });
                         setIsViewingExpense(false);
                         setIsEditingExpense(true);
@@ -1460,14 +1436,6 @@ export default function GastosViagem() {
                         onChange={(e) => setEditForm({...editForm, date: e.target.value})}
                       />
                     </div>
-                    <div>
-                      <Label>Local (Opcional)</Label>
-                      <Input
-                        value={editForm.location}
-                        onChange={(e) => setEditForm({...editForm, location: e.target.value})}
-                        placeholder="Ex: Restaurante XYZ"
-                      />
-                    </div>
                   </div>
 
                   <div className="flex gap-2">
@@ -1513,7 +1481,6 @@ export default function GastosViagem() {
                               planned_amount: parseFloat(editForm.amount),
                               currency: editForm.currency,
                               expense_date: editForm.date,
-                              location: editForm.location,
                               receipt_image_url: receiptUrl
                             })
                             .eq('id', editingExpense.id)
