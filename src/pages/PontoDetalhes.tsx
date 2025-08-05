@@ -435,23 +435,6 @@ export default function PontoDetalhes() {
                 </CardContent>
               </Card>
 
-              {/* Informações da Viagem */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Informações da Viagem</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <strong>Destino:</strong>
-                    <p className="text-lg mt-1">{trip.destination}</p>
-                  </div>
-                  <div>
-                    <strong>Viagem:</strong>
-                    <p className="text-lg mt-1">{trip.title}</p>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Ações Rápidas */}
               <Card>
                 <CardHeader>
