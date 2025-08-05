@@ -37,6 +37,8 @@ export default function Dashboard() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTripSelector, setShowTripSelector] = useState(false);
+  const [showDestinationSelector, setShowDestinationSelector] = useState(false);
+  const [showItinerarySelector, setShowItinerarySelector] = useState(false);
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -271,7 +273,11 @@ export default function Dashboard() {
             <CardTitle className="text-lg">Ações Rápidas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button variant="outline" className="w-full justify-start gap-2 text-sm">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start gap-2 text-sm"
+              onClick={() => setShowDestinationSelector(true)}
+            >
               <MapPin className="w-4 h-4" />
               Adicionar Destino
             </Button>
@@ -283,7 +289,11 @@ export default function Dashboard() {
               <Wallet className="w-4 h-4" />
               Registrar Gasto
             </Button>
-            <Button variant="outline" className="w-full justify-start gap-2 text-sm">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start gap-2 text-sm"
+              onClick={() => setShowItinerarySelector(true)}
+            >
               <Calendar className="w-4 h-4" />
               Criar Roteiro
             </Button>
@@ -360,6 +370,162 @@ export default function Dashboard() {
               <Button 
                 variant="outline" 
                 onClick={() => setShowTripSelector(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Seleção de Viagem para Destino */}
+      <Dialog open={showDestinationSelector} onOpenChange={setShowDestinationSelector}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              Selecionar Viagem para Adicionar Destino
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {trips.length === 0 ? (
+              <div className="text-center py-8">
+                <Plane className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-4">Nenhuma viagem encontrada</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Você precisa criar uma viagem antes de adicionar destinos.
+                </p>
+                <Button 
+                  onClick={() => {
+                    setShowDestinationSelector(false);
+                    navigate("/nova-viagem");
+                  }}
+                  className="bg-gradient-ocean hover:shadow-travel transition-all duration-300"
+                >
+                  Criar Primeira Viagem
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {trips.map((trip) => (
+                  <button
+                    key={trip.id}
+                    onClick={() => {
+                      setShowDestinationSelector(false);
+                      navigate(`/viagem/${trip.id}/planejamento`);
+                    }}
+                    className="w-full p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors text-left group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                          {trip.destination}
+                        </h4>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {trip.description || trip.title}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <Clock className="w-3 h-3" />
+                          {formatDateRange(trip.start_date, trip.end_date)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={getStatusColor(trip.status)}
+                          className="text-xs"
+                        >
+                          {getStatusText(trip.status)}
+                        </Badge>
+                        <CheckCircle className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2 mt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDestinationSelector(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Seleção de Viagem para Roteiro */}
+      <Dialog open={showItinerarySelector} onOpenChange={setShowItinerarySelector}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              Selecionar Viagem para Criar Roteiro
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {trips.length === 0 ? (
+              <div className="text-center py-8">
+                <Plane className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-4">Nenhuma viagem encontrada</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Você precisa criar uma viagem antes de criar roteiros.
+                </p>
+                <Button 
+                  onClick={() => {
+                    setShowItinerarySelector(false);
+                    navigate("/nova-viagem");
+                  }}
+                  className="bg-gradient-ocean hover:shadow-travel transition-all duration-300"
+                >
+                  Criar Primeira Viagem
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {trips.map((trip) => (
+                  <button
+                    key={trip.id}
+                    onClick={() => {
+                      setShowItinerarySelector(false);
+                      navigate(`/viagem/${trip.id}/roteiro`);
+                    }}
+                    className="w-full p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors text-left group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                          {trip.destination}
+                        </h4>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {trip.description || trip.title}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <Clock className="w-3 h-3" />
+                          {formatDateRange(trip.start_date, trip.end_date)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={getStatusColor(trip.status)}
+                          className="text-xs"
+                        >
+                          {getStatusText(trip.status)}
+                        </Badge>
+                        <CheckCircle className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2 mt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowItinerarySelector(false)}
                 className="flex-1"
               >
                 Cancelar
