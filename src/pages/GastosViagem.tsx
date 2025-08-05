@@ -100,6 +100,8 @@ export default function GastosViagem() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [isAnalyzingReceipt, setIsAnalyzingReceipt] = useState(false);
   const [analysisStep, setAnalysisStep] = useState<string>("");
+  const [isViewingReceipt, setIsViewingReceipt] = useState(false);
+  const [receiptImageUrl, setReceiptImageUrl] = useState("");
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isViewingExpense, setIsViewingExpense] = useState(false);
@@ -1154,11 +1156,12 @@ export default function GastosViagem() {
                           <div 
                             className="bg-muted rounded-lg p-3 flex items-center justify-between cursor-pointer hover:bg-muted/80 transition-colors"
                             onClick={() => {
-                              // Abrir comprovante - usar URL construída manualmente pois pode ter diferentes formatos de path
+                              // Abrir comprovante no modal
                               const url = selectedExpense.receipt_image_url!.startsWith('http') 
                                 ? selectedExpense.receipt_image_url!
                                 : `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${selectedExpense.receipt_image_url}`;
-                              window.open(url, '_blank');
+                              setReceiptImageUrl(url);
+                              setIsViewingReceipt(true);
                             }}
                           >
                             <div className="flex items-center">
@@ -1235,7 +1238,8 @@ export default function GastosViagem() {
                               const url = editingExpense.receipt_image_url!.startsWith('http') 
                                 ? editingExpense.receipt_image_url!
                                 : `https://sqbdqqbvxrmxnmrlqynu.supabase.co/storage/v1/object/public/trip-documents/${editingExpense.receipt_image_url}`;
-                              window.open(url, '_blank');
+                              setReceiptImageUrl(url);
+                              setIsViewingReceipt(true);
                             }}
                           >
                             <div className="flex items-center">
@@ -1469,6 +1473,55 @@ export default function GastosViagem() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Modal de Visualização do Comprovante */}
+        <Dialog open={isViewingReceipt} onOpenChange={setIsViewingReceipt}>
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-primary" />
+                Visualizar Comprovante
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center py-4">
+              {receiptImageUrl && (
+                <div className="w-full max-w-3xl">
+                  <img 
+                    src={receiptImageUrl} 
+                    alt="Comprovante" 
+                    className="w-full h-auto rounded-lg shadow-lg border border-border"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                      toast({
+                        title: "Erro ao carregar imagem",
+                        description: "Não foi possível carregar o comprovante.",
+                        variant: "destructive"
+                      });
+                    }}
+                  />
+                </div>
+              )}
+              <div className="flex gap-3 mt-6">
+                <Button 
+                  onClick={() => setIsViewingReceipt(false)}
+                  variant="outline"
+                >
+                  Fechar
+                </Button>
+                <Button 
+                  onClick={() => {
+                    if (receiptImageUrl) {
+                      window.open(receiptImageUrl, '_blank');
+                    }
+                  }}
+                  variant="default"
+                >
+                  Abrir em Nova Aba
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </PWALayout>
     </ProtectedRoute>
   );
