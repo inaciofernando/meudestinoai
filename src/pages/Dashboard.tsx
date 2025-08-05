@@ -284,7 +284,15 @@ export default function Dashboard() {
             <Button 
               variant="outline" 
               className="w-full justify-start gap-2 text-sm"
-              onClick={() => setShowTripSelector(true)}
+              onClick={() => {
+                if (trips.length === 0) {
+                  setShowTripSelector(true);
+                } else if (trips.length === 1) {
+                  navigate(`/viagem/${trips[0].id}/gastos?add=true`);
+                } else {
+                  setShowTripSelector(true);
+                }
+              }}
             >
               <Wallet className="w-4 h-4" />
               Registrar Gasto
@@ -335,7 +343,7 @@ export default function Dashboard() {
                     key={trip.id}
                     onClick={() => {
                       setShowTripSelector(false);
-                      navigate(`/viagem/${trip.id}/gastos`);
+                      navigate(`/viagem/${trip.id}/gastos?add=true`);
                     }}
                     className="w-full p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors text-left group"
                   >

@@ -92,10 +92,14 @@ export default function GastosViagem() {
   const { user } = useAuth();
   const { toast } = useToast();
   
+  // Check URL params for auto-opening add expense modal
+  const urlParams = new URLSearchParams(window.location.search);
+  const shouldAutoOpenAdd = urlParams.get('add') === 'true';
+  
   const [trip, setTrip] = useState<Trip | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [isAddingExpense, setIsAddingExpense] = useState(shouldAutoOpenAdd);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [isEditingExpense, setIsEditingExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -136,6 +140,15 @@ export default function GastosViagem() {
     location: "",
     receiptFile: null as File | null
   });
+
+  // Remove URL parameter when modal is closed
+  useEffect(() => {
+    if (!isAddingExpense && shouldAutoOpenAdd) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('add');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [isAddingExpense, shouldAutoOpenAdd]);
 
   useEffect(() => {
     const fetchData = async () => {
