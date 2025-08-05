@@ -6,6 +6,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +43,9 @@ import {
   Eye,
   Edit,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2,
+  MoreVertical
 } from "lucide-react";
 
 interface RoteiroPonto {
@@ -74,6 +93,7 @@ export default function PontoDetalhes() {
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getTimePeriod = (time: string): keyof typeof TIME_PERIODS => {
     const hour = parseInt(time.split(':')[0]);
@@ -168,6 +188,38 @@ export default function PontoDetalhes() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!ponto || !user?.id) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      const { error } = await supabase
+        .from("roteiro_pontos")
+        .delete()
+        .eq("id", ponto.id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Ponto excluído!",
+        description: "O ponto foi removido do roteiro com sucesso.",
+      });
+
+      navigate(`/roteiro/${tripId}`, { replace: true });
+    } catch (error) {
+      console.error("Erro ao excluir ponto:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o ponto.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -238,11 +290,55 @@ export default function PontoDetalhes() {
               >
                 <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
               </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full"
+                  >
+                    <MoreVertical className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate(`/roteiro/${tripId}/ponto/${pontoId}/edit`)}>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Editar
+                  </DropdownMenuItem>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Excluir
+                      </DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir ponto</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir "{ponto?.title}"? Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDelete}
+                          disabled={isDeleting}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {isDeleting ? "Excluindo..." : "Excluir"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
-          {/* Galeria de imagens estilo Airbnb */}
-          <div className="relative aspect-square bg-muted">
+          {/* Galeria de imagens compacta */}
+          <div className="relative aspect-[4/3] bg-muted mt-16">
             {ponto.images && ponto.images.length > 0 ? (
               <div className="relative h-full">
                 <img
@@ -384,25 +480,15 @@ export default function PontoDetalhes() {
 
           {/* Footer fixo com ações */}
           <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => navigate(`/roteiro/${tripId}/ponto/${pontoId}/edit`)}
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Editar
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={() => {
-                  console.log("🔙 Footer - Voltando para roteiro:", tripId);
-                  navigate(`/roteiro/${tripId}`, { replace: true });
-                }}
-              >
-                Voltar ao Roteiro
-              </Button>
-            </div>
+            <Button
+              className="w-full"
+              onClick={() => {
+                console.log("🔙 Footer - Voltando para roteiro:", tripId);
+                navigate(`/roteiro/${tripId}`, { replace: true });
+              }}
+            >
+              Voltar ao Roteiro
+            </Button>
           </div>
         </div>
       </PWALayout>
