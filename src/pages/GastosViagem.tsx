@@ -237,6 +237,64 @@ export default function GastosViagem() {
     return categoryStats;
   };
 
+  // Nova função para organizar gastos por dia
+  const getExpensesByDay = () => {
+    const expensesByDay = expenses.reduce((acc, expense) => {
+      const date = expense.date.split('T')[0];
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(expense);
+      return acc;
+    }, {} as Record<string, Expense[]>);
+
+    // Converter para array e ordenar por data (mais recente primeiro)
+    return Object.entries(expensesByDay)
+      .map(([date, dayExpenses]) => ({
+        date,
+        expenses: dayExpenses,
+        total: dayExpenses.reduce((sum, expense) => sum + expense.amount, 0),
+        mainCategory: getMostFrequentCategory(dayExpenses)
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  };
+
+  const getMostFrequentCategory = (dayExpenses: Expense[]) => {
+    const categoryCount = dayExpenses.reduce((acc, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const mostFrequent = Object.entries(categoryCount).reduce((max, [category, count]) => 
+      count > max.count ? { category, count } : max, 
+      { category: '', count: 0 }
+    );
+
+    return EXPENSE_CATEGORIES.find(cat => cat.id === mostFrequent.category);
+  };
+
+  // Novas funções para KPIs melhorados
+  const getDailyAverage = () => {
+    if (!trip?.start_date || expenses.length === 0) return 0;
+    
+    const startDate = new Date(trip.start_date);
+    const endDate = trip.end_date ? new Date(trip.end_date) : new Date();
+    const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+    
+    return getTotalExpenses() / daysDiff;
+  };
+
+  const getProjectedTotal = () => {
+    if (!trip?.start_date || !trip?.end_date) return 0;
+    
+    const startDate = new Date(trip.start_date);
+    const endDate = new Date(trip.end_date);
+    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const dailyAverage = getDailyAverage();
+    
+    return dailyAverage * totalDays;
+  };
+
   const fetchExpenses = async () => {
     if (!user || !trip) return;
 
@@ -1153,67 +1211,159 @@ export default function GastosViagem() {
             </Dialog>
           </div>
 
-          {/* Budget Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-4">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Orçamento Total</p>
-                    <p className="text-2xl font-bold text-primary">
-                      {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Moeda: {selectedCurrency.name}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
+          {/* Dashboard de KPIs Moderno - 2 Cards por Linha */}
+          <div className="px-4 space-y-4">
+            {/* Primeira Linha - Orçamento vs Gasto + Saldo Disponível */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                        <Target className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Orçamento vs Gasto</p>
+                        <p className="text-lg font-bold">
+                          {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
+                        </p>
+                      </div>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsEditingBudget(true)}
-                      className="h-8 w-8 p-0"
-                      title="Editar orçamento e moeda"
+                      className="h-8 w-8 p-0 hover:bg-primary/10"
+                      title="Editar orçamento"
                     >
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Target className="w-8 h-8 text-primary/50" />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  
+                  {/* Barra de Progresso */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Gasto: {formatCurrency(getTotalExpenses(), selectedCurrency.symbol)}</span>
+                      <span className="font-medium">{budgetStatus.percentage.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-3">
+                      <div 
+                        className={`h-3 rounded-full transition-all duration-500 ${
+                          budgetStatus.status === "over-budget" ? "bg-destructive" :
+                          budgetStatus.status === "warning" ? "bg-orange-500" : "bg-green-500"
+                        }`}
+                        style={{ width: `${Math.min(100, budgetStatus.percentage)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">{selectedCurrency.name}</p>
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Gasto</p>
-                    <p className="text-2xl font-bold text-destructive">
-                      {formatCurrency(getTotalExpenses(), selectedCurrency.symbol)}
-                    </p>
+              <Card className={`border-2 transition-all duration-300 ${
+                budgetStatus.status === "over-budget" ? "bg-destructive/5 border-destructive/20" :
+                budgetStatus.status === "warning" ? "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800" :
+                "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800"
+              }`}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        budgetStatus.status === "over-budget" ? "bg-destructive/10" :
+                        budgetStatus.status === "warning" ? "bg-orange-100 dark:bg-orange-900/30" :
+                        "bg-green-100 dark:bg-green-900/30"
+                      }`}>
+                        {budgetStatus.status === "over-budget" ? (
+                          <AlertCircle className="w-6 h-6 text-destructive" />
+                        ) : budgetStatus.status === "warning" ? (
+                          <AlertCircle className="w-6 h-6 text-orange-600" />
+                        ) : (
+                          <CheckCircle className="w-6 h-6 text-green-600" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Saldo Disponível</p>
+                        <p className={`text-2xl font-bold ${
+                          budgetStatus.status === "over-budget" ? "text-destructive" :
+                          budgetStatus.status === "warning" ? "text-orange-600" : "text-green-600"
+                        }`}>
+                          {formatCurrency(Math.max(0, (trip.total_budget || 0) - getTotalExpenses()), selectedCurrency.symbol)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant={
+                        budgetStatus.status === "over-budget" ? "destructive" :
+                        budgetStatus.status === "warning" ? "default" : "default"
+                      } className={
+                        budgetStatus.status === "warning" ? "bg-orange-100 text-orange-800 border-orange-200" :
+                        budgetStatus.status === "on-track" ? "bg-green-100 text-green-800 border-green-200" : ""
+                      }>
+                        {budgetStatus.status === "over-budget" ? "Excedido" :
+                         budgetStatus.status === "warning" ? "Atenção" : "No Controle"}
+                      </Badge>
+                    </div>
                   </div>
-                  <TrendingUp className="w-8 h-8 text-destructive/50" />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Restante</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {formatCurrency(Math.max(0, (trip.total_budget || 0) - getTotalExpenses()), selectedCurrency.symbol)}
-                    </p>
+            {/* Segunda Linha - Média Diária + Projeção */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 dark:from-blue-950/20 dark:to-indigo-950/20 dark:border-blue-800">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                        <BarChart3 className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Média Diária</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {formatCurrency(getDailyAverage(), selectedCurrency.symbol)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Por dia de viagem
+                        </p>
+                      </div>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-blue-400" />
                   </div>
-                  <div className="flex items-center">
-                    {budgetStatus.status === "on-track" && <CheckCircle className="w-8 h-8 text-green-500/50" />}
-                    {budgetStatus.status === "warning" && <AlertCircle className="w-8 h-8 text-yellow-500/50" />}
-                    {budgetStatus.status === "over-budget" && <AlertCircle className="w-8 h-8 text-red-500/50" />}
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 dark:from-purple-950/20 dark:to-pink-950/20 dark:border-purple-800">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                        <TrendingUp className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Projeção Total</p>
+                        <p className="text-2xl font-bold text-purple-600">
+                          {formatCurrency(getProjectedTotal(), selectedCurrency.symbol)}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Baseado no padrão atual
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {getProjectedTotal() > (trip.total_budget || 0) ? (
+                        <Badge variant="destructive" className="text-xs">
+                          Acima do orçamento
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
+                          Dentro do orçamento
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* AI Assistant Promotion */}
@@ -1229,11 +1379,12 @@ export default function GastosViagem() {
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4 mt-4">
+                {/* Nova Seção: Gastos por Dia */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <PieChart className="w-5 h-5" />
-                      Gastos por Categoria
+                      Gastos por Dia
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -1241,42 +1392,147 @@ export default function GastosViagem() {
                       <div className="text-center py-12 text-muted-foreground">
                         <Receipt className="w-12 h-12 mx-auto mb-4 opacity-50" />
                         <p>Nenhum gasto registrado ainda</p>
-                        <p className="text-sm">Comece adicionando seus primeiros gastos</p>
+                        <p className="text-sm">Comece adicionando seus primeiros gastos da viagem</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {expenses.map((expense) => {
-                          const category = EXPENSE_CATEGORIES.find(c => c.id === expense.category) || EXPENSE_CATEGORIES[EXPENSE_CATEGORIES.length - 1];
-                          const CategoryIcon = category.icon;
+                        {getExpensesByDay().map((dayData, index) => {
+                          const isExpanded = selectedCategory === dayData.date;
+                          const dayDate = new Date(dayData.date + 'T00:00:00');
+                          const dayName = dayDate.toLocaleDateString('pt-BR', { weekday: 'long' });
+                          const formattedDate = dayDate.toLocaleDateString('pt-BR', { 
+                            day: '2-digit', 
+                            month: '2-digit', 
+                            year: 'numeric' 
+                          });
                           
                           return (
-            <div 
-              key={expense.id} 
-              className="border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-              onClick={() => handleViewExpenseDetails(expense)}
+                            <Card 
+                              key={dayData.date} 
+                              className="border hover:shadow-md transition-all duration-300 cursor-pointer animate-fade-in"
+                              style={{ animationDelay: `${index * 0.1}s` }}
+                              onClick={() => setSelectedCategory(isExpanded ? null : dayData.date)}
                             >
-                              <div className="flex items-center justify-between p-4">
-                                <div className="flex items-center gap-3">
-                                  <div>
-                                    <p className="font-medium">{expense.location || 'Local não informado'}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {category.name} • {new Date(expense.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                              <CardContent className="p-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-4">
+                                    {/* Indicador visual do dia */}
+                                    <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl flex flex-col items-center justify-center">
+                                      <span className="text-xs text-muted-foreground capitalize">
+                                        {dayName.slice(0, 3)}
+                                      </span>
+                                      <span className="text-lg font-bold text-primary">
+                                        {dayDate.getDate()}
+                                      </span>
+                                    </div>
+                                    
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <h3 className="font-semibold text-foreground">
+                                          {formattedDate}
+                                        </h3>
+                                        <span className="text-sm text-muted-foreground capitalize">
+                                          • {dayName}
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-3 mt-2">
+                                        {/* Categoria principal do dia */}
+                                        {dayData.mainCategory && (
+                                          <div className="flex items-center gap-2">
+                                            <div className={`w-4 h-4 ${dayData.mainCategory.color} rounded-sm flex items-center justify-center`}>
+                                              <dayData.mainCategory.icon className="w-3 h-3 text-white" />
+                                            </div>
+                                            <span className="text-sm text-muted-foreground">
+                                              {dayData.mainCategory.name}
+                                            </span>
+                                          </div>
+                                        )}
+                                        
+                                        {/* Quantidade de gastos */}
+                                        <Badge variant="outline" className="text-xs">
+                                          {dayData.expenses.length} {dayData.expenses.length === 1 ? 'gasto' : 'gastos'}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Total do dia */}
+                                  <div className="text-right">
+                                    <p className="text-2xl font-bold text-primary">
+                                      {formatCurrency(dayData.total, selectedCurrency.symbol)}
                                     </p>
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                      <TrendingUp className="w-3 h-3" />
+                                      <span>
+                                        {((dayData.total / getTotalExpenses()) * 100).toFixed(1)}% do total
+                                      </span>
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className="font-bold text-destructive">
-                                    {formatCurrency(expense.amount, CURRENCIES.find(c => c.code === expense.currency)?.symbol || '$')}
-                                  </p>
-                                  {expense.receipt_url && (
-                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                                      <Receipt className="w-3 h-3" />
-                                      <span>Cupom anexado</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
+                                
+                                {/* Lista expansível de gastos do dia */}
+                                {isExpanded && (
+                                  <div className="mt-4 pt-4 border-t space-y-2 animate-accordion-down">
+                                    <h4 className="font-medium text-sm text-muted-foreground mb-3">
+                                      Detalhes dos gastos:
+                                    </h4>
+                                    {dayData.expenses.map((expense) => {
+                                      const category = EXPENSE_CATEGORIES.find(c => c.id === expense.category) || EXPENSE_CATEGORIES[EXPENSE_CATEGORIES.length - 1];
+                                      
+                                      return (
+                                        <div 
+                                          key={expense.id}
+                                          className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 cursor-pointer transition-all duration-200"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleViewExpenseDetails(expense);
+                                          }}
+                                        >
+                                          <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 ${category.color} rounded-lg flex items-center justify-center`}>
+                                              <category.icon className="w-4 h-4 text-white" />
+                                            </div>
+                                            <div>
+                                              <p className="font-medium text-sm">
+                                                {expense.description || expense.location || 'Gasto sem descrição'}
+                                              </p>
+                                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <span>{category.name}</span>
+                                                {expense.location && (
+                                                  <>
+                                                    <span>•</span>
+                                                    <div className="flex items-center gap-1">
+                                                      <MapPin className="w-3 h-3" />
+                                                      <span>{expense.location}</span>
+                                                    </div>
+                                                  </>
+                                                )}
+                                                {expense.receipt_url && (
+                                                  <>
+                                                    <span>•</span>
+                                                    <div className="flex items-center gap-1 text-green-600">
+                                                      <Receipt className="w-3 h-3" />
+                                                      <span>Cupom</span>
+                                                    </div>
+                                                  </>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="text-right">
+                                            <p className="font-bold text-destructive">
+                                              {formatCurrency(expense.amount, CURRENCIES.find(c => c.code === expense.currency)?.symbol || selectedCurrency.symbol)}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
                           );
                         })}
                       </div>
