@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -258,232 +258,229 @@ export default function PontoDetalhes() {
   return (
     <ProtectedRoute>
       <PWALayout>
-        <div className="min-h-screen pb-20 airbnb-gradient-bg">
-          {/* Header fixo com overlay */}
-          <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                console.log("🔙 Voltando para roteiro:", tripId);
-                navigate(`/roteiro/${tripId}`, { replace: true });
-              }}
-              className="rounded-full"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleShare}
-                className="rounded-full"
-              >
-                <Share className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsLiked(!isLiked)}
-                className="rounded-full"
-              >
-                <Heart className={`w-5 h-5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(`/roteiro/${tripId}/ponto/${pontoId}/edit`)}
-                className="rounded-full"
-              >
-                <Edit className="w-5 h-5" />
-              </Button>
-              
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir ponto</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Tem certeza que deseja excluir "{ponto?.title}"? Esta ação não pode ser desfeita.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDelete}
-                      disabled={isDeleting}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      {isDeleting ? "Excluindo..." : "Excluir"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-
-          {/* Galeria de imagens compacta */}
-          <div className="relative aspect-[4/3] bg-muted mt-16">
-            {ponto.images && ponto.images.length > 0 ? (
-              <div className="relative h-full">
-                <img
-                  src={ponto.images[currentImageIndex]}
-                  alt={ponto.title}
-                  className="w-full h-full object-cover"
-                />
-                
-                {/* Navegação das imagens */}
-                {ponto.images.length > 1 && (
-                  <>
+        <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
+          {/* Header fixo com botões */}
+          <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/roteiro/${tripId}`)}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Voltar
+                </Button>
+                <h1 className="text-2xl font-bold">{ponto.title}</h1>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/roteiro/${tripId}/ponto/${pontoId}/edit`)}
+                  className="flex items-center gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  Editar
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
                     <Button
-                      variant="secondary"
-                      size="icon"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white"
-                      onClick={prevImage}
-                      disabled={currentImageIndex === 0}
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:text-destructive flex items-center gap-2"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" />
+                      Excluir
                     </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white"
-                      onClick={nextImage}
-                      disabled={currentImageIndex === ponto.images.length - 1}
-                    />
-                    
-                    {/* Indicadores */}
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                      {ponto.images.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            index === currentImageIndex 
-                              ? 'bg-white scale-125' 
-                              : 'bg-white/50'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {/* Contador de imagens */}
-                {ponto.images.length > 1 && (
-                  <div className="absolute top-4 right-4 bg-black/70 text-white text-sm px-3 py-1 rounded-full">
-                    {currentImageIndex + 1} / {ponto.images.length}
-                  </div>
-                )}
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir ponto</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja excluir "{ponto?.title}"? Esta ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isDeleting ? "Excluindo..." : "Excluir"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
-            ) : (
-              <div className={`h-full ${category.color} flex items-center justify-center`}>
-                <CategoryIcon className="w-20 h-20 text-white" />
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Conteúdo principal */}
-          <div className="p-6 space-y-6">
-            {/* Título e badges */}
-            <div className="space-y-3">
-              <div className="flex items-start justify-between gap-4">
-                <h1 className="text-2xl font-bold text-foreground">{ponto.title}</h1>
-                <div className="flex gap-2 shrink-0">
-                  <Badge variant="outline" className="text-xs">
-                    <PeriodIcon className="w-3 h-3 mr-1" />
-                    {period.name}
-                  </Badge>
-                  <Badge className={`text-xs text-white ${category.color}`}>
-                    {category.name}
-                  </Badge>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="w-4 h-4" />
-                <span>{ponto.location}</span>
-              </div>
-            </div>
+          <div className="flex-1 overflow-auto p-4">
+            <div className="max-w-4xl mx-auto space-y-6">
+              {/* Galeria de imagens */}
+              {ponto.images && ponto.images.length > 0 && (
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="relative">
+                      <img
+                        src={ponto.images[currentImageIndex]}
+                        alt={ponto.title}
+                        className="w-full h-64 md:h-96 object-cover rounded-lg"
+                      />
+                      
+                      {/* Navegação das imagens */}
+                      {ponto.images.length > 1 && (
+                        <>
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white"
+                            onClick={prevImage}
+                            disabled={currentImageIndex === 0}
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white"
+                            onClick={nextImage}
+                            disabled={currentImageIndex === ponto.images.length - 1}
+                          />
+                          
+                          {/* Contador de imagens */}
+                          <div className="absolute top-4 right-4 bg-black/70 text-white text-sm px-3 py-1 rounded-full">
+                            {currentImageIndex + 1} / {ponto.images.length}
+                          </div>
+                          
+                          {/* Indicadores */}
+                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                            {ponto.images.map((_, index) => (
+                              <button
+                                key={index}
+                                onClick={() => setCurrentImageIndex(index)}
+                                className={`w-2 h-2 rounded-full transition-all ${
+                                  index === currentImageIndex 
+                                    ? 'bg-white scale-125' 
+                                    : 'bg-white/50'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Informações de tempo */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-primary" />
+              {/* Detalhes do Ponto */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Detalhes do Ponto</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <strong>Local:</strong>
+                      <p className="text-lg mt-1 flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        {ponto.location}
+                      </p>
                     </div>
                     <div>
-                      <p className="font-medium">Horário da visita</p>
-                      <p className="text-sm text-muted-foreground">
-                        {ponto.time_start} {ponto.time_end && `- ${ponto.time_end}`}
+                      <strong>Categoria:</strong>
+                      <p className="text-lg mt-1 flex items-center gap-2">
+                        <CategoryIcon className="w-4 h-4 text-muted-foreground" />
+                        {category.name}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold">
-                      {ponto.day_number}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <strong>Horário:</strong>
+                      <p className="text-lg mt-1 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        {ponto.time_start} {ponto.time_end && `- ${ponto.time_end}`}
+                      </p>
                     </div>
                     <div>
-                      <p className="font-medium">Dia {ponto.day_number}</p>
-                      <p className="text-sm text-muted-foreground">da viagem</p>
+                      <strong>Dia da viagem:</strong>
+                      <p className="text-lg mt-1 flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        Dia {ponto.day_number}
+                      </p>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Descrição */}
-            {ponto.description && (
-              <div className="space-y-3">
-                <h2 className="text-lg font-semibold">Sobre este ponto</h2>
-                <p className="text-muted-foreground leading-relaxed">{ponto.description}</p>
-              </div>
-            )}
+                  <div>
+                    <strong>Período:</strong>
+                    <p className="text-lg mt-1 flex items-center gap-2">
+                      <PeriodIcon className={`w-4 h-4 ${period.color}`} />
+                      {period.name}
+                    </p>
+                  </div>
 
-            {/* Grid de informações adicionais */}
-            <div className="grid grid-cols-2 gap-4">
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <Calendar className="w-6 h-6 mx-auto mb-2 text-primary" />
-                  <p className="font-medium">Viagem</p>
-                  <p className="text-sm text-muted-foreground">{trip.destination}</p>
+                  {ponto.description && (
+                    <div>
+                      <strong>Descrição:</strong>
+                      <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{ponto.description}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-              
+
+              {/* Informações da Viagem */}
               <Card>
-                <CardContent className="p-4 text-center">
-                  <Eye className="w-6 h-6 mx-auto mb-2 text-primary" />
-                  <p className="font-medium">Categoria</p>
-                  <p className="text-sm text-muted-foreground">{category.name}</p>
+                <CardHeader>
+                  <CardTitle>Informações da Viagem</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <strong>Destino:</strong>
+                    <p className="text-lg mt-1">{trip.destination}</p>
+                  </div>
+                  <div>
+                    <strong>Viagem:</strong>
+                    <p className="text-lg mt-1">{trip.title}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Ações Rápidas */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ações</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleShare}
+                      className="flex items-center gap-2"
+                    >
+                      <Share className="w-4 h-4" />
+                      Compartilhar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsLiked(!isLiked)}
+                      className={`flex items-center gap-2 ${isLiked ? 'text-red-500' : ''}`}
+                    >
+                      <Heart className={`w-4 h-4 ${isLiked ? 'fill-red-500' : ''}`} />
+                      {isLiked ? 'Curtido' : 'Curtir'}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
-
-          </div>
-
-          {/* Footer fixo com ações */}
-          <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-            <Button
-              className="w-full"
-              onClick={() => {
-                console.log("🔙 Footer - Voltando para roteiro:", tripId);
-                navigate(`/roteiro/${tripId}`, { replace: true });
-              }}
-            >
-              Voltar ao Roteiro
-            </Button>
           </div>
         </div>
       </PWALayout>
