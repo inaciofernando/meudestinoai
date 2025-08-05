@@ -95,6 +95,8 @@ export default function GastosViagem() {
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [isViewingExpense, setIsViewingExpense] = useState(false);
 
   // Form states for budget editing
   const [budgetForm, setBudgetForm] = useState({
@@ -717,9 +719,13 @@ export default function GastosViagem() {
                               const expenseCategory = EXPENSE_CATEGORIES.find(cat => cat.id === expense.category);
                               
                               return (
-                                <div 
+                                <button 
                                   key={expense.id} 
-                                  className="flex items-center justify-between p-4 hover:bg-muted/20 transition-colors"
+                                  onClick={() => {
+                                    setSelectedExpense(expense);
+                                    setIsViewingExpense(true);
+                                  }}
+                                  className="w-full flex items-center justify-between p-4 hover:bg-muted/20 transition-colors cursor-pointer text-left"
                                 >
                                   <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
@@ -742,7 +748,7 @@ export default function GastosViagem() {
                                   <p className="c6-text-value text-sm">
                                     {formatCurrency(expense.amount, selectedCurrency.symbol)}
                                   </p>
-                                </div>
+                                </button>
                               );
                             })}
                           </div>
@@ -796,6 +802,81 @@ export default function GastosViagem() {
                   </Button>
                 </div>
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Dialog para visualizar detalhes do gasto */}
+          <Dialog open={isViewingExpense} onOpenChange={setIsViewingExpense}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Detalhes do Gasto</DialogTitle>
+              </DialogHeader>
+              {selectedExpense && (
+                <div className="space-y-4">
+                  <div className="c6-card">
+                    <div className="flex items-center gap-3 mb-4">
+                      {(() => {
+                        const category = EXPENSE_CATEGORIES.find(cat => cat.id === selectedExpense.category);
+                        return category ? (
+                          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                            <category.icon className="w-6 h-6 text-primary" />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+                            <Receipt className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                        );
+                      })()}
+                      <div>
+                        <h3 className="font-semibold text-foreground">{selectedExpense.description}</h3>
+                        <p className="c6-text-secondary text-sm">
+                          {EXPENSE_CATEGORIES.find(cat => cat.id === selectedExpense.category)?.name || 'Outros'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="c6-text-secondary">Valor:</span>
+                        <span className="font-semibold text-primary text-lg">
+                          {formatCurrency(selectedExpense.amount, selectedCurrency.symbol)}
+                        </span>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <span className="c6-text-secondary">Data:</span>
+                        <span className="c6-text-primary">
+                          {format(new Date(selectedExpense.date), "dd/MM/yyyy", { locale: ptBR })}
+                        </span>
+                      </div>
+
+                      {selectedExpense.location && (
+                        <div className="flex justify-between">
+                          <span className="c6-text-secondary">Local:</span>
+                          <span className="c6-text-primary">{selectedExpense.location}</span>
+                        </div>
+                      )}
+
+                      {selectedExpense.receipt_url && (
+                        <div>
+                          <span className="c6-text-secondary block mb-2">Comprovante:</span>
+                          <div className="bg-muted rounded-lg p-3 flex items-center justify-center">
+                            <Receipt className="w-8 h-8 text-muted-foreground" />
+                            <span className="ml-2 c6-text-secondary text-sm">Comprovante anexado</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={() => setIsViewingExpense(false)}
+                    className="w-full c6-button-primary"
+                  >
+                    Fechar
+                  </Button>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
