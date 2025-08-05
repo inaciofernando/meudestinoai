@@ -8,32 +8,32 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Airbnb-inspired color palette */
-    --background: 0 0% 97%; /* #F7F7F7 - Warm light gray background */
-    --foreground: 0 0% 13%; /* #222222 - Almost black text */
+    /* C6 Bank inspired color palette */
+    --background: 220 13% 9%; /* Dark background like C6 */
+    --foreground: 210 40% 95%; /* Light text */
 
-    --card: 0 0% 100%; /* Pure white cards */
-    --card-foreground: 0 0% 13%;
+    --card: 220 13% 11%; /* Dark cards with subtle variation */
+    --card-foreground: 210 40% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 13%;
+    --popover: 220 13% 11%;
+    --popover-foreground: 210 40% 95%;
 
-    /* Airbnb coral/pink primary */
-    --primary: 351 83% 67%; /* #FF5A5F - Signature Airbnb pink */
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 351 73% 77%;
+    /* C6 Bank blue primary */
+    --primary: 207 89% 54%; /* C6 characteristic blue */
+    --primary-foreground: 210 40% 95%;
+    --primary-glow: 207 79% 64%;
 
-    /* Subtle gray secondary */
-    --secondary: 0 0% 96%; /* #F5F5F5 */
-    --secondary-foreground: 0 0% 13%;
+    /* Dark secondary */
+    --secondary: 220 13% 15%; /* Slightly lighter than cards */
+    --secondary-foreground: 210 40% 95%;
 
-    /* Muted grays */
-    --muted: 0 0% 96%; /* #F5F5F5 */
-    --muted-foreground: 0 0% 44%; /* #717171 - Medium gray text */
+    /* Muted grays for C6 style */
+    --muted: 220 13% 15%;
+    --muted-foreground: 215 25% 65%; /* Medium gray text */
 
-    /* Teal accent (Airbnb secondary color) */
-    --accent: 176 38% 49%; /* #008489 */
-    --accent-foreground: 0 0% 100%;
+    /* Accent similar to secondary */
+    --accent: 220 13% 15%;
+    --accent-foreground: 210 40% 95%;
 
     /* Orange highlight */
     --highlight: 22 89% 52%; /* #FF8C00 */
@@ -42,20 +42,20 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 91%; /* #E8E8E8 - Light gray borders */
-    --input: 0 0% 91%;
-    --ring: 351 83% 67%;
+    --border: 220 13% 20%; /* Dark borders for C6 style */
+    --input: 220 13% 15%;
+    --ring: 207 89% 54%;
 
-    /* Airbnb gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(351 83% 67%), hsl(351 73% 77%));
+    /* C6 Bank gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(207 89% 54%), hsl(207 79% 64%));
     --gradient-warm: linear-gradient(135deg, hsl(22 89% 52%), hsl(32 84% 57%));
     --gradient-teal: linear-gradient(135deg, hsl(176 38% 49%), hsl(186 33% 54%));
-    --gradient-background: linear-gradient(180deg, hsl(0 0% 98%), hsl(0 0% 96%));
+    --gradient-background: linear-gradient(180deg, hsl(220 13% 9%), hsl(220 13% 7%));
 
-    /* Airbnb-style shadows */
-    --shadow-airbnb: 0 2px 16px rgba(0, 0, 0, 0.12);
-    --shadow-card: 0 6px 16px rgba(0, 0, 0, 0.12);
-    --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.15);
+    /* C6 Bank style shadows */
+    --shadow-c6: 0 2px 16px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
+    --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.35);
 
     /* Smooth transitions */
     --transition-smooth: all 0.2s ease;
@@ -149,24 +149,37 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Airbnb-inspired utilities */
-  .airbnb-card {
-    @apply bg-card border-0 shadow-airbnb hover:shadow-hover transition-all duration-300 rounded-xl;
+  /* C6 Bank inspired utilities */
+  .c6-card {
+    @apply bg-card border border-border rounded-xl p-4 transition-all duration-200;
+    box-shadow: var(--shadow-card);
   }
   
-  .airbnb-text-primary {
-    @apply text-foreground font-semibold;
+  .c6-card:hover {
+    box-shadow: var(--shadow-hover);
   }
   
-  .airbnb-text-secondary {
-    @apply text-muted-foreground font-normal;
+  .c6-text-primary {
+    @apply text-foreground font-medium;
   }
   
-  .airbnb-button-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-semibold transition-smooth;
+  .c6-text-secondary {
+    @apply text-muted-foreground text-sm;
   }
   
-  .airbnb-gradient-bg {
+  .c6-text-value {
+    @apply text-foreground font-semibold text-right;
+  }
+  
+  .c6-button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-medium transition-smooth px-4 py-2;
+  }
+  
+  .c6-gradient-bg {
     background: var(--gradient-background);
+  }
+  
+  .c6-filter-chip {
+    @apply bg-muted text-foreground rounded-full px-4 py-2 text-sm font-medium border border-border hover:bg-accent transition-smooth;
   }
 }
