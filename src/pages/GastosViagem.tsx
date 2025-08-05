@@ -504,9 +504,8 @@ export default function GastosViagem() {
               </div>
               <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
                 <DialogTrigger asChild>
-                  <Button className="c6-button-primary">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar
+                  <Button className="c6-button-primary w-10 h-10 p-0 rounded-full">
+                    <Plus className="w-5 h-5" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
