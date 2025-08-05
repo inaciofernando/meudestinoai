@@ -1055,14 +1055,6 @@ export default function DetalhesViagem() {
                     <span className="text-xs font-medium">Documentos</span>
                   </Button>
                 </div>
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-700 font-medium mb-1">
-                    🤖 IA Integrada em Breve
-                  </p>
-                  <p className="text-xs text-blue-600">
-                    Nosso assistente de IA ajudará a organizar automaticamente todos os aspectos da sua viagem.
-                  </p>
-                </div>
               </CardContent>
             </Card>
           )}
