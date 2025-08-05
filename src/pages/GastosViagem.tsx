@@ -64,6 +64,8 @@ interface Expense {
   description: string;
   date: string;
   establishment?: string;
+  expense_type: string;
+  payment_method_type?: string;
   receipt_image_url?: string;
   created_at: string;
 }
@@ -84,6 +86,20 @@ const CURRENCIES = [
   { code: "USD", symbol: "$", name: "Dólar Americano" },
   { code: "EUR", symbol: "€", name: "Euro" },
   { code: "GBP", symbol: "£", name: "Libra Esterlina" }
+];
+
+const EXPENSE_TYPES = [
+  { id: "planejado", name: "Planejado", color: "bg-blue-100 text-blue-800" },
+  { id: "realizado", name: "Realizado", color: "bg-green-100 text-green-800" }
+];
+
+const PAYMENT_METHODS = [
+  { id: "dinheiro", name: "Dinheiro" },
+  { id: "cartao_credito", name: "Cartão de Crédito" },
+  { id: "cartao_debito", name: "Cartão de Débito" },
+  { id: "pix", name: "PIX" },
+  { id: "transferencia", name: "Transferência" },
+  { id: "outros", name: "Outros" }
 ];
 
 export default function GastosViagem() {
@@ -125,6 +141,8 @@ export default function GastosViagem() {
     currency: "BRL",
     description: "",
     establishment: "",
+    expense_type: "realizado",
+    payment_method_type: "",
     date: new Date().toISOString().split('T')[0],
     receiptFile: null as File | null
   });
@@ -138,6 +156,8 @@ export default function GastosViagem() {
     description: "",
     date: "",
     establishment: "",
+    expense_type: "realizado",
+    payment_method_type: "",
     receiptFile: null as File | null
   });
 
@@ -197,9 +217,11 @@ export default function GastosViagem() {
             amount: item.actual_amount || 0,
             currency: item.currency,
             establishment: item.establishment,
+            expense_type: item.expense_type || 'realizado',
+            payment_method_type: item.payment_method_type,
             description: item.title,
             date: item.expense_date || item.created_at,
-        receipt_image_url: item.receipt_image_url,
+            receipt_image_url: item.receipt_image_url,
             created_at: item.created_at
           }));
 
@@ -314,6 +336,8 @@ export default function GastosViagem() {
         amount: item.actual_amount || 0,
         currency: item.currency,
         establishment: item.establishment,
+        expense_type: item.expense_type || 'realizado',
+        payment_method_type: item.payment_method_type,
         description: item.title,
         date: item.expense_date || item.created_at,
         receipt_image_url: item.receipt_image_url,
@@ -356,6 +380,9 @@ export default function GastosViagem() {
           user_id: user.id,
           title: newExpense.description,
           category: newExpense.category,
+          establishment: newExpense.establishment,
+          expense_type: newExpense.expense_type,
+          payment_method_type: newExpense.payment_method_type,
           actual_amount: parseFloat(newExpense.amount),
           planned_amount: parseFloat(newExpense.amount),
           currency: newExpense.currency,
@@ -379,6 +406,8 @@ export default function GastosViagem() {
         currency: "BRL",
         description: "",
         establishment: "",
+        expense_type: "realizado",
+        payment_method_type: "",
         date: new Date().toISOString().split('T')[0],
         receiptFile: null
       });
@@ -786,6 +815,46 @@ export default function GastosViagem() {
                       />
                     </div>
 
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Tipo de Gasto *</Label>
+                        <Select 
+                          value={newExpense.expense_type} 
+                          onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {EXPENSE_TYPES.map(type => (
+                              <SelectItem key={type.id} value={type.id}>
+                                {type.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label>Método de Pagamento</Label>
+                        <Select 
+                          value={newExpense.payment_method_type} 
+                          onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o método" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PAYMENT_METHODS.map(method => (
+                              <SelectItem key={method.id} value={method.id}>
+                                {method.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
                     <div>
                       <Label>Descrição *</Label>
                       <Textarea
@@ -1155,6 +1224,26 @@ export default function GastosViagem() {
                       )}
 
                       <div className="flex justify-between">
+                        <span className="c6-text-secondary">Tipo de Gasto:</span>
+                        <span className="c6-text-primary">
+                          <Badge variant="secondary" className={
+                            EXPENSE_TYPES.find(type => type.id === selectedExpense.expense_type)?.color || "bg-gray-100 text-gray-800"
+                          }>
+                            {EXPENSE_TYPES.find(type => type.id === selectedExpense.expense_type)?.name || 'Realizado'}
+                          </Badge>
+                        </span>
+                      </div>
+
+                      {selectedExpense.payment_method_type && (
+                        <div className="flex justify-between">
+                          <span className="c6-text-secondary">Método de Pagamento:</span>
+                          <span className="c6-text-primary">
+                            {PAYMENT_METHODS.find(method => method.id === selectedExpense.payment_method_type)?.name || selectedExpense.payment_method_type}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between">
                         <span className="c6-text-secondary">Categoria:</span>
                         <span className="c6-text-primary">
                           {EXPENSE_CATEGORIES.find(cat => cat.id === selectedExpense.category)?.name || 'Outros'}
@@ -1207,6 +1296,8 @@ export default function GastosViagem() {
                           amount: selectedExpense.amount.toString(),
                           currency: selectedExpense.currency,
                           establishment: selectedExpense.establishment || "",
+                          expense_type: selectedExpense.expense_type,
+                          payment_method_type: selectedExpense.payment_method_type || "",
                           description: selectedExpense.description,
                           date: selectedExpense.date.split('T')[0],
                           receiptFile: null
@@ -1418,6 +1509,46 @@ export default function GastosViagem() {
                     />
                   </div>
 
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>Tipo de Gasto *</Label>
+                      <Select 
+                        value={editForm.expense_type} 
+                        onValueChange={(value) => setEditForm({...editForm, expense_type: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {EXPENSE_TYPES.map(type => (
+                            <SelectItem key={type.id} value={type.id}>
+                              {type.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Método de Pagamento</Label>
+                      <Select 
+                        value={editForm.payment_method_type} 
+                        onValueChange={(value) => setEditForm({...editForm, payment_method_type: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o método" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PAYMENT_METHODS.map(method => (
+                            <SelectItem key={method.id} value={method.id}>
+                              {method.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <div>
                     <Label>Descrição *</Label>
                     <Textarea
@@ -1511,6 +1642,8 @@ export default function GastosViagem() {
                               title: editForm.description,
                               category: editForm.category,
                               establishment: editForm.establishment,
+                              expense_type: editForm.expense_type,
+                              payment_method_type: editForm.payment_method_type,
                               actual_amount: parseFloat(editForm.amount),
                               planned_amount: parseFloat(editForm.amount),
                               currency: editForm.currency,

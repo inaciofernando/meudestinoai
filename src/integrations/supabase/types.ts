@@ -74,10 +74,12 @@ export type Database = {
           description: string | null
           establishment: string | null
           expense_date: string | null
+          expense_type: string
           id: string
           is_confirmed: boolean
           notes: string | null
           payment_method: string | null
+          payment_method_type: string | null
           planned_amount: number
           receipt_image_url: string | null
           title: string
@@ -93,10 +95,12 @@ export type Database = {
           description?: string | null
           establishment?: string | null
           expense_date?: string | null
+          expense_type?: string
           id?: string
           is_confirmed?: boolean
           notes?: string | null
           payment_method?: string | null
+          payment_method_type?: string | null
           planned_amount: number
           receipt_image_url?: string | null
           title: string
@@ -112,10 +116,12 @@ export type Database = {
           description?: string | null
           establishment?: string | null
           expense_date?: string | null
+          expense_type?: string
           id?: string
           is_confirmed?: boolean
           notes?: string | null
           payment_method?: string | null
+          payment_method_type?: string | null
           planned_amount?: number
           receipt_image_url?: string | null
           title?: string
