@@ -124,6 +124,7 @@ export default function GastosViagem() {
     amount: "",
     currency: "BRL",
     description: "",
+    establishment: "",
     date: new Date().toISOString().split('T')[0],
     location: "",
     receiptFile: null as File | null
@@ -379,6 +380,7 @@ export default function GastosViagem() {
         amount: "",
         currency: "BRL",
         description: "",
+        establishment: "",
         date: new Date().toISOString().split('T')[0],
         location: "",
         receiptFile: null
@@ -778,6 +780,15 @@ export default function GastosViagem() {
                         </Select>
                       </div>
                     )}
+
+                    <div>
+                      <Label>Estabelecimento</Label>
+                      <Input
+                        value={newExpense.establishment}
+                        onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
+                        placeholder="Ex: Restaurante Villa Rosa, Hotel Copacabana..."
+                      />
+                    </div>
 
                     <div>
                       <Label>Descrição *</Label>
