@@ -36,6 +36,7 @@ import {
   AlertCircle,
   CheckCircle,
   Edit2,
+  Trash2,
   Calendar,
   ChevronDown,
   ChevronUp,
@@ -1203,9 +1204,68 @@ export default function GastosViagem() {
                       <Edit2 className="w-4 h-4 mr-2" />
                       Editar
                     </Button>
+                    
+                    <Button 
+                      onClick={async () => {
+                        if (!selectedExpense || !user) return;
+                        
+                        // Confirmar exclusão
+                        const confirmDelete = window.confirm(
+                          `Tem certeza que deseja excluir este gasto?\n\n${selectedExpense.description}\nValor: ${formatCurrency(selectedExpense.amount)}\n\nEsta ação não pode ser desfeita.`
+                        );
+                        
+                        if (!confirmDelete) return;
+                        
+                        try {
+                          // Excluir do banco de dados
+                          const { error } = await supabase
+                            .from('budget_items')
+                            .delete()
+                            .eq('id', selectedExpense.id)
+                            .eq('user_id', user.id);
+                          
+                          if (error) {
+                            console.error('Erro ao excluir gasto:', error);
+                            toast({
+                              title: "Erro ao excluir",
+                              description: "Não foi possível excluir o gasto. Tente novamente.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          
+                          // Atualizar lista local
+                          setExpenses(prev => prev.filter(exp => exp.id !== selectedExpense.id));
+                          
+                          // Fechar modal
+                          setIsViewingExpense(false);
+                          setSelectedExpense(null);
+                          
+                          toast({
+                            title: "Gasto excluído",
+                            description: "O gasto foi removido com sucesso.",
+                          });
+                          
+                        } catch (error) {
+                          console.error('Erro ao excluir gasto:', error);
+                          toast({
+                            title: "Erro ao excluir",
+                            description: "Erro interno. Tente novamente.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      variant="destructive"
+                      className="flex-1"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Excluir
+                    </Button>
+                    
                     <Button 
                       onClick={() => setIsViewingExpense(false)}
-                      className="flex-1 c6-button-primary"
+                      variant="outline"
+                      className="flex-1"
                     >
                       Fechar
                     </Button>
