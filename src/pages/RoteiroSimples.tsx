@@ -362,8 +362,8 @@ export default function RoteiroSimples() {
                       </div>
                     </div>
 
-                    {/* Grid de cards estilo Airbnb */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {/* Grid compacto estilo catálogo */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {dayPontos.map((ponto) => {
                         const category = CATEGORY_CONFIG[ponto.category] || CATEGORY_CONFIG.activity;
                         const CategoryIcon = category.icon;
@@ -375,7 +375,7 @@ export default function RoteiroSimples() {
                             <div className="relative">
                               {/* Imagem de destaque */}
                               {ponto.images && ponto.images.length > 0 ? (
-                                <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
+                                 <div className="relative aspect-[3/2] overflow-hidden rounded-t-lg">
                                   <img
                                     src={ponto.images[0]}
                                     alt={ponto.title}
@@ -397,7 +397,7 @@ export default function RoteiroSimples() {
                                   </div>
                                 </div>
                               ) : (
-                                <div className={`aspect-[4/3] ${category.color} rounded-t-lg flex items-center justify-center relative bg-gradient-to-br`}>
+                                <div className={`aspect-[3/2] ${category.color} rounded-t-lg flex items-center justify-center relative bg-gradient-to-br`}>
                                   <CategoryIcon className="w-16 h-16 text-white/90" />
                                   {/* Floating time badge */}
                                   <div className="absolute bottom-3 left-3 bg-background/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg border border-border/50">
@@ -411,7 +411,7 @@ export default function RoteiroSimples() {
                             </div>
                             
                              {/* Card content */}
-                             <CardContent className="p-4 space-y-2">
+                             <CardContent className="p-3 space-y-1.5">
                                <div className="flex items-start justify-between gap-2">
                                  <h3 className="font-semibold text-foreground line-clamp-1">{ponto.title}</h3>
                                  <Badge variant="outline" className="text-xs shrink-0">
