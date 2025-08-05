@@ -545,15 +545,77 @@ export default function GastosViagem() {
                     {newExpense.receiptFile && (
                       <div className="mt-3">
                         <Button 
-                          onClick={() => {
-                            // Implementar análise de IA aqui
+                          onClick={async () => {
+                            if (!newExpense.receiptFile) return;
+                            
                             setIsAnalyzingReceipt(true);
-                            setAnalysisStep("Processando imagem...");
-                            // Simular processo
-                            setTimeout(() => {
+                            setAnalysisStep("Convertendo imagem...");
+                            
+                            try {
+                              // Converter arquivo para base64
+                              const reader = new FileReader();
+                              reader.onload = async (e) => {
+                                const base64 = e.target?.result as string;
+                                const imageBase64 = base64.split(',')[1]; // Remove o prefixo data:image/...;base64,
+                                
+                                setAnalysisStep("Enviando para análise...");
+                                
+                                // Chamar a edge function
+                                const { data, error } = await supabase.functions.invoke('analyze-receipt', {
+                                  body: { imageBase64 }
+                                });
+                                
+                                if (error) {
+                                  console.error('Erro na análise:', error);
+                                  toast({
+                                    title: "Erro na análise",
+                                    description: "Não foi possível analisar o cupom. Tente novamente.",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                
+                                if (data.success) {
+                                  setAnalysisStep("Preenchendo formulário...");
+                                  
+                                  // Preencher os campos automaticamente
+                                  const extractedData = data.data;
+                                  setNewExpense(prev => ({
+                                    ...prev,
+                                    amount: extractedData.amount?.toString() || prev.amount,
+                                    description: extractedData.description || prev.description,
+                                    location: extractedData.location || prev.location,
+                                    category: extractedData.category || prev.category,
+                                    subcategory: extractedData.subcategory || prev.subcategory,
+                                    date: extractedData.date || prev.date
+                                  }));
+                                  
+                                  toast({
+                                    title: "Análise concluída!",
+                                    description: "Campos preenchidos automaticamente. Verifique as informações.",
+                                  });
+                                } else {
+                                  toast({
+                                    title: "Erro na análise",
+                                    description: data.error || "Não foi possível extrair dados do cupom.",
+                                    variant: "destructive",
+                                  });
+                                }
+                              };
+                              
+                              reader.readAsDataURL(newExpense.receiptFile);
+                              
+                            } catch (error) {
+                              console.error('Erro na análise:', error);
+                              toast({
+                                title: "Erro na análise",
+                                description: "Erro interno. Tente novamente.",
+                                variant: "destructive",
+                              });
+                            } finally {
                               setIsAnalyzingReceipt(false);
                               setAnalysisStep("");
-                            }, 3000);
+                            }
                           }}
                           disabled={isAnalyzingReceipt}
                           variant="outline"
