@@ -1354,14 +1354,6 @@ export default function GastosViagem() {
                 <p className="c6-text-secondary text-xs">Despesas planejadas</p>
               </div>
 
-              {/* Card Projeção Total */}
-              <div className="c6-card p-4">
-                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">PROJEÇÃO TOTAL</p>
-                <p className="text-lg sm:text-2xl font-bold text-purple-600 mb-1">
-                  {formatCurrency(getProjectedTotal(), selectedCurrency.symbol)}
-                </p>
-                <p className="c6-text-secondary text-xs">Baseado no padrão atual</p>
-              </div>
             </div>
           </div>
 
