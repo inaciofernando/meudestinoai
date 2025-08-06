@@ -78,11 +78,13 @@ interface UserPaymentMethod {
   id: string;
   name: string;
   type: string;
-  initial_balance: number;
-  current_balance: number;
   currency: string;
   color: string;
   is_active: boolean;
+  user_id: string;
+  trip_id: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 const EXPENSE_CATEGORIES = [
@@ -146,7 +148,6 @@ export default function GastosViagem() {
   const [userPaymentMethods, setUserPaymentMethods] = useState<UserPaymentMethod[]>([]);
   const [newPaymentMethod, setNewPaymentMethod] = useState({
     name: "",
-    initial_balance: "",
     currency: "BRL",
     color: "#6366f1"
   });
@@ -582,11 +583,9 @@ export default function GastosViagem() {
         .from('user_payment_methods')
         .insert({
           user_id: user.id,
-          trip_id: trip.id,
+          trip_id: null,
           name: newPaymentMethod.name,
           type: 'custom',
-          initial_balance: parseFloat(newPaymentMethod.initial_balance) || 0,
-          current_balance: parseFloat(newPaymentMethod.initial_balance) || 0,
           currency: newPaymentMethod.currency,
           color: newPaymentMethod.color
         });
@@ -601,7 +600,6 @@ export default function GastosViagem() {
       // Reset form and refresh data
       setNewPaymentMethod({
         name: "",
-        initial_balance: "",
         currency: "BRL",
         color: "#6366f1"
       });
@@ -648,39 +646,20 @@ export default function GastosViagem() {
   const getPaymentMethodSummary = () => {
     const summary = new Map();
     
-    // Add custom payment methods with balances
-    userPaymentMethods.forEach(method => {
-      const spent = (method.initial_balance || 0) - (method.current_balance || 0);
-      summary.set(method.name, {
-        name: method.name,
-        spent,
-        remaining: method.current_balance || 0,
-        initial: method.initial_balance || 0,
-        currency: method.currency,
-        color: method.color,
-        type: 'custom'
-      });
-    });
-
-    // Add standard payment methods (count expenses only)
-    const standardExpenses = new Map();
+    // Count expenses for all payment methods
     expenses.forEach(expense => {
       const method = expense.payment_method_type;
-      if (method && !summary.has(method)) {
-        standardExpenses.set(method, (standardExpenses.get(method) || 0) + expense.amount);
+      if (method) {
+        const current = summary.get(method) || {
+          name: method,
+          spent: 0,
+          currency: selectedCurrency.code,
+          color: userPaymentMethods.find(m => m.name === method)?.color || '#64748b',
+          type: userPaymentMethods.find(m => m.name === method) ? 'custom' : 'standard'
+        };
+        current.spent += expense.amount;
+        summary.set(method, current);
       }
-    });
-
-    standardExpenses.forEach((amount, method) => {
-      summary.set(method, {
-        name: method,
-        spent: amount,
-        remaining: null,
-        initial: null,
-        currency: selectedCurrency.code,
-        color: '#64748b',
-        type: 'standard'
-      });
     });
 
     return Array.from(summary.values());
@@ -1103,10 +1082,9 @@ export default function GastosViagem() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setIsManagingPayments(true)}
-                            className="h-6 px-2 text-xs"
+                            className="h-6 w-6 p-0"
                           >
-                            <Plus className="h-3 w-3 mr-1" />
-                            Gerenciar
+                            <Plus className="h-3 w-3" />
                           </Button>
                         </div>
                         <Select 
@@ -2133,16 +2111,6 @@ export default function GastosViagem() {
                       placeholder="Ex: Cartão Pré-pago, Wise..."
                     />
                   </div>
-                  <div>
-                    <Label>Saldo Inicial</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newPaymentMethod.initial_balance}
-                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, initial_balance: e.target.value})}
-                      placeholder="0,00"
-                    />
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -2201,10 +2169,7 @@ export default function GastosViagem() {
                           <div>
                             <p className="font-medium text-sm">{method.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              Saldo: {formatCurrency(method.current_balance || 0, method.currency)} 
-                              {method.initial_balance && method.initial_balance > 0 && (
-                                <span> / {formatCurrency(method.initial_balance, method.currency)}</span>
-                              )}
+                              {method.currency}
                             </p>
                           </div>
                         </div>
