@@ -412,12 +412,10 @@ export type Database = {
           color: string | null
           created_at: string
           currency: string
-          current_balance: number | null
           id: string
-          initial_balance: number | null
           is_active: boolean
           name: string
-          trip_id: string
+          trip_id: string | null
           type: string
           updated_at: string
           user_id: string
@@ -426,12 +424,10 @@ export type Database = {
           color?: string | null
           created_at?: string
           currency?: string
-          current_balance?: number | null
           id?: string
-          initial_balance?: number | null
           is_active?: boolean
           name: string
-          trip_id: string
+          trip_id?: string | null
           type?: string
           updated_at?: string
           user_id: string
@@ -440,12 +436,10 @@ export type Database = {
           color?: string | null
           created_at?: string
           currency?: string
-          current_balance?: number | null
           id?: string
-          initial_balance?: number | null
           is_active?: boolean
           name?: string
-          trip_id?: string
+          trip_id?: string | null
           type?: string
           updated_at?: string
           user_id?: string
