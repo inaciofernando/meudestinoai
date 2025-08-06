@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -153,6 +153,7 @@ export default function GastosViagem() {
     color: "#6366f1"
   });
   const [activeFilter, setActiveFilter] = useState<'todos' | 'planejado' | 'realizado'>('todos');
+  const [showChart, setShowChart] = useState(false);
 
   // Form states for budget editing
   const [budgetForm, setBudgetForm] = useState({
@@ -679,22 +680,28 @@ export default function GastosViagem() {
   };
 
   const getPaymentMethodChartData = () => {
-    const paymentData = new Map();
+    const dateData = new Map();
     
     expenses.forEach(expense => {
-      if (expense.payment_method_type) {
-        const current = paymentData.get(expense.payment_method_type) || 0;
-        paymentData.set(expense.payment_method_type, current + (Number(expense.amount) || 0));
+      if (expense.date) {
+        const date = format(new Date(expense.date), "dd/MM", { locale: ptBR });
+        const current = dateData.get(date) || 0;
+        dateData.set(date, current + (Number(expense.amount) || 0));
       }
     });
 
-    const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
-    
-    return Array.from(paymentData.entries()).map(([method, amount], index) => ({
-      name: method,
-      value: amount,
-      fill: colors[index % colors.length]
-    })).filter(item => item.value > 0);
+    return Array.from(dateData.entries())
+      .map(([date, amount]) => ({
+        date,
+        valor: amount
+      }))
+      .sort((a, b) => {
+        const [dayA, monthA] = a.date.split('/').map(Number);
+        const [dayB, monthB] = b.date.split('/').map(Number);
+        const dateA = new Date(2024, monthA - 1, dayA);
+        const dateB = new Date(2024, monthB - 1, dayB);
+        return dateA.getTime() - dateB.getTime();
+      });
   };
 
   const handleUpdateBudget = async () => {
@@ -1377,32 +1384,40 @@ export default function GastosViagem() {
             </div>
           </div>
 
-          {/* Gráfico de Métodos de Pagamento */}
-          {getPaymentMethodChartData().length > 0 && (
-            <div className="px-4 mt-6">
+          {/* Botão para Gráfico */}
+          <div className="px-4 mt-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowChart(!showChart)}
+              className="w-full"
+            >
+              {showChart ? 'Ocultar Gráfico' : 'Ver Gráfico de Gastos por Data'}
+            </Button>
+          </div>
+
+          {/* Gráfico de Linha */}
+          {showChart && getPaymentMethodChartData().length > 0 && (
+            <div className="px-4 mt-4">
               <div className="c6-card p-6">
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-foreground mb-1">Métodos de Pagamento</h2>
-                  <p className="c6-text-secondary text-sm">Distribuição dos gastos por meio de pagamento</p>
+                  <h2 className="text-lg font-semibold text-foreground mb-1">Evolução dos Gastos</h2>
+                  <p className="c6-text-secondary text-sm">Gastos acumulados por data</p>
                 </div>
                 
                 <div className="w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={getPaymentMethodChartData()}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                        stroke="none"
-                      >
-                        {getPaymentMethodChartData().map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
+                    <LineChart data={getPaymentMethodChartData()}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                      />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                        tickFormatter={(value) => `${selectedCurrency.symbol} ${value.toFixed(0)}`}
+                      />
                       <Tooltip 
                         formatter={(value: number) => [formatCurrency(value, selectedCurrency.symbol), "Valor"]}
                         labelStyle={{ color: 'hsl(var(--foreground))' }}
@@ -1412,12 +1427,15 @@ export default function GastosViagem() {
                           borderRadius: '8px'
                         }}
                       />
-                      <Legend 
-                        verticalAlign="bottom" 
-                        height={36}
-                        wrapperStyle={{ color: 'hsl(var(--foreground))' }}
+                      <Line 
+                        type="monotone" 
+                        dataKey="valor" 
+                        stroke="#3b82f6" 
+                        strokeWidth={3}
+                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, fill: '#3b82f6' }}
                       />
-                    </PieChart>
+                    </LineChart>
                   </ResponsiveContainer>
                 </div>
               </div>
