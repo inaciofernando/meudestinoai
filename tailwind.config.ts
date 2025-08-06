@@ -18,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'sans': ['Inter', 'Circular Std', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+				'airbnb': ['Circular Std', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+			},
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-warm': 'var(--gradient-warm)',

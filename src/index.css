@@ -8,54 +8,54 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* C6 Bank inspired color palette */
-    --background: 220 13% 9%; /* Dark background like C6 */
-    --foreground: 210 40% 95%; /* Light text */
+    /* Airbnb light mode palette - Clean white theme */
+    --background: 0 0% 100%; /* Pure white background */
+    --foreground: 0 0% 13%; /* Dark text for contrast */
 
-    --card: 220 13% 11%; /* Dark cards with subtle variation */
-    --card-foreground: 210 40% 95%;
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 0 0% 13%;
 
-    --popover: 220 13% 11%;
-    --popover-foreground: 210 40% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
 
-    /* C6 Bank blue primary */
-    --primary: 207 89% 54%; /* C6 characteristic blue */
-    --primary-foreground: 210 40% 95%;
-    --primary-glow: 207 79% 64%;
+    /* Airbnb pink/coral primary */
+    --primary: 351 83% 67%; /* #FF385C - Airbnb red */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 351 73% 77%;
 
-    /* Dark secondary */
-    --secondary: 220 13% 15%; /* Slightly lighter than cards */
-    --secondary-foreground: 210 40% 95%;
+    /* Light gray secondary */
+    --secondary: 0 0% 97%; /* Very light gray */
+    --secondary-foreground: 0 0% 13%;
 
-    /* Muted grays for C6 style */
-    --muted: 220 13% 15%;
-    --muted-foreground: 215 25% 65%; /* Medium gray text */
+    /* Airbnb muted grays */
+    --muted: 0 0% 96%; /* #F7F7F7 */
+    --muted-foreground: 0 0% 45%; /* #737373 - Medium gray */
 
-    /* Accent similar to secondary */
-    --accent: 220 13% 15%;
-    --accent-foreground: 210 40% 95%;
+    /* Subtle accent */
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 13%;
 
-    /* Orange highlight */
-    --highlight: 22 89% 52%; /* #FF8C00 */
+    /* Teal highlight for actions */
+    --highlight: 176 38% 49%; /* #00A0A5 */
     --highlight-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 20%; /* Dark borders for C6 style */
-    --input: 220 13% 15%;
-    --ring: 207 89% 54%;
+    --border: 0 0% 91%; /* #E8E8E8 - Light borders */
+    --input: 0 0% 96%;
+    --ring: 351 83% 67%;
 
-    /* C6 Bank gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(207 89% 54%), hsl(207 79% 64%));
-    --gradient-warm: linear-gradient(135deg, hsl(22 89% 52%), hsl(32 84% 57%));
-    --gradient-teal: linear-gradient(135deg, hsl(176 38% 49%), hsl(186 33% 54%));
-    --gradient-background: linear-gradient(180deg, hsl(220 13% 9%), hsl(220 13% 7%));
+    /* Light gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(351 83% 67%), hsl(351 73% 77%));
+    --gradient-warm: linear-gradient(135deg, hsl(22 89% 65%), hsl(32 84% 70%));
+    --gradient-teal: linear-gradient(135deg, hsl(176 38% 49%), hsl(186 33% 59%));
+    --gradient-background: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 98%));
 
-    /* C6 Bank style shadows */
-    --shadow-c6: 0 2px 16px rgba(0, 0, 0, 0.3);
-    --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.25);
-    --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.35);
+    /* Airbnb light shadows */
+    --shadow-airbnb: 0 2px 8px rgba(0, 0, 0, 0.12);
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
 
     /* Smooth transitions */
     --transition-smooth: all 0.2s ease;
@@ -142,7 +142,9 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-medium;
+    @apply bg-background text-foreground font-sans;
+    font-weight: 400;
+    font-family: 'Inter', 'Circular Std', '-apple-system', BlinkMacSystemFont, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
