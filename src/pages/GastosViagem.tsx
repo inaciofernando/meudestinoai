@@ -273,7 +273,7 @@ export default function GastosViagem() {
             expense_type: item.expense_type || 'realizado',
             payment_method_type: item.payment_method_type,
             description: item.title,
-            date: item.expense_date || item.created_at,
+            date: item.expense_date ? item.expense_date.split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : ''),
             receipt_image_url: item.receipt_image_url,
             created_at: item.created_at
           }));
@@ -447,7 +447,7 @@ export default function GastosViagem() {
         expense_type: item.expense_type || 'realizado',
         payment_method_type: item.payment_method_type,
         description: item.title,
-        date: item.expense_date || item.created_at,
+        date: item.expense_date ? item.expense_date.split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : ''),
         receipt_image_url: item.receipt_image_url,
         created_at: item.created_at
       }));
@@ -1788,6 +1788,7 @@ export default function GastosViagem() {
                           date: selectedExpense.date.split('T')[0],
                           receiptFile: null
                         });
+                        console.log('EditForm initialized with date:', selectedExpense.date.split('T')[0]);
                         setIsViewingExpense(false);
                         setIsEditingExpense(true);
                       }}
@@ -2077,22 +2078,26 @@ export default function GastosViagem() {
                             receiptUrl = uploadData.path;
                           }
 
-                          const { error } = await supabase
-                            .from('budget_items')
-                            .update({
-                              title: editForm.description,
-                              category: editForm.category,
-                              establishment: editForm.establishment,
-                              expense_type: editForm.expense_type,
-                              payment_method_type: editForm.payment_method_type,
-                              actual_amount: parseFloat(editForm.amount),
-                              planned_amount: parseFloat(editForm.amount),
-                              currency: editForm.currency,
-                              expense_date: editForm.date,
-                              receipt_image_url: receiptUrl
-                            })
-                            .eq('id', editingExpense.id)
-                            .eq('user_id', user.id);
+                           console.log('About to save to database:');
+                           console.log('editForm.date:', editForm.date);
+                           console.log('typeof editForm.date:', typeof editForm.date);
+                           
+                           const { error } = await supabase
+                             .from('budget_items')
+                             .update({
+                               title: editForm.description,
+                               category: editForm.category,
+                               establishment: editForm.establishment,
+                               expense_type: editForm.expense_type,
+                               payment_method_type: editForm.payment_method_type,
+                               actual_amount: parseFloat(editForm.amount),
+                               planned_amount: parseFloat(editForm.amount),
+                               currency: editForm.currency,
+                               expense_date: editForm.date,
+                               receipt_image_url: receiptUrl
+                             })
+                             .eq('id', editingExpense.id)
+                             .eq('user_id', user.id);
 
                            if (error) throw error;
                            
