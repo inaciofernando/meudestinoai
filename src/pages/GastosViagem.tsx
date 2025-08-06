@@ -273,7 +273,7 @@ export default function GastosViagem() {
             expense_type: item.expense_type || 'realizado',
             payment_method_type: item.payment_method_type,
             description: item.title,
-            date: item.expense_date || item.created_at,
+            date: formatInTimeZone(new Date(item.expense_date || item.created_at), 'America/Sao_Paulo', 'yyyy-MM-dd'),
             receipt_image_url: item.receipt_image_url,
             created_at: item.created_at
           }));
@@ -447,7 +447,7 @@ export default function GastosViagem() {
         expense_type: item.expense_type || 'realizado',
         payment_method_type: item.payment_method_type,
         description: item.title,
-        date: item.expense_date || item.created_at,
+        date: formatInTimeZone(new Date(item.expense_date || item.created_at), 'America/Sao_Paulo', 'yyyy-MM-dd'),
         receipt_image_url: item.receipt_image_url,
         created_at: item.created_at
       }));
@@ -1785,7 +1785,7 @@ export default function GastosViagem() {
                           expense_type: selectedExpense.expense_type,
                           payment_method_type: selectedExpense.payment_method_type || "",
                           description: selectedExpense.description,
-                          date: selectedExpense.date.split('T')[0],
+                          date: formatInTimeZone(new Date(selectedExpense.date), 'America/Sao_Paulo', 'yyyy-MM-dd'),
                           receiptFile: null
                         });
                         setIsViewingExpense(false);
