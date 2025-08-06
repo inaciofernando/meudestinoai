@@ -89,19 +89,30 @@ interface UserPaymentMethod {
   updated_at: string;
 }
 
-// Utility function to handle Brazilian timezone
-const getBrazilDate = (date?: Date | string) => {
-  const targetDate = date ? new Date(date) : new Date();
-  return toZonedTime(targetDate, 'America/Sao_Paulo');
+// Utility function to handle dates correctly
+const formatDateForDisplay = (dateString: string): string => {
+  if (!dateString) return '';
+  // Se já está no formato YYYY-MM-DD, retorna direto
+  if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return dateString;
+  }
+  // Se tem timestamp, pega só a parte da data
+  return dateString.split('T')[0];
 };
 
-const formatBrazilDate = (date: Date | string, formatString: string = "dd/MM/yyyy") => {
-  return formatInTimeZone(new Date(date), 'America/Sao_Paulo', formatString, { locale: ptBR });
+const formatDateForBrazilian = (dateString: string): string => {
+  if (!dateString) return '';
+  const cleanDate = formatDateForDisplay(dateString);
+  const [year, month, day] = cleanDate.split('-');
+  return `${day}/${month}/${year}`;
 };
 
-const getTodayBrazilString = () => {
-  const brazilDate = getBrazilDate();
-  return formatInTimeZone(brazilDate, 'America/Sao_Paulo', 'yyyy-MM-dd');
+const getTodayString = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const EXPENSE_CATEGORIES = [
@@ -187,7 +198,7 @@ export default function GastosViagem() {
     establishment: "",
     expense_type: "realizado",
     payment_method_type: "",
-    date: getTodayBrazilString(),
+    date: getTodayString(),
     receiptFile: null as File | null,
     isRecurring: false,
     recurrenceCount: 1,
@@ -273,7 +284,7 @@ export default function GastosViagem() {
             expense_type: item.expense_type || 'realizado',
             payment_method_type: item.payment_method_type,
             description: item.title,
-            date: item.expense_date ? item.expense_date.split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : ''),
+            date: formatDateForDisplay(item.expense_date || item.created_at),
             receipt_image_url: item.receipt_image_url,
             created_at: item.created_at
           }));
@@ -349,7 +360,7 @@ export default function GastosViagem() {
         total: dayExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0),
         mainCategory: getMostFrequentCategory(dayExpenses)
       }))
-      .sort((a, b) => getBrazilDate(b.date).getTime() - getBrazilDate(a.date).getTime());
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   };
 
   const getMostFrequentCategory = (dayExpenses: Expense[]) => {
@@ -370,8 +381,8 @@ export default function GastosViagem() {
   const getDailyAverage = () => {
     if (!trip?.start_date || expenses.length === 0) return 0;
     
-    const startDate = getBrazilDate(trip.start_date);
-    const endDate = trip.end_date ? getBrazilDate(trip.end_date) : getBrazilDate();
+    const startDate = new Date(trip.start_date);
+    const endDate = trip.end_date ? new Date(trip.end_date) : new Date();
     const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
     
     return getTotalExpenses() / daysDiff;
@@ -380,8 +391,8 @@ export default function GastosViagem() {
   const getProjectedTotal = () => {
     if (!trip?.start_date || !trip?.end_date) return 0;
     
-    const startDate = getBrazilDate(trip.start_date);
-    const endDate = getBrazilDate(trip.end_date);
+    const startDate = new Date(trip.start_date);
+    const endDate = new Date(trip.end_date);
     const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const dailyAverage = getDailyAverage();
     
@@ -447,7 +458,7 @@ export default function GastosViagem() {
         expense_type: item.expense_type || 'realizado',
         payment_method_type: item.payment_method_type,
         description: item.title,
-        date: item.expense_date ? item.expense_date.split('T')[0] : (item.created_at ? item.created_at.split('T')[0] : ''),
+        date: formatDateForDisplay(item.expense_date || item.created_at),
         receipt_image_url: item.receipt_image_url,
         created_at: item.created_at
       }));
@@ -482,7 +493,7 @@ export default function GastosViagem() {
 
       // Create expenses array based on recurrence settings
       const expensesToInsert = [];
-      const startDate = getBrazilDate(newExpense.date);
+      const startDate = new Date(newExpense.date);
 
       for (let i = 0; i < (newExpense.isRecurring ? newExpense.recurrenceCount : 1); i++) {
         let expenseDate = new Date(startDate);
@@ -512,7 +523,7 @@ export default function GastosViagem() {
           actual_amount: parseFloat(newExpense.amount),
           planned_amount: parseFloat(newExpense.amount),
           currency: newExpense.currency,
-          expense_date: formatInTimeZone(expenseDate, 'America/Sao_Paulo', 'yyyy-MM-dd'),
+          expense_date: formatDateForDisplay(expenseDate.toISOString()),
           receipt_image_url: receiptUrl,
           is_confirmed: true
         });
@@ -543,7 +554,7 @@ export default function GastosViagem() {
         establishment: "",
         expense_type: "realizado",
         payment_method_type: "",
-        date: getTodayBrazilString(),
+        date: getTodayString(),
         receiptFile: null,
         isRecurring: false,
         recurrenceCount: 1,
@@ -1285,7 +1296,7 @@ export default function GastosViagem() {
                             Será criado {newExpense.recurrenceCount} gasto{newExpense.recurrenceCount > 1 ? 's' : ''} {' '}
                             {newExpense.recurrencePeriod === 'diario' ? 'diários' : 
                              newExpense.recurrencePeriod === 'semanal' ? 'semanais' : 'mensais'} a partir de {' '}
-                            {formatBrazilDate(newExpense.date)}
+                            {formatDateForBrazilian(newExpense.date)}
                           </p>
                         </div>
                       )}
@@ -1528,7 +1539,7 @@ export default function GastosViagem() {
                             <div className="w-2 h-2 bg-primary rounded-full"></div>
                             <div className="text-left">
                               <p className="c6-text-primary font-medium">
-                                {formatBrazilDate(dayData.date)}
+                                {formatDateForBrazilian(dayData.date)}
                               </p>
                               <p className="c6-text-secondary text-xs">
                                 {dayData.expenses.length} transação{dayData.expenses.length > 1 ? 'ões' : ''}
@@ -1698,7 +1709,7 @@ export default function GastosViagem() {
                       <div className="flex justify-between">
                         <span className="c6-text-secondary">Data:</span>
                         <span className="c6-text-primary">
-                           {formatBrazilDate(selectedExpense.date)}
+                           {formatDateForBrazilian(selectedExpense.date)}
                         </span>
                       </div>
 
@@ -1785,7 +1796,7 @@ export default function GastosViagem() {
                           expense_type: selectedExpense.expense_type,
                           payment_method_type: selectedExpense.payment_method_type || "",
                           description: selectedExpense.description,
-                          date: selectedExpense.date.split('T')[0],
+                          date: formatDateForDisplay(selectedExpense.date),
                           receiptFile: null
                         });
                         console.log('EditForm initialized with date:', selectedExpense.date.split('T')[0]);
@@ -2205,7 +2216,7 @@ export default function GastosViagem() {
                     </div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>Data:</span>
-                      <span>{formatBrazilDate(selectedExpense.date)}</span>
+                      <span>{formatDateForBrazilian(selectedExpense.date)}</span>
                     </div>
                     {selectedExpense.establishment && (
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
