@@ -277,7 +277,7 @@ export default function GastosViagem() {
   const selectedCurrency = CURRENCIES.find(c => c.code === (trip?.budget_currency || "BRL")) || CURRENCIES[0];
 
   const getTotalExpenses = () => {
-    return expenses.reduce((total, expense) => total + expense.amount, 0);
+    return expenses.reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
   };
 
   const getBudgetStatus = () => {
@@ -316,7 +316,7 @@ export default function GastosViagem() {
       .map(([date, dayExpenses]) => ({
         date,
         expenses: dayExpenses,
-        total: dayExpenses.reduce((sum, expense) => sum + expense.amount, 0),
+        total: dayExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0),
         mainCategory: getMostFrequentCategory(dayExpenses)
       }))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -657,7 +657,7 @@ export default function GastosViagem() {
           color: userPaymentMethods.find(m => m.name === method)?.color || '#64748b',
           type: userPaymentMethods.find(m => m.name === method) ? 'custom' : 'standard'
         };
-        current.spent += expense.amount;
+        current.spent += (Number(expense.amount) || 0);
         summary.set(method, current);
       }
     });
@@ -1463,8 +1463,8 @@ export default function GastosViagem() {
                                         </p>
                                       </div>
                                     </div>
-                                    <p className="c6-text-value text-sm">
-                                      {formatCurrency(expense.amount, selectedCurrency.symbol)}
+                                     <p className="c6-text-value text-sm">
+                                       {formatCurrency(Number(expense.amount) || 0, selectedCurrency.symbol)}
                                     </p>
                                   </button>
                                 </div>
@@ -1557,8 +1557,8 @@ export default function GastosViagem() {
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="c6-text-secondary">Valor:</span>
-                        <span className="font-semibold text-primary text-lg">
-                          {formatCurrency(selectedExpense.amount, selectedCurrency.symbol)}
+                         <span className="font-semibold text-primary text-lg">
+                           {formatCurrency(Number(selectedExpense.amount) || 0, selectedCurrency.symbol)}
                         </span>
                       </div>
                       
@@ -2056,8 +2056,8 @@ export default function GastosViagem() {
                     <div className="font-medium text-sm">{selectedExpense.description}</div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>Valor:</span>
-                      <span className="font-medium text-destructive">
-                        {formatCurrency(selectedExpense.amount, selectedCurrency.symbol)}
+                       <span className="font-medium text-destructive">
+                         {formatCurrency(Number(selectedExpense.amount) || 0, selectedCurrency.symbol)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
