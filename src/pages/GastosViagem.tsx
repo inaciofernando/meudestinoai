@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from "recharts";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -680,28 +680,22 @@ export default function GastosViagem() {
   };
 
   const getPaymentMethodChartData = () => {
-    const dateData = new Map();
+    const paymentData = new Map();
     
     expenses.forEach(expense => {
-      if (expense.date) {
-        const date = format(new Date(expense.date), "dd/MM", { locale: ptBR });
-        const current = dateData.get(date) || 0;
-        dateData.set(date, current + (Number(expense.amount) || 0));
+      if (expense.payment_method_type) {
+        const current = paymentData.get(expense.payment_method_type) || 0;
+        paymentData.set(expense.payment_method_type, current + (Number(expense.amount) || 0));
       }
     });
 
-    return Array.from(dateData.entries())
-      .map(([date, amount]) => ({
-        date,
+    return Array.from(paymentData.entries())
+      .map(([method, amount]) => ({
+        metodo: method,
         valor: amount
       }))
-      .sort((a, b) => {
-        const [dayA, monthA] = a.date.split('/').map(Number);
-        const [dayB, monthB] = b.date.split('/').map(Number);
-        const dateA = new Date(2024, monthA - 1, dayA);
-        const dateB = new Date(2024, monthB - 1, dayB);
-        return dateA.getTime() - dateB.getTime();
-      });
+      .sort((a, b) => b.valor - a.valor) // Ordenar do maior para o menor
+      .filter(item => item.valor > 0);
   };
 
   const handleUpdateBudget = async () => {
@@ -1395,31 +1389,38 @@ export default function GastosViagem() {
             </Button>
           </div>
 
-          {/* Gráfico de Linha */}
+          {/* Gráfico de Barras Horizontais */}
           {showChart && getPaymentMethodChartData().length > 0 && (
             <div className="px-4 mt-4">
               <div className="c6-card p-6">
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-foreground mb-1">Evolução dos Gastos</h2>
-                  <p className="c6-text-secondary text-sm">Gastos acumulados por data</p>
+                  <h2 className="text-lg font-semibold text-foreground mb-1">Gastos por Método de Pagamento</h2>
+                  <p className="c6-text-secondary text-sm">Ranking dos métodos mais utilizados</p>
                 </div>
                 
-                <div className="w-full h-64">
+                <div className="w-full h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={getPaymentMethodChartData()}>
+                    <BarChart 
+                      data={getPaymentMethodChartData()}
+                      layout="horizontal"
+                      margin={{ top: 20, right: 30, left: 80, bottom: 5 }}
+                    >
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
-                        dataKey="date" 
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                      />
-                      <YAxis 
+                        type="number"
                         stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                         tickFormatter={(value) => `${selectedCurrency.symbol} ${value.toFixed(0)}`}
                       />
+                      <YAxis 
+                        type="category"
+                        dataKey="metodo"
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                        width={75}
+                      />
                       <Tooltip 
-                        formatter={(value: number) => [formatCurrency(value, selectedCurrency.symbol), "Valor"]}
+                        formatter={(value: number) => [formatCurrency(value, selectedCurrency.symbol), "Valor Total"]}
                         labelStyle={{ color: 'hsl(var(--foreground))' }}
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--background))', 
@@ -1427,15 +1428,12 @@ export default function GastosViagem() {
                           borderRadius: '8px'
                         }}
                       />
-                      <Line 
-                        type="monotone" 
+                      <Bar 
                         dataKey="valor" 
-                        stroke="#3b82f6" 
-                        strokeWidth={3}
-                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                        activeDot={{ r: 6, fill: '#3b82f6' }}
+                        fill="#3b82f6"
+                        radius={[0, 4, 4, 0]}
                       />
-                    </LineChart>
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
