@@ -273,7 +273,7 @@ export default function GastosViagem() {
             expense_type: item.expense_type || 'realizado',
             payment_method_type: item.payment_method_type,
             description: item.title,
-            date: formatInTimeZone(new Date(item.expense_date || item.created_at), 'America/Sao_Paulo', 'yyyy-MM-dd'),
+            date: item.expense_date || item.created_at,
             receipt_image_url: item.receipt_image_url,
             created_at: item.created_at
           }));
@@ -447,7 +447,7 @@ export default function GastosViagem() {
         expense_type: item.expense_type || 'realizado',
         payment_method_type: item.payment_method_type,
         description: item.title,
-        date: formatInTimeZone(new Date(item.expense_date || item.created_at), 'America/Sao_Paulo', 'yyyy-MM-dd'),
+        date: item.expense_date || item.created_at,
         receipt_image_url: item.receipt_image_url,
         created_at: item.created_at
       }));
@@ -1785,7 +1785,7 @@ export default function GastosViagem() {
                           expense_type: selectedExpense.expense_type,
                           payment_method_type: selectedExpense.payment_method_type || "",
                           description: selectedExpense.description,
-                          date: formatInTimeZone(new Date(selectedExpense.date), 'America/Sao_Paulo', 'yyyy-MM-dd'),
+                          date: selectedExpense.date.split('T')[0],
                           receiptFile: null
                         });
                         setIsViewingExpense(false);
@@ -2052,8 +2052,11 @@ export default function GastosViagem() {
                       Cancelar
                     </Button>
                     <Button 
-                      onClick={async () => {
-                        if (!user || !trip || !editingExpense) return;
+                       onClick={async () => {
+                         console.log('=== DEBUG EDIT FORM DATE ===');
+                         console.log('editForm.date original:', editForm.date);
+                         
+                         if (!user || !trip || !editingExpense) return;
 
                         try {
                           let receiptUrl = editingExpense.receipt_image_url;
@@ -2085,13 +2088,15 @@ export default function GastosViagem() {
                               actual_amount: parseFloat(editForm.amount),
                               planned_amount: parseFloat(editForm.amount),
                               currency: editForm.currency,
-                              expense_date: formatInTimeZone(new Date(editForm.date + 'T12:00:00'), 'America/Sao_Paulo', 'yyyy-MM-dd'),
+                              expense_date: editForm.date,
                               receipt_image_url: receiptUrl
                             })
                             .eq('id', editingExpense.id)
                             .eq('user_id', user.id);
 
-                          if (error) throw error;
+                           if (error) throw error;
+                           
+                           console.log('Date saved successfully:', editForm.date);
 
                           toast({
                             title: "Gasto atualizado!",
