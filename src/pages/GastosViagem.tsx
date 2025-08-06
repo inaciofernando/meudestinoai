@@ -2206,30 +2206,6 @@ export default function GastosViagem() {
                         </span>
                       </div>
                       
-                      {summary.type === 'custom' && summary.initial !== null && (
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <div className="flex justify-between">
-                            <span>Saldo inicial:</span>
-                            <span>{formatCurrency(summary.initial, summary.currency)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Saldo restante:</span>
-                            <span className={summary.remaining < 0 ? 'text-destructive' : 'text-green-600'}>
-                              {formatCurrency(summary.remaining, summary.currency)}
-                            </span>
-                          </div>
-                          {summary.initial > 0 && (
-                            <div className="w-full bg-muted rounded-full h-2 mt-2">
-                              <div 
-                                className="bg-primary h-2 rounded-full" 
-                                style={{ 
-                                  width: `${Math.max(0, Math.min(100, (summary.spent / summary.initial) * 100))}%` 
-                                }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
