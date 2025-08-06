@@ -2085,7 +2085,7 @@ export default function GastosViagem() {
                               actual_amount: parseFloat(editForm.amount),
                               planned_amount: parseFloat(editForm.amount),
                               currency: editForm.currency,
-                              expense_date: editForm.date,
+                              expense_date: formatInTimeZone(new Date(editForm.date + 'T12:00:00'), 'America/Sao_Paulo', 'yyyy-MM-dd'),
                               receipt_image_url: receiptUrl
                             })
                             .eq('id', editingExpense.id)
