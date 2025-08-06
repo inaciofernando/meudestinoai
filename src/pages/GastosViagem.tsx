@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -129,6 +130,7 @@ export default function GastosViagem() {
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isViewingExpense, setIsViewingExpense] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'todos' | 'planejado' | 'realizado'>('todos');
 
   // Form states for budget editing
@@ -457,19 +459,58 @@ export default function GastosViagem() {
       });
       
       setIsAddingExpense(false);
-
-      // Refresh expenses
-      fetchExpenses();
     } catch (error) {
       console.error('Error adding expense:', error);
       toast({
-        title: "Erro",
+        title: "Erro ao adicionar gasto",
         description: "Não foi possível adicionar o gasto. Tente novamente.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
+  const handleDeleteExpense = async () => {
+    if (!selectedExpense || !user) return;
+    
+    try {
+      // Excluir do banco de dados
+      const { error } = await supabase
+        .from('budget_items')
+        .delete()
+        .eq('id', selectedExpense.id)
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error('Erro ao excluir gasto:', error);
+        toast({
+          title: "Erro ao excluir",
+          description: "Não foi possível excluir o gasto. Tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Atualizar lista local
+      setExpenses(prev => prev.filter(exp => exp.id !== selectedExpense.id));
+      
+      // Fechar modais
+      setIsDeleteDialogOpen(false);
+      setIsViewingExpense(false);
+      setSelectedExpense(null);
+      
+      toast({
+        title: "Gasto excluído",
+        description: "O gasto foi removido com sucesso.",
+      });
+      
+    } catch (error) {
+      console.error('Erro ao excluir gasto:', error);
+      toast({
+        title: "Erro ao excluir",
+        description: "Erro interno. Tente novamente.",
+        variant: "destructive",
+      });
+    }
   const handleUpdateBudget = async () => {
     if (!user || !trip) return;
 
@@ -1460,55 +1501,7 @@ export default function GastosViagem() {
                     </Button>
                     
                     <Button 
-                      onClick={async () => {
-                        if (!selectedExpense || !user) return;
-                        
-                        // Confirmar exclusão
-                        const confirmDelete = window.confirm(
-                          `Tem certeza que deseja excluir este gasto?\n\n${selectedExpense.description}\nValor: ${formatCurrency(selectedExpense.amount)}\n\nEsta ação não pode ser desfeita.`
-                        );
-                        
-                        if (!confirmDelete) return;
-                        
-                        try {
-                          // Excluir do banco de dados
-                          const { error } = await supabase
-                            .from('budget_items')
-                            .delete()
-                            .eq('id', selectedExpense.id)
-                            .eq('user_id', user.id);
-                          
-                          if (error) {
-                            console.error('Erro ao excluir gasto:', error);
-                            toast({
-                              title: "Erro ao excluir",
-                              description: "Não foi possível excluir o gasto. Tente novamente.",
-                              variant: "destructive",
-                            });
-                            return;
-                          }
-                          
-                          // Atualizar lista local
-                          setExpenses(prev => prev.filter(exp => exp.id !== selectedExpense.id));
-                          
-                          // Fechar modal
-                          setIsViewingExpense(false);
-                          setSelectedExpense(null);
-                          
-                          toast({
-                            title: "Gasto excluído",
-                            description: "O gasto foi removido com sucesso.",
-                          });
-                          
-                        } catch (error) {
-                          console.error('Erro ao excluir gasto:', error);
-                          toast({
-                            title: "Erro ao excluir",
-                            description: "Erro interno. Tente novamente.",
-                            variant: "destructive",
-                          });
-                        }
-                      }}
+                      onClick={() => setIsDeleteDialogOpen(true)}
                       variant="destructive"
                       className="flex-1"
                     >
@@ -1879,7 +1872,59 @@ export default function GastosViagem() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Modal de Confirmação de Exclusão */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent className="max-w-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                <Trash2 className="h-5 w-5" />
+                Excluir Gasto
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-3 pt-2">
+                <div className="text-sm text-muted-foreground">
+                  Tem certeza que deseja excluir este gasto? Esta ação não pode ser desfeita.
+                </div>
+                
+                {selectedExpense && (
+                  <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                    <div className="font-medium text-sm">{selectedExpense.description}</div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Valor:</span>
+                      <span className="font-medium text-destructive">
+                        {formatCurrency(selectedExpense.amount, selectedCurrency.symbol)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Data:</span>
+                      <span>{format(new Date(selectedExpense.date), "dd/MM/yyyy", { locale: ptBR })}</span>
+                    </div>
+                    {selectedExpense.establishment && (
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Local:</span>
+                        <span>{selectedExpense.establishment}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteExpense}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir Definitivamente
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
       </PWALayout>
     </ProtectedRoute>
   );
 }
+
+export default GastosViagem;
