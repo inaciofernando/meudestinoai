@@ -535,6 +535,9 @@ export default function GastosViagem() {
       });
       
       setIsAddingExpense(false);
+      
+      // Refresh the expenses list to show the new expense
+      fetchExpenses();
     } catch (error) {
       console.error('Error adding expense:', error);
       toast({
@@ -566,9 +569,6 @@ export default function GastosViagem() {
         return;
       }
       
-      // Atualizar lista local
-      setExpenses(prev => prev.filter(exp => exp.id !== selectedExpense.id));
-      
       // Fechar modais
       setIsDeleteDialogOpen(false);
       setIsViewingExpense(false);
@@ -578,6 +578,9 @@ export default function GastosViagem() {
         title: "Gasto excluído",
         description: "O gasto foi removido com sucesso.",
       });
+      
+      // Refresh the expenses list to ensure data consistency
+      fetchExpenses();
       
     } catch (error) {
       console.error('Erro ao excluir gasto:', error);
