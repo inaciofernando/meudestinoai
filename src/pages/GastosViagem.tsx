@@ -1043,17 +1043,20 @@ export default function GastosViagem() {
                   <p className="c6-text-secondary text-xs">Comece adicionando seus primeiros gastos</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {getExpensesByDay().map((dayData) => {
+                <div className="space-y-0">
+                  {getExpensesByDay().map((dayData, dayIndex) => {
                     const isExpanded = expandedDays.has(dayData.date);
                     const category = dayData.mainCategory;
                     
                     return (
-                      <div key={dayData.date} className="border border-border rounded-lg">
+                      <div key={dayData.date}>
+                        {/* Separador entre dias */}
+                        {dayIndex > 0 && <div className="h-px bg-border/50" />}
+                        
                         {/* Header do dia */}
                         <button
                           onClick={() => toggleDayExpansion(dayData.date)}
-                          className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors rounded-lg"
+                          className="w-full flex items-center justify-between py-4 px-0 hover:bg-muted/30 transition-colors"
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 bg-primary rounded-full"></div>
@@ -1081,40 +1084,44 @@ export default function GastosViagem() {
 
                         {/* Lista de gastos do dia */}
                         {isExpanded && (
-                          <div className="border-t border-border">
-                            {dayData.expenses.map((expense) => {
+                          <div className="pt-2">
+                            {dayData.expenses.map((expense, expenseIndex) => {
                               const expenseCategory = EXPENSE_CATEGORIES.find(cat => cat.id === expense.category);
                               
                               return (
-                                <button 
-                                  key={expense.id} 
-                                  onClick={() => {
-                                    setSelectedExpense(expense);
-                                    setIsViewingExpense(true);
-                                  }}
-                                  className="w-full flex items-center justify-between p-4 hover:bg-muted/20 transition-colors cursor-pointer text-left"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
-                                      {expenseCategory ? (
-                                        <expenseCategory.icon className="w-4 h-4 text-muted-foreground" />
-                                      ) : (
-                                        <Receipt className="w-4 h-4 text-muted-foreground" />
-                                      )}
+                                <div key={expense.id}>
+                                  {/* Separador entre gastos */}
+                                  {expenseIndex > 0 && <div className="h-px bg-border/30 mx-0" />}
+                                  
+                                  <button 
+                                    onClick={() => {
+                                      setSelectedExpense(expense);
+                                      setIsViewingExpense(true);
+                                    }}
+                                    className="w-full flex items-center justify-between py-3 px-0 hover:bg-muted/20 transition-colors cursor-pointer text-left"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
+                                        {expenseCategory ? (
+                                          <expenseCategory.icon className="w-4 h-4 text-muted-foreground" />
+                                        ) : (
+                                          <Receipt className="w-4 h-4 text-muted-foreground" />
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="c6-text-primary text-sm font-medium">
+                                          {expense.description}
+                                        </p>
+                                        <p className="c6-text-secondary text-xs">
+                                          {expenseCategory?.name || 'Outros'}
+                                        </p>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <p className="c6-text-primary text-sm font-medium">
-                                        {expense.description}
-                                      </p>
-                                      <p className="c6-text-secondary text-xs">
-                                        {expenseCategory?.name || 'Outros'}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <p className="c6-text-value text-sm">
-                                    {formatCurrency(expense.amount, selectedCurrency.symbol)}
-                                  </p>
-                                </button>
+                                    <p className="c6-text-value text-sm">
+                                      {formatCurrency(expense.amount, selectedCurrency.symbol)}
+                                    </p>
+                                  </button>
+                                </div>
                               );
                             })}
                           </div>
