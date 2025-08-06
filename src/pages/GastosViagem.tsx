@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from "recharts";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { toZonedTime, formatInTimeZone } from "date-fns-tz";
 import {
   ArrowLeft,
   Plus,
@@ -87,6 +88,21 @@ interface UserPaymentMethod {
   created_at: string;
   updated_at: string;
 }
+
+// Utility function to handle Brazilian timezone
+const getBrazilDate = (date?: Date | string) => {
+  const targetDate = date ? new Date(date) : new Date();
+  return toZonedTime(targetDate, 'America/Sao_Paulo');
+};
+
+const formatBrazilDate = (date: Date | string, formatString: string = "dd/MM/yyyy") => {
+  return formatInTimeZone(new Date(date), 'America/Sao_Paulo', formatString, { locale: ptBR });
+};
+
+const getTodayBrazilString = () => {
+  const brazilDate = getBrazilDate();
+  return formatInTimeZone(brazilDate, 'America/Sao_Paulo', 'yyyy-MM-dd');
+};
 
 const EXPENSE_CATEGORIES = [
   { id: "transport", name: "Transporte", icon: Plane, color: "bg-blue-500", subcategories: ["Voo", "Táxi", "Uber", "Ônibus", "Trem", "Aluguel de Carro"] },
@@ -171,7 +187,7 @@ export default function GastosViagem() {
     establishment: "",
     expense_type: "realizado",
     payment_method_type: "",
-    date: new Date().toISOString().split('T')[0],
+    date: getTodayBrazilString(),
     receiptFile: null as File | null,
     isRecurring: false,
     recurrenceCount: 1,
@@ -333,7 +349,7 @@ export default function GastosViagem() {
         total: dayExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0),
         mainCategory: getMostFrequentCategory(dayExpenses)
       }))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      .sort((a, b) => getBrazilDate(b.date).getTime() - getBrazilDate(a.date).getTime());
   };
 
   const getMostFrequentCategory = (dayExpenses: Expense[]) => {
@@ -354,8 +370,8 @@ export default function GastosViagem() {
   const getDailyAverage = () => {
     if (!trip?.start_date || expenses.length === 0) return 0;
     
-    const startDate = new Date(trip.start_date);
-    const endDate = trip.end_date ? new Date(trip.end_date) : new Date();
+    const startDate = getBrazilDate(trip.start_date);
+    const endDate = trip.end_date ? getBrazilDate(trip.end_date) : getBrazilDate();
     const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
     
     return getTotalExpenses() / daysDiff;
@@ -364,8 +380,8 @@ export default function GastosViagem() {
   const getProjectedTotal = () => {
     if (!trip?.start_date || !trip?.end_date) return 0;
     
-    const startDate = new Date(trip.start_date);
-    const endDate = new Date(trip.end_date);
+    const startDate = getBrazilDate(trip.start_date);
+    const endDate = getBrazilDate(trip.end_date);
     const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     const dailyAverage = getDailyAverage();
     
@@ -466,7 +482,7 @@ export default function GastosViagem() {
 
       // Create expenses array based on recurrence settings
       const expensesToInsert = [];
-      const startDate = new Date(newExpense.date);
+      const startDate = getBrazilDate(newExpense.date);
 
       for (let i = 0; i < (newExpense.isRecurring ? newExpense.recurrenceCount : 1); i++) {
         let expenseDate = new Date(startDate);
@@ -496,7 +512,7 @@ export default function GastosViagem() {
           actual_amount: parseFloat(newExpense.amount),
           planned_amount: parseFloat(newExpense.amount),
           currency: newExpense.currency,
-          expense_date: expenseDate.toISOString().split('T')[0],
+          expense_date: formatInTimeZone(expenseDate, 'America/Sao_Paulo', 'yyyy-MM-dd'),
           receipt_image_url: receiptUrl,
           is_confirmed: true
         });
@@ -527,7 +543,7 @@ export default function GastosViagem() {
         establishment: "",
         expense_type: "realizado",
         payment_method_type: "",
-        date: new Date().toISOString().split('T')[0],
+        date: getTodayBrazilString(),
         receiptFile: null,
         isRecurring: false,
         recurrenceCount: 1,
@@ -1269,7 +1285,7 @@ export default function GastosViagem() {
                             Será criado {newExpense.recurrenceCount} gasto{newExpense.recurrenceCount > 1 ? 's' : ''} {' '}
                             {newExpense.recurrencePeriod === 'diario' ? 'diários' : 
                              newExpense.recurrencePeriod === 'semanal' ? 'semanais' : 'mensais'} a partir de {' '}
-                            {format(new Date(newExpense.date), "dd/MM/yyyy", { locale: ptBR })}
+                            {formatBrazilDate(newExpense.date)}
                           </p>
                         </div>
                       )}
@@ -1512,7 +1528,7 @@ export default function GastosViagem() {
                             <div className="w-2 h-2 bg-primary rounded-full"></div>
                             <div className="text-left">
                               <p className="c6-text-primary font-medium">
-                                {format(new Date(dayData.date), "dd/MM/yyyy", { locale: ptBR })}
+                                {formatBrazilDate(dayData.date)}
                               </p>
                               <p className="c6-text-secondary text-xs">
                                 {dayData.expenses.length} transação{dayData.expenses.length > 1 ? 'ões' : ''}
@@ -1682,7 +1698,7 @@ export default function GastosViagem() {
                       <div className="flex justify-between">
                         <span className="c6-text-secondary">Data:</span>
                         <span className="c6-text-primary">
-                          {format(new Date(selectedExpense.date), "dd/MM/yyyy", { locale: ptBR })}
+                           {formatBrazilDate(selectedExpense.date)}
                         </span>
                       </div>
 
@@ -2179,7 +2195,7 @@ export default function GastosViagem() {
                     </div>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>Data:</span>
-                      <span>{format(new Date(selectedExpense.date), "dd/MM/yyyy", { locale: ptBR })}</span>
+                      <span>{formatBrazilDate(selectedExpense.date)}</span>
                     </div>
                     {selectedExpense.establishment && (
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
