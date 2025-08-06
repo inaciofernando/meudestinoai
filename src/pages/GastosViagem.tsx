@@ -511,6 +511,8 @@ export default function GastosViagem() {
         variant: "destructive",
       });
     }
+  };
+
   const handleUpdateBudget = async () => {
     if (!user || !trip) return;
 
@@ -1926,5 +1928,3 @@ export default function GastosViagem() {
     </ProtectedRoute>
   );
 }
-
-export default GastosViagem;
