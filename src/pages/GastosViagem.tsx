@@ -682,23 +682,38 @@ export default function GastosViagem() {
     return Array.from(summary.values());
   };
 
-  const getPaymentMethodChartData = () => {
+  const getPaymentMethodTableData = () => {
     const paymentData = new Map();
     
     expenses.forEach(expense => {
       if (expense.payment_method_type) {
-        const current = paymentData.get(expense.payment_method_type) || 0;
-        paymentData.set(expense.payment_method_type, current + (Number(expense.amount) || 0));
+        const current = paymentData.get(expense.payment_method_type) || {
+          planejado: 0,
+          realizado: 0,
+          total: 0
+        };
+        
+        const amount = Number(expense.amount) || 0;
+        if (expense.expense_type === 'planejado') {
+          current.planejado += amount;
+        } else {
+          current.realizado += amount;
+        }
+        current.total = current.planejado + current.realizado;
+        
+        paymentData.set(expense.payment_method_type, current);
       }
     });
 
     return Array.from(paymentData.entries())
-      .map(([method, amount]) => ({
+      .map(([method, data]) => ({
         metodo: method,
-        valor: amount
+        planejado: data.planejado,
+        realizado: data.realizado,
+        total: data.total
       }))
-      .sort((a, b) => b.valor - a.valor) // Ordenar do maior para o menor
-      .filter(item => item.valor > 0);
+      .sort((a, b) => b.total - a.total) // Ordenar do maior para o menor
+      .filter(item => item.total > 0);
   };
 
   const handleUpdateBudget = async () => {
@@ -1381,63 +1396,75 @@ export default function GastosViagem() {
             </div>
           </div>
 
-          {/* Botão para Gráfico */}
+          {/* Botão para Tabela */}
           <div className="px-4 mt-6">
             <Button 
               variant="outline" 
               onClick={() => setShowChart(!showChart)}
               className="w-full"
             >
-              {showChart ? 'Ocultar Gráfico' : 'Ver Gráfico de Gastos por Data'}
+              {showChart ? 'Ocultar Resumo' : 'Ver Resumo por Método de Pagamento'}
             </Button>
           </div>
 
-          {/* Gráfico de Barras Horizontais */}
-          {showChart && getPaymentMethodChartData().length > 0 && (
+          {/* Tabela de Métodos de Pagamento */}
+          {showChart && getPaymentMethodTableData().length > 0 && (
             <div className="px-4 mt-4">
               <div className="c6-card p-6">
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-foreground mb-1">Gastos por Método de Pagamento</h2>
-                  <p className="c6-text-secondary text-sm">Ranking dos métodos mais utilizados</p>
+                  <h2 className="text-lg font-semibold text-foreground mb-1">Resumo por Método de Pagamento</h2>
+                  <p className="c6-text-secondary text-sm">Gastos planejados e realizados por método</p>
                 </div>
                 
-                <div className="w-full h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart 
-                      data={getPaymentMethodChartData()}
-                      layout="horizontal"
-                      margin={{ top: 20, right: 30, left: 80, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis 
-                        type="number"
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                        tickFormatter={(value) => `${selectedCurrency.symbol} ${value.toFixed(0)}`}
-                      />
-                      <YAxis 
-                        type="category"
-                        dataKey="metodo"
-                        stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
-                        width={75}
-                      />
-                      <Tooltip 
-                        formatter={(value: number) => [formatCurrency(value, selectedCurrency.symbol), "Valor Total"]}
-                        labelStyle={{ color: 'hsl(var(--foreground))' }}
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--background))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Bar 
-                        dataKey="valor" 
-                        fill="#3b82f6"
-                        radius={[0, 4, 4, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-3 px-2 text-sm font-medium text-muted-foreground">Método</th>
+                        <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Planejado</th>
+                        <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Realizado</th>
+                        <th className="text-right py-3 px-2 text-sm font-medium text-muted-foreground">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getPaymentMethodTableData().map((item, index) => (
+                        <tr key={item.metodo} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                          <td className="py-4 px-2 font-medium text-foreground">{item.metodo}</td>
+                          <td className="py-4 px-2 text-right text-blue-600 font-medium">
+                            {item.planejado > 0 ? formatCurrency(item.planejado, selectedCurrency.symbol) : '-'}
+                          </td>
+                          <td className="py-4 px-2 text-right text-destructive font-medium">
+                            {item.realizado > 0 ? formatCurrency(item.realizado, selectedCurrency.symbol) : '-'}
+                          </td>
+                          <td className="py-4 px-2 text-right font-bold text-foreground">
+                            {formatCurrency(item.total, selectedCurrency.symbol)}
+                          </td>
+                        </tr>
+                      ))}
+                      {/* Linha de totais */}
+                      <tr className="border-t-2 border-border bg-muted/20">
+                        <td className="py-4 px-2 font-bold text-foreground">TOTAL GERAL</td>
+                        <td className="py-4 px-2 text-right font-bold text-blue-600">
+                          {formatCurrency(
+                            getPaymentMethodTableData().reduce((sum, item) => sum + item.planejado, 0),
+                            selectedCurrency.symbol
+                          )}
+                        </td>
+                        <td className="py-4 px-2 text-right font-bold text-destructive">
+                          {formatCurrency(
+                            getPaymentMethodTableData().reduce((sum, item) => sum + item.realizado, 0),
+                            selectedCurrency.symbol
+                          )}
+                        </td>
+                        <td className="py-4 px-2 text-right font-bold text-primary text-lg">
+                          {formatCurrency(
+                            getPaymentMethodTableData().reduce((sum, item) => sum + item.total, 0),
+                            selectedCurrency.symbol
+                          )}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
