@@ -1431,13 +1431,13 @@ export default function GastosViagem() {
                         <tr key={item.metodo} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
                           <td className="py-4 px-2 font-medium text-foreground">{item.metodo}</td>
                           <td className="py-4 px-2 text-right text-blue-600 font-medium">
-                            {item.planejado > 0 ? formatCurrency(item.planejado, selectedCurrency.symbol) : '-'}
+                            {item.planejado > 0 ? item.planejado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}
                           </td>
                           <td className="py-4 px-2 text-right text-destructive font-medium">
-                            {item.realizado > 0 ? formatCurrency(item.realizado, selectedCurrency.symbol) : '-'}
+                            {item.realizado > 0 ? item.realizado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}
                           </td>
                           <td className="py-4 px-2 text-right font-bold text-foreground">
-                            {formatCurrency(item.total, selectedCurrency.symbol)}
+                            {item.total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </td>
                         </tr>
                       ))}
@@ -1445,22 +1445,13 @@ export default function GastosViagem() {
                       <tr className="border-t-2 border-border bg-muted/20">
                         <td className="py-4 px-2 font-bold text-foreground">TOTAL GERAL</td>
                         <td className="py-4 px-2 text-right font-bold text-blue-600">
-                          {formatCurrency(
-                            getPaymentMethodTableData().reduce((sum, item) => sum + item.planejado, 0),
-                            selectedCurrency.symbol
-                          )}
+                          {getPaymentMethodTableData().reduce((sum, item) => sum + item.planejado, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="py-4 px-2 text-right font-bold text-destructive">
-                          {formatCurrency(
-                            getPaymentMethodTableData().reduce((sum, item) => sum + item.realizado, 0),
-                            selectedCurrency.symbol
-                          )}
+                          {getPaymentMethodTableData().reduce((sum, item) => sum + item.realizado, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="py-4 px-2 text-right font-bold text-primary text-lg">
-                          {formatCurrency(
-                            getPaymentMethodTableData().reduce((sum, item) => sum + item.total, 0),
-                            selectedCurrency.symbol
-                          )}
+                          {getPaymentMethodTableData().reduce((sum, item) => sum + item.total, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                       </tr>
                     </tbody>
