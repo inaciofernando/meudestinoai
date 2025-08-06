@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -126,6 +127,7 @@ export default function GastosViagem() {
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isViewingExpense, setIsViewingExpense] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'todos' | 'planejado' | 'realizado'>('todos');
 
   // Form states for budget editing
   const [budgetForm, setBudgetForm] = useState({
@@ -258,9 +260,16 @@ export default function GastosViagem() {
     return { status: "on-track", percentage };
   };
 
+  // Função para filtrar gastos por tipo
+  const getFilteredExpenses = () => {
+    if (activeFilter === 'todos') return expenses;
+    return expenses.filter(expense => expense.expense_type === activeFilter);
+  };
+
   // Função para organizar gastos por dia
   const getExpensesByDay = () => {
-    const expensesByDay = expenses.reduce((acc, expense) => {
+    const filteredExpenses = getFilteredExpenses();
+    const expensesByDay = filteredExpenses.reduce((acc, expense) => {
       const date = expense.date.split('T')[0];
       if (!acc[date]) {
         acc[date] = [];
@@ -1036,11 +1045,28 @@ export default function GastosViagem() {
                 <p className="c6-text-secondary text-sm">Histórico de transações da viagem</p>
               </div>
 
-              {expenses.length === 0 ? (
+              {/* Filtros por tipo de gasto */}
+              <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as any)} className="mb-6">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="todos">Todos</TabsTrigger>
+                  <TabsTrigger value="planejado">Planejados</TabsTrigger>
+                  <TabsTrigger value="realizado">Realizados</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {getFilteredExpenses().length === 0 ? (
                 <div className="text-center py-12">
                   <Receipt className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-                  <p className="c6-text-secondary">Nenhum gasto registrado</p>
-                  <p className="c6-text-secondary text-xs">Comece adicionando seus primeiros gastos</p>
+                  <p className="c6-text-secondary">
+                    {activeFilter === 'todos' ? 'Nenhum gasto registrado' : 
+                     activeFilter === 'planejado' ? 'Nenhum gasto planejado' : 
+                     'Nenhum gasto realizado'}
+                  </p>
+                  <p className="c6-text-secondary text-xs">
+                    {activeFilter === 'todos' ? 'Comece adicionando seus primeiros gastos' :
+                     activeFilter === 'planejado' ? 'Nenhum gasto planejado encontrado' :
+                     'Nenhum gasto realizado encontrado'}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-0">
@@ -1108,10 +1134,24 @@ export default function GastosViagem() {
                                           <Receipt className="w-4 h-4 text-muted-foreground" />
                                         )}
                                       </div>
-                                      <div>
-                                        <p className="c6-text-primary text-sm font-medium">
-                                          {expense.description}
-                                        </p>
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <p className="c6-text-primary text-sm font-medium">
+                                            {expense.description}
+                                          </p>
+                                          {activeFilter === 'todos' && (
+                                            <Badge 
+                                              variant="secondary" 
+                                              className={`text-xs px-2 py-0.5 ${
+                                                expense.expense_type === 'planejado' 
+                                                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
+                                                  : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                              }`}
+                                            >
+                                              {expense.expense_type === 'planejado' ? 'Planejado' : 'Realizado'}
+                                            </Badge>
+                                          )}
+                                        </div>
                                         <p className="c6-text-secondary text-xs">
                                           {expenseCategory?.name || 'Outros'}
                                         </p>
