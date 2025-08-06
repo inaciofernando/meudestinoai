@@ -961,28 +961,34 @@ export default function DetalhesViagem() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <CalendarIcon className="w-5 h-5 text-primary" />
+                    <CalendarIcon className="w-5 h-5 text-destructive" />
                     Datas da Viagem
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Data de Início</label>
-                    <p className="text-foreground">{formatDate(trip.start_date)}</p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Data de Término</label>
-                    <p className="text-foreground">{formatDate(trip.end_date)}</p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Duração</label>
-                    <p className="text-foreground flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {formatDateRange(trip.start_date, trip.end_date)}
-                    </p>
-                  </div>
+                <CardContent>
+                  {trip.start_date && trip.end_date ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-medium text-foreground">
+                          {format(parseISO(trip.start_date), "dd/MMM", { locale: ptBR })} - {format(parseISO(trip.end_date), "dd/MMM/yy", { locale: ptBR })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="w-4 h-4" />
+                        <span className="text-sm">
+                          {(() => {
+                            const start = parseISO(trip.start_date);
+                            const end = parseISO(trip.end_date);
+                            const diffTime = Math.abs(end.getTime() - start.getTime());
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                            return `${diffDays} dias`;
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">Datas não definidas</p>
+                  )}
                 </CardContent>
               </Card>
 
