@@ -280,6 +280,18 @@ export default function GastosViagem() {
     return expenses.reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
   };
 
+  const getRealizedExpenses = () => {
+    return expenses
+      .filter(expense => expense.expense_type === 'realizado')
+      .reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
+  };
+
+  const getPlannedExpenses = () => {
+    return expenses
+      .filter(expense => expense.expense_type === 'planejado')
+      .reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
+  };
+
   const getBudgetStatus = () => {
     const totalExpenses = getTotalExpenses();
     const budget = trip?.total_budget || 0;
@@ -1324,13 +1336,22 @@ export default function GastosViagem() {
                 </div>
               </div>
 
-              {/* Card Média Diária */}
+              {/* Card Gasto Realizado */}
               <div className="c6-card p-4">
                 <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO REALIZADO</p>
-                <p className="text-lg sm:text-2xl font-bold text-primary mb-1">
-                  {formatCurrency(getTotalExpenses(), selectedCurrency.symbol)}
+                <p className="text-lg sm:text-2xl font-bold text-destructive mb-1">
+                  {formatCurrency(getRealizedExpenses(), selectedCurrency.symbol)}
                 </p>
-                <p className="c6-text-secondary text-xs">Total gasto na viagem</p>
+                <p className="c6-text-secondary text-xs">Despesas realizadas</p>
+              </div>
+
+              {/* Card Gasto Planejado */}
+              <div className="c6-card p-4">
+                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO PLANEJADO</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-600 mb-1">
+                  {formatCurrency(getPlannedExpenses(), selectedCurrency.symbol)}
+                </p>
+                <p className="c6-text-secondary text-xs">Despesas planejadas</p>
               </div>
 
               {/* Card Projeção Total */}
