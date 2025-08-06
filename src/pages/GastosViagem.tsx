@@ -1092,7 +1092,6 @@ export default function GastosViagem() {
                               </p>
                               <p className="c6-text-secondary text-xs">
                                 {dayData.expenses.length} transação{dayData.expenses.length > 1 ? 'ões' : ''}
-                                {category && ` • ${category.name}`}
                               </p>
                             </div>
                           </div>
