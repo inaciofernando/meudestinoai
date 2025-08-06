@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -675,6 +676,25 @@ export default function GastosViagem() {
     });
 
     return Array.from(summary.values());
+  };
+
+  const getPaymentMethodChartData = () => {
+    const paymentData = new Map();
+    
+    expenses.forEach(expense => {
+      if (expense.payment_method_type) {
+        const current = paymentData.get(expense.payment_method_type) || 0;
+        paymentData.set(expense.payment_method_type, current + (Number(expense.amount) || 0));
+      }
+    });
+
+    const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#f97316', '#84cc16'];
+    
+    return Array.from(paymentData.entries()).map(([method, amount], index) => ({
+      name: method,
+      value: amount,
+      fill: colors[index % colors.length]
+    })).filter(item => item.value > 0);
   };
 
   const handleUpdateBudget = async () => {
@@ -1356,6 +1376,53 @@ export default function GastosViagem() {
 
             </div>
           </div>
+
+          {/* Gráfico de Métodos de Pagamento */}
+          {getPaymentMethodChartData().length > 0 && (
+            <div className="px-4 mt-6">
+              <div className="c6-card p-6">
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-foreground mb-1">Métodos de Pagamento</h2>
+                  <p className="c6-text-secondary text-sm">Distribuição dos gastos por meio de pagamento</p>
+                </div>
+                
+                <div className="w-full h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={getPaymentMethodChartData()}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {getPaymentMethodChartData().map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => [formatCurrency(value, selectedCurrency.symbol), "Valor"]}
+                        labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--background))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                      />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={36}
+                        wrapperStyle={{ color: 'hsl(var(--foreground))' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Gastos por dia - Estilo C6 Bank */}
           <div className="px-4 mt-6">
