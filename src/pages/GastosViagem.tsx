@@ -1326,11 +1326,11 @@ export default function GastosViagem() {
 
               {/* Card Média Diária */}
               <div className="c6-card p-4">
-                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">MÉDIA DIÁRIA</p>
+                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO REALIZADO</p>
                 <p className="text-lg sm:text-2xl font-bold text-primary mb-1">
-                  {formatCurrency(getDailyAverage(), selectedCurrency.symbol)}
+                  {formatCurrency(getTotalExpenses(), selectedCurrency.symbol)}
                 </p>
-                <p className="c6-text-secondary text-xs">Por dia de viagem</p>
+                <p className="c6-text-secondary text-xs">Total gasto na viagem</p>
               </div>
 
               {/* Card Projeção Total */}
