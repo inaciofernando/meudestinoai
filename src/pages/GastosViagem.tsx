@@ -6,6 +6,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -146,7 +148,10 @@ export default function GastosViagem() {
     expense_type: "realizado",
     payment_method_type: "",
     date: new Date().toISOString().split('T')[0],
-    receiptFile: null as File | null
+    receiptFile: null as File | null,
+    isRecurring: false,
+    recurrenceCount: 1,
+    recurrencePeriod: "diario" as "diario" | "semanal" | "mensal"
   });
 
   // Form states for editing expense
@@ -381,10 +386,28 @@ export default function GastosViagem() {
         receiptUrl = uploadData.path;
       }
 
-      // Save expense to database
-      const { error } = await supabase
-        .from('budget_items')
-        .insert({
+      // Create expenses array based on recurrence settings
+      const expensesToInsert = [];
+      const startDate = new Date(newExpense.date);
+
+      for (let i = 0; i < (newExpense.isRecurring ? newExpense.recurrenceCount : 1); i++) {
+        let expenseDate = new Date(startDate);
+        
+        if (newExpense.isRecurring && i > 0) {
+          switch (newExpense.recurrencePeriod) {
+            case "diario":
+              expenseDate.setDate(startDate.getDate() + i);
+              break;
+            case "semanal":
+              expenseDate.setDate(startDate.getDate() + (i * 7));
+              break;
+            case "mensal":
+              expenseDate.setMonth(startDate.getMonth() + i);
+              break;
+          }
+        }
+
+        expensesToInsert.push({
           trip_id: trip.id,
           user_id: user.id,
           title: newExpense.description,
@@ -395,16 +418,25 @@ export default function GastosViagem() {
           actual_amount: parseFloat(newExpense.amount),
           planned_amount: parseFloat(newExpense.amount),
           currency: newExpense.currency,
-          expense_date: newExpense.date,
+          expense_date: expenseDate.toISOString().split('T')[0],
           receipt_image_url: receiptUrl,
           is_confirmed: true
         });
+      }
+
+      // Save expenses to database
+      const { error } = await supabase
+        .from('budget_items')
+        .insert(expensesToInsert);
 
       if (error) throw error;
 
+      const expenseCount = expensesToInsert.length;
       toast({
-        title: "Gasto adicionado!",
-        description: "Seu gasto foi registrado com sucesso.",
+        title: expenseCount > 1 ? `${expenseCount} gastos adicionados!` : "Gasto adicionado!",
+        description: expenseCount > 1 ? 
+          `Seus ${expenseCount} gastos recorrentes foram registrados com sucesso.` :
+          "Seu gasto foi registrado com sucesso.",
       });
 
       // Reset form and close dialog
@@ -418,7 +450,10 @@ export default function GastosViagem() {
         expense_type: "realizado",
         payment_method_type: "",
         date: new Date().toISOString().split('T')[0],
-        receiptFile: null
+        receiptFile: null,
+        isRecurring: false,
+        recurrenceCount: 1,
+        recurrencePeriod: "diario"
       });
       
       setIsAddingExpense(false);
@@ -915,6 +950,72 @@ export default function GastosViagem() {
                           onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
                         />
                       </div>
+                    </div>
+
+                    {/* Opções de Repetição */}
+                    <div className="space-y-4 border-t pt-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <Label className="text-sm font-medium">Repetir este gasto</Label>
+                          <p className="text-xs text-muted-foreground">Crie gastos recorrentes automaticamente</p>
+                        </div>
+                        <Switch
+                          checked={newExpense.isRecurring}
+                          onCheckedChange={(checked) => setNewExpense({
+                            ...newExpense, 
+                            isRecurring: checked,
+                            recurrenceCount: checked ? 2 : 1
+                          })}
+                        />
+                      </div>
+
+                      {newExpense.isRecurring && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label>Quantidade</Label>
+                            <Input
+                              type="number"
+                              min="2"
+                              max="365"
+                              value={newExpense.recurrenceCount}
+                              onChange={(e) => setNewExpense({
+                                ...newExpense, 
+                                recurrenceCount: Math.max(2, parseInt(e.target.value) || 2)
+                              })}
+                              placeholder="2"
+                            />
+                          </div>
+                          <div>
+                            <Label>Período</Label>
+                            <Select 
+                              value={newExpense.recurrencePeriod} 
+                              onValueChange={(value: "diario" | "semanal" | "mensal") => 
+                                setNewExpense({...newExpense, recurrencePeriod: value})
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="diario">Diário</SelectItem>
+                                <SelectItem value="semanal">Semanal</SelectItem>
+                                <SelectItem value="mensal">Mensal</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      )}
+
+                      {newExpense.isRecurring && (
+                        <div className="text-xs text-muted-foreground bg-blue-50 p-3 rounded-lg">
+                          <p>
+                            Será criado {newExpense.recurrenceCount} gasto{newExpense.recurrenceCount > 1 ? 's' : ''} {' '}
+                            {newExpense.recurrencePeriod === 'diario' ? 'diários' : 
+                             newExpense.recurrencePeriod === 'semanal' ? 'semanais' : 'mensais'} a partir de {' '}
+                            {format(new Date(newExpense.date), "dd/MM/yyyy", { locale: ptBR })}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex gap-2">
