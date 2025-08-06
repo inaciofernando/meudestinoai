@@ -1443,7 +1443,7 @@ export default function GastosViagem() {
                       ))}
                       {/* Linha de totais */}
                       <tr className="border-t-2 border-border bg-muted/20">
-                        <td className="py-4 px-2 font-bold text-foreground">TOTAL GERAL</td>
+                        <td className="py-4 px-2 font-bold text-foreground">Total</td>
                         <td className="py-4 px-2 text-right font-bold text-blue-600">
                           {getPaymentMethodTableData().reduce((sum, item) => sum + item.planejado, 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
