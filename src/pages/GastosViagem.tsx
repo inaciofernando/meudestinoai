@@ -42,6 +42,7 @@ import {
   Edit2,
   Trash2,
   Calendar,
+  Clock,
   ChevronDown,
   ChevronUp,
   Bot,
@@ -779,6 +780,27 @@ export default function GastosViagem() {
                   <p className="c6-text-secondary text-xs uppercase tracking-wide">Extrato da viagem</p>
                   <h1 className="text-xl font-semibold text-foreground">{trip.title}</h1>
                   <p className="c6-text-secondary text-sm">{trip.destination}</p>
+                  
+                  {/* Card Datas da Viagem */}
+                  {trip.start_date && trip.end_date && (
+                    <div className="mt-3 c6-card p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Calendar className="w-4 h-4 text-destructive" />
+                        <span className="text-sm font-medium text-foreground">Datas da Viagem</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-foreground font-medium">
+                          {format(new Date(trip.start_date), "dd/MMM", { locale: ptBR })} - {format(new Date(trip.end_date), "dd/MMM/yy", { locale: ptBR })}
+                        </span>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          <span className="text-xs">
+                            {Math.ceil((new Date(trip.end_date).getTime() - new Date(trip.start_date).getTime()) / (1000 * 60 * 60 * 24))} dias
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
