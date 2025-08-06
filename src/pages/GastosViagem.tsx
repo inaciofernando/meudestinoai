@@ -74,6 +74,17 @@ interface Expense {
   created_at: string;
 }
 
+interface UserPaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+  initial_balance: number;
+  current_balance: number;
+  currency: string;
+  color: string;
+  is_active: boolean;
+}
+
 const EXPENSE_CATEGORIES = [
   { id: "transport", name: "Transporte", icon: Plane, color: "bg-blue-500", subcategories: ["Voo", "Táxi", "Uber", "Ônibus", "Trem", "Aluguel de Carro"] },
   { id: "accommodation", name: "Hospedagem", icon: Hotel, color: "bg-purple-500", subcategories: ["Hotel", "Pousada", "Airbnb", "Hostel", "Resort"] },
@@ -131,6 +142,14 @@ export default function GastosViagem() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isViewingExpense, setIsViewingExpense] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isManagingPayments, setIsManagingPayments] = useState(false);
+  const [userPaymentMethods, setUserPaymentMethods] = useState<UserPaymentMethod[]>([]);
+  const [newPaymentMethod, setNewPaymentMethod] = useState({
+    name: "",
+    initial_balance: "",
+    currency: "BRL",
+    color: "#6366f1"
+  });
   const [activeFilter, setActiveFilter] = useState<'todos' | 'planejado' | 'realizado'>('todos');
 
   // Form states for budget editing
@@ -171,6 +190,12 @@ export default function GastosViagem() {
   });
 
   // Remove URL parameter when modal is closed
+  useEffect(() => {
+    if (user && trip) {
+      fetchUserPaymentMethods();
+    }
+  }, [user, trip]);
+
   useEffect(() => {
     if (!isAddingExpense && shouldAutoOpenAdd) {
       const url = new URL(window.location.href);
@@ -330,6 +355,48 @@ export default function GastosViagem() {
     const dailyAverage = getDailyAverage();
     
     return dailyAverage * totalDays;
+  };
+
+  const fetchUserPaymentMethods = async () => {
+    if (!user || !trip) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_payment_methods')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('trip_id', trip.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      setUserPaymentMethods(data || []);
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+    }
+  };
+
+  const getAllPaymentMethods = () => {
+    const standardMethods = PAYMENT_METHODS.map(method => ({
+      id: method.id,
+      name: method.name,
+      type: 'standard' as const,
+      balance: undefined as number | undefined,
+      currency: undefined as string | undefined,
+      color: undefined as string | undefined
+    }));
+
+    const customMethods = userPaymentMethods.map(method => ({
+      id: method.id,
+      name: method.name,
+      type: 'custom' as const,
+      balance: method.current_balance,
+      currency: method.currency,
+      color: method.color
+    }));
+
+    return [...standardMethods, ...customMethods];
   };
 
   const fetchExpenses = async () => {
@@ -511,6 +578,118 @@ export default function GastosViagem() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleCreatePaymentMethod = async () => {
+    if (!user || !trip || !newPaymentMethod.name) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_payment_methods')
+        .insert({
+          user_id: user.id,
+          trip_id: trip.id,
+          name: newPaymentMethod.name,
+          type: 'custom',
+          initial_balance: parseFloat(newPaymentMethod.initial_balance) || 0,
+          current_balance: parseFloat(newPaymentMethod.initial_balance) || 0,
+          currency: newPaymentMethod.currency,
+          color: newPaymentMethod.color
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Método criado!",
+        description: "Método de pagamento criado com sucesso.",
+      });
+
+      // Reset form and refresh data
+      setNewPaymentMethod({
+        name: "",
+        initial_balance: "",
+        currency: "BRL",
+        color: "#6366f1"
+      });
+      
+      fetchUserPaymentMethods();
+    } catch (error) {
+      console.error('Error creating payment method:', error);
+      toast({
+        title: "Erro ao criar",
+        description: "Não foi possível criar o método de pagamento.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeletePaymentMethod = async (methodId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_payment_methods')
+        .update({ is_active: false })
+        .eq('id', methodId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Método removido",
+        description: "Método de pagamento removido com sucesso.",
+      });
+
+      fetchUserPaymentMethods();
+    } catch (error) {
+      console.error('Error deleting payment method:', error);
+      toast({
+        title: "Erro ao remover",
+        description: "Não foi possível remover o método de pagamento.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getPaymentMethodSummary = () => {
+    const summary = new Map();
+    
+    // Add custom payment methods with balances
+    userPaymentMethods.forEach(method => {
+      const spent = (method.initial_balance || 0) - (method.current_balance || 0);
+      summary.set(method.name, {
+        name: method.name,
+        spent,
+        remaining: method.current_balance || 0,
+        initial: method.initial_balance || 0,
+        currency: method.currency,
+        color: method.color,
+        type: 'custom'
+      });
+    });
+
+    // Add standard payment methods (count expenses only)
+    const standardExpenses = new Map();
+    expenses.forEach(expense => {
+      const method = expense.payment_method_type;
+      if (method && !summary.has(method)) {
+        standardExpenses.set(method, (standardExpenses.get(method) || 0) + expense.amount);
+      }
+    });
+
+    standardExpenses.forEach((amount, method) => {
+      summary.set(method, {
+        name: method,
+        spent: amount,
+        remaining: null,
+        initial: null,
+        currency: selectedCurrency.code,
+        color: '#64748b',
+        type: 'standard'
+      });
+    });
+
+    return Array.from(summary.values());
   };
 
   const handleUpdateBudget = async () => {
@@ -923,7 +1102,19 @@ export default function GastosViagem() {
                       </div>
 
                       <div>
-                        <Label>Método de Pagamento</Label>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label>Método de Pagamento</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setIsManagingPayments(true)}
+                            className="h-6 px-2 text-xs"
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Gerenciar
+                          </Button>
+                        </div>
                         <Select 
                           value={newExpense.payment_method_type} 
                           onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
@@ -932,9 +1123,16 @@ export default function GastosViagem() {
                             <SelectValue placeholder="Selecione o método" />
                           </SelectTrigger>
                           <SelectContent>
-                            {PAYMENT_METHODS.map(method => (
-                              <SelectItem key={method.id} value={method.id}>
-                                {method.name}
+                            {getAllPaymentMethods().map(method => (
+                              <SelectItem key={method.type === 'custom' ? method.id : method.id} value={method.name}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{method.name}</span>
+                                  {method.type === 'custom' && method.balance !== undefined && (
+                                    <span className="text-xs text-muted-foreground ml-2">
+                                      {formatCurrency(method.balance, method.currency)}
+                                    </span>
+                                  )}
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1681,9 +1879,16 @@ export default function GastosViagem() {
                           <SelectValue placeholder="Selecione o método" />
                         </SelectTrigger>
                         <SelectContent>
-                          {PAYMENT_METHODS.map(method => (
-                            <SelectItem key={method.id} value={method.id}>
-                              {method.name}
+                          {getAllPaymentMethods().map(method => (
+                            <SelectItem key={method.type === 'custom' ? method.id : method.id} value={method.name}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{method.name}</span>
+                                {method.type === 'custom' && method.balance !== undefined && (
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    {formatCurrency(method.balance, method.currency)}
+                                  </span>
+                                )}
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -1923,6 +2128,176 @@ export default function GastosViagem() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Modal de Gerenciamento de Métodos de Pagamento */}
+        <Dialog open={isManagingPayments} onOpenChange={setIsManagingPayments}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Gerenciar Métodos de Pagamento
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Criar Novo Método */}
+              <div className="space-y-4 border rounded-lg p-4">
+                <h3 className="font-medium text-sm">Criar Novo Método</h3>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Nome do Método *</Label>
+                    <Input
+                      value={newPaymentMethod.name}
+                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, name: e.target.value})}
+                      placeholder="Ex: Cartão Pré-pago, Wise..."
+                    />
+                  </div>
+                  <div>
+                    <Label>Saldo Inicial</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={newPaymentMethod.initial_balance}
+                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, initial_balance: e.target.value})}
+                      placeholder="0,00"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Moeda</Label>
+                    <Select 
+                      value={newPaymentMethod.currency} 
+                      onValueChange={(value) => setNewPaymentMethod({...newPaymentMethod, currency: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CURRENCIES.map(currency => (
+                          <SelectItem key={currency.code} value={currency.code}>
+                            {currency.symbol} {currency.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Cor</Label>
+                    <Input
+                      type="color"
+                      value={newPaymentMethod.color}
+                      onChange={(e) => setNewPaymentMethod({...newPaymentMethod, color: e.target.value})}
+                      className="h-9 w-full"
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={handleCreatePaymentMethod}
+                  disabled={!newPaymentMethod.name}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Método
+                </Button>
+              </div>
+
+              {/* Lista de Métodos Existentes */}
+              {userPaymentMethods.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-medium text-sm">Seus Métodos de Pagamento</h3>
+                  
+                  <div className="space-y-3">
+                    {userPaymentMethods.map(method => (
+                      <div key={method.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-4 h-4 rounded-full" 
+                            style={{ backgroundColor: method.color }}
+                          />
+                          <div>
+                            <p className="font-medium text-sm">{method.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Saldo: {formatCurrency(method.current_balance || 0, method.currency)} 
+                              {method.initial_balance && method.initial_balance > 0 && (
+                                <span> / {formatCurrency(method.initial_balance, method.currency)}</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeletePaymentMethod(method.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Dashboard de Gastos por Método */}
+              <div className="space-y-4">
+                <h3 className="font-medium text-sm">Resumo de Gastos por Método</h3>
+                
+                <div className="space-y-3">
+                  {getPaymentMethodSummary().map(summary => (
+                    <div key={summary.name} className="p-3 border rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: summary.color }}
+                          />
+                          <span className="font-medium text-sm">{summary.name}</span>
+                        </div>
+                        <span className="text-sm text-destructive">
+                          -{formatCurrency(summary.spent, summary.currency)}
+                        </span>
+                      </div>
+                      
+                      {summary.type === 'custom' && summary.initial !== null && (
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <div className="flex justify-between">
+                            <span>Saldo inicial:</span>
+                            <span>{formatCurrency(summary.initial, summary.currency)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Saldo restante:</span>
+                            <span className={summary.remaining < 0 ? 'text-destructive' : 'text-green-600'}>
+                              {formatCurrency(summary.remaining, summary.currency)}
+                            </span>
+                          </div>
+                          {summary.initial > 0 && (
+                            <div className="w-full bg-muted rounded-full h-2 mt-2">
+                              <div 
+                                className="bg-primary h-2 rounded-full" 
+                                style={{ 
+                                  width: `${Math.max(0, Math.min(100, (summary.spent / summary.initial) * 100))}%` 
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setIsManagingPayments(false)}>
+                Fechar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
       </PWALayout>
     </ProtectedRoute>

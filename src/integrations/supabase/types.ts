@@ -407,6 +407,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_payment_methods: {
+        Row: {
+          color: string | null
+          created_at: string
+          currency: string
+          current_balance: number | null
+          id: string
+          initial_balance: number | null
+          is_active: boolean
+          name: string
+          trip_id: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          currency?: string
+          current_balance?: number | null
+          id?: string
+          initial_balance?: number | null
+          is_active?: boolean
+          name: string
+          trip_id: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          currency?: string
+          current_balance?: number | null
+          id?: string
+          initial_balance?: number | null
+          is_active?: boolean
+          name?: string
+          trip_id?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
