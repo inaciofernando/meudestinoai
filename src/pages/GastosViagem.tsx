@@ -381,19 +381,13 @@ export default function GastosViagem() {
     const standardMethods = PAYMENT_METHODS.map(method => ({
       id: method.id,
       name: method.name,
-      type: 'standard' as const,
-      balance: undefined as number | undefined,
-      currency: undefined as string | undefined,
-      color: undefined as string | undefined
+      type: 'standard' as const
     }));
 
     const customMethods = userPaymentMethods.map(method => ({
       id: method.id,
       name: method.name,
-      type: 'custom' as const,
-      balance: method.current_balance,
-      currency: method.currency,
-      color: method.color
+      type: 'custom' as const
     }));
 
     return [...standardMethods, ...customMethods];
@@ -1125,14 +1119,7 @@ export default function GastosViagem() {
                           <SelectContent>
                             {getAllPaymentMethods().map(method => (
                               <SelectItem key={method.type === 'custom' ? method.id : method.id} value={method.name}>
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{method.name}</span>
-                                  {method.type === 'custom' && method.balance !== undefined && (
-                                    <span className="text-xs text-muted-foreground ml-2">
-                                      {formatCurrency(method.balance, method.currency)}
-                                    </span>
-                                  )}
-                                </div>
+                                {method.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1881,14 +1868,7 @@ export default function GastosViagem() {
                         <SelectContent>
                           {getAllPaymentMethods().map(method => (
                             <SelectItem key={method.type === 'custom' ? method.id : method.id} value={method.name}>
-                              <div className="flex items-center justify-between w-full">
-                                <span>{method.name}</span>
-                                {method.type === 'custom' && method.balance !== undefined && (
-                                  <span className="text-xs text-muted-foreground ml-2">
-                                    {formatCurrency(method.balance, method.currency)}
-                                  </span>
-                                )}
-                              </div>
+                              {method.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
