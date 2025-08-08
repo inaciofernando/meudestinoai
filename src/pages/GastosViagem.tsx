@@ -1262,10 +1262,16 @@ export default function GastosViagem() {
                               min="1"
                               max="365"
                               value={newExpense.recurrenceCount}
-                              onChange={(e) => setNewExpense({
-                                ...newExpense, 
-                                recurrenceCount: Math.max(1, parseInt(e.target.value) || 1)
-                              })}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === '') {
+                                  return; // Não atualiza se estiver vazio (permitindo digitar)
+                                }
+                                const numValue = parseInt(value);
+                                if (!isNaN(numValue) && numValue >= 1 && numValue <= 365) {
+                                  setNewExpense({...newExpense, recurrenceCount: numValue});
+                                }
+                              }}
                               placeholder="2"
                             />
                           </div>
