@@ -1248,7 +1248,7 @@ export default function GastosViagem() {
                           onCheckedChange={(checked) => setNewExpense({
                             ...newExpense, 
                             isRecurring: checked,
-                            recurrenceCount: checked ? 2 : 1
+                            recurrenceCount: checked ? 1 : 1
                           })}
                         />
                       </div>
@@ -1259,12 +1259,12 @@ export default function GastosViagem() {
                             <Label>Quantidade</Label>
                             <Input
                               type="number"
-                              min="2"
+                              min="1"
                               max="365"
                               value={newExpense.recurrenceCount}
                               onChange={(e) => setNewExpense({
                                 ...newExpense, 
-                                recurrenceCount: Math.max(2, parseInt(e.target.value) || 2)
+                                recurrenceCount: Math.max(1, parseInt(e.target.value) || 1)
                               })}
                               placeholder="2"
                             />
