@@ -8,9 +8,9 @@ interface PWALayoutProps {
 
 export const PWALayout = ({ children }: PWALayoutProps) => {
   return (
-    <div className="min-h-screen bg-gradient-sky flex flex-col">
+    <div className="min-h-screen-mobile bg-gradient-sky flex flex-col mobile-safe-area">
       <PWAHeader />
-      <main className="flex-1 pb-20 pt-4">
+      <main className="flex-1 pb-20 pt-4 overflow-y-auto">
         <div className="container px-4 mx-auto">
           {children}
         </div>

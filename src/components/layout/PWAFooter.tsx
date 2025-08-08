@@ -22,7 +22,7 @@ export const PWAFooter = () => {
   const isActive = (path: string) => currentPath === path;
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+    <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <nav className="container px-2 py-2">
         <div className="flex items-center justify-around">
           {navigation.map((item) => {
