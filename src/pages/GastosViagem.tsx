@@ -1257,23 +1257,25 @@ export default function GastosViagem() {
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <Label>Quantidade</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              max="365"
-                              value={newExpense.recurrenceCount}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (value === '') {
-                                  return; // Não atualiza se estiver vazio (permitindo digitar)
-                                }
-                                const numValue = parseInt(value);
-                                if (!isNaN(numValue) && numValue >= 1 && numValue <= 365) {
-                                  setNewExpense({...newExpense, recurrenceCount: numValue});
-                                }
-                              }}
-                              placeholder="2"
-                            />
+                            <Select 
+                              value={newExpense.recurrenceCount.toString()} 
+                              onValueChange={(value) => setNewExpense({
+                                ...newExpense, 
+                                recurrenceCount: parseInt(value)
+                              })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione a quantidade" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({length: 30}, (_, i) => i + 1).map(num => (
+                                  <SelectItem key={num} value={num.toString()}>
+                                    {num} {num === 1 ? 'vez' : 'vezes'}
+                                  </SelectItem>
+                                ))}
+                                <SelectItem value="365">365 vezes (anual)</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div>
                             <Label>Período</Label>
