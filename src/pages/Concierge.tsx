@@ -796,58 +796,59 @@ export default function Concierge() {
             {/* Input Area - sempre visível na parte inferior */}
             <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t pt-4">
               <div className="flex items-end gap-3">
-                <div className="relative flex-1">
-                  <div className="absolute left-1.5 bottom-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 rounded-full border-0 hover:bg-muted"
-                      onClick={() =>
-                        toast({
-                          title: "Em breve",
-                          description: "Anexos serão suportados em breve.",
-                        })
-                      }
-                      aria-label="Adicionar"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </Button>
-                  </div>
+                <div className="flex-1">
+                  <div className="relative rounded-2xl border bg-muted/30 shadow-sm px-4 pt-2 pb-12">
+                    <Textarea
+                      ref={textareaRef}
+                      rows={1}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onInput={autoResize}
+                      placeholder="Digite sua pergunta sobre a viagem..."
+                      className="min-h-14 max-h-40 w-full bg-transparent border-0 shadow-none resize-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          ask();
+                        }
+                      }}
+                    />
 
-                  <div className="absolute right-4 bottom-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 rounded-full border-0 hover:bg-muted"
-                      onClick={() =>
-                        toast({
-                          title: "Em breve",
-                          description: "Entrada por voz em breve.",
-                        })
-                      }
-                      aria-label="Falar"
-                    >
-                      <Mic className="w-5 h-5" />
-                    </Button>
+                    <div className="absolute left-2 bottom-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-full"
+                        onClick={() =>
+                          toast({
+                            title: "Em breve",
+                            description: "Anexos serão suportados em breve.",
+                          })
+                        }
+                        aria-label="Adicionar"
+                      >
+                        <Plus className="w-5 h-5" />
+                      </Button>
+                    </div>
+                    <div className="absolute right-2 bottom-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-full"
+                        onClick={() =>
+                          toast({
+                            title: "Em breve",
+                            description: "Entrada por voz em breve.",
+                          })
+                        }
+                        aria-label="Falar"
+                      >
+                        <Mic className="w-5 h-5" />
+                      </Button>
+                    </div>
                   </div>
-
-                  <Textarea
-                    ref={textareaRef}
-                    rows={1}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onInput={autoResize}
-                    placeholder="Digite sua pergunta sobre a viagem..."
-                    className="min-h-14 max-h-40 rounded-full pl-14 pr-28 md:pr-36 pt-3 pb-12 text-base shadow-sm resize-none"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        ask();
-                      }
-                    }}
-                  />
                 </div>
 
                 <Button
