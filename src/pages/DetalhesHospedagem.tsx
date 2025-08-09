@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { format, parseISO } from "date-fns";
 import { Download, ExternalLink, ArrowLeft, Edit, Trash2, Calendar as CalendarIcon, Save, Upload } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,6 +50,7 @@ export default function DetalhesHospedagem() {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [voucherFile, setVoucherFile] = useState<File | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     console.log("DetalhesHospedagem - useEffect", { tripId, hospedagemId, user });
@@ -211,8 +213,6 @@ export default function DetalhesHospedagem() {
   const handleDelete = async () => {
     if (!accommodation || !user) return;
 
-    if (!confirm("Tem certeza que deseja excluir esta hospedagem?")) return;
-
     try {
       const { error } = await supabase
         .from("accommodations")
@@ -231,6 +231,8 @@ export default function DetalhesHospedagem() {
     } catch (error) {
       console.error("Erro ao excluir hospedagem:", error);
       toast.error("Erro ao excluir hospedagem");
+    } finally {
+      setShowDeleteDialog(false);
     }
   };
 
@@ -285,7 +287,7 @@ export default function DetalhesHospedagem() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleDelete}
+                onClick={() => setShowDeleteDialog(true)}
                 className="text-destructive hover:text-destructive flex items-center gap-1"
               >
                 <Trash2 className="w-4 h-4" />
@@ -607,6 +609,27 @@ export default function DetalhesHospedagem() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Modal de Confirmação de Exclusão */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir Hospedagem</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir esta hospedagem? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </PWALayout>
   );
