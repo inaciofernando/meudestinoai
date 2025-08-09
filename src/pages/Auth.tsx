@@ -21,24 +21,29 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
+    let canceled = false;
+
+    const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/");
+      if (!canceled && session) {
+        // Defer navigation to avoid potential render race conditions
+        setTimeout(() => navigate("/"), 0);
       }
     };
 
-    checkUser();
+    init();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Listen for auth changes (deferred navigation)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        navigate("/");
+        setTimeout(() => navigate("/"), 0);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      canceled = true;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
