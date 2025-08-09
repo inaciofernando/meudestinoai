@@ -112,6 +112,18 @@ export default function AdicionarRestaurante() {
     const wazeFromConcierge = urlParams.get('waze');
     const estimatedFromConcierge = urlParams.get('estimated_amount');
     const sourceText = urlParams.get('source') || '';
+    const fromConcierge = urlParams.get('fromConcierge');
+
+    console.log("🔍 Checking Concierge params for restaurant:", { 
+      nameFromConcierge, 
+      descriptionFromConcierge, 
+      cuisineFromConcierge, 
+      addressFromConcierge, 
+      linkFromConcierge, 
+      estimatedFromConcierge,
+      fromConcierge,
+      fullUrl: window.location.href 
+    });
 
     let linkFromSource = '';
     if (sourceText) {
@@ -119,7 +131,8 @@ export default function AdicionarRestaurante() {
       if (anyLink) linkFromSource = anyLink[0];
     }
 
-    if (nameFromConcierge || descriptionFromConcierge || linkFromConcierge || linkFromSource) {
+    if (fromConcierge && (nameFromConcierge || descriptionFromConcierge || linkFromConcierge || linkFromSource)) {
+      console.log("✅ Pre-filling restaurant form with concierge data");
       setForm(prev => ({
         ...prev,
         restaurant_name: nameFromConcierge || prev.restaurant_name,

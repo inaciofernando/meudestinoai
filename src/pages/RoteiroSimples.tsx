@@ -125,7 +125,16 @@ export default function RoteiroSimples() {
     const categoryFromConcierge = urlParams.get('category');
     const fromConcierge = urlParams.get('fromConcierge');
     
+    console.log("🔍 Checking Concierge params for roteiro:", { 
+      titleFromConcierge, 
+      descriptionFromConcierge, 
+      categoryFromConcierge, 
+      fromConcierge,
+      fullUrl: window.location.href 
+    });
+    
     if (fromConcierge && titleFromConcierge) {
+      console.log("✅ Pre-filling roteiro form with concierge data");
       setFormData(prev => ({
         ...prev,
         title: titleFromConcierge,
