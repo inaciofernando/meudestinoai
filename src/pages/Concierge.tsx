@@ -327,6 +327,25 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
 }
 
 export default function Concierge() {
+  // Helper: extrai o bloco JSON (mantém no conteúdo, mas ocultamos na renderização)
+  const parseConciergeJson = (message: string): any | null => {
+    const match = message.match(/```json\s*([\s\S]*?)```/i);
+    if (!match) return null;
+    try {
+      return JSON.parse(match[1]);
+    } catch {
+      return null;
+    }
+  };
+
+  // Helper: garante protocolo nos links
+  const sanitizeUrl = (url?: string) => {
+    const u = (url || "").trim();
+    if (!u) return "";
+    if (!/^https?:\/\//i.test(u)) return `https://${u}`;
+    return u;
+  };
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -634,28 +653,69 @@ export default function Concierge() {
                     >
                       {m.role === "assistant" ? (
                         <div className="space-y-3">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={{
-                              a: ({ node, ...props }) => (
-                                <a
-                                  {...props}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="underline text-primary"
-                                />
-                              ),
-                              ul: (props) => <ul className="list-disc pl-5 my-2" {...props} />,
-                              ol: (props) => <ol className="list-decimal pl-5 my-2" {...props} />,
-                              li: (props) => <li className="my-1" {...props} />,
-                              h1: (props) => <h1 className="text-lg font-bold mb-2" {...props} />,
-                              h2: (props) => <h2 className="text-base font-semibold mb-2" {...props} />,
-                              p: (props) => <p className="leading-relaxed mb-2" {...props} />,
-                            }}
-                          >
-                            {m.content}
-                          </ReactMarkdown>
-                          <QuickActionButtons message={m.content} tripId={id!} />
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                a: ({ node, ...props }) => (
+                                  <a
+                                    {...props}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline text-primary"
+                                  />
+                                ),
+                                ul: (props) => <ul className="list-disc pl-5 my-2" {...props} />,
+                                ol: (props) => <ol className="list-decimal pl-5 my-2" {...props} />,
+                                li: (props) => <li className="my-1" {...props} />,
+                                h1: (props) => <h1 className="text-lg font-bold mb-2" {...props} />,
+                                h2: (props) => <h2 className="text-base font-semibold mb-2" {...props} />,
+                                p: (props) => <p className="leading-relaxed mb-2" {...props} />,
+                                code: ({ inline, className, children, ...props }: any) => {
+                                  const lang = /language-(\w+)/.exec(className || '')?.[1];
+                                  // Oculta blocos de código JSON (continua existindo no conteúdo para parsing)
+                                  if (!inline && lang === 'json') return null;
+                                  return (
+                                    <code className={className} {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                },
+                              }}
+                            >
+                              {m.content}
+                            </ReactMarkdown>
+
+                            {(() => {
+                              const parsed = parseConciergeJson(m.content);
+                              const r = parsed?.restaurant;
+                              if (!r) return null;
+                              return (
+                                <div className="mt-2 pt-2 border-t text-sm">
+                                  <div className="font-semibold mb-1">Resumo dos dados</div>
+                                  <ul className="list-disc pl-5 space-y-1">
+                                    <li><span className="font-medium">{r.name || ''}</span>{r.cuisine ? ` • ${r.cuisine}` : ''}</li>
+                                    {r.address ? <li>{r.address}</li> : null}
+                                    {r.estimated_amount ? <li>Custo estimado: {r.estimated_amount}</li> : null}
+                                  </ul>
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    {r.link ? (
+                                      <a href={sanitizeUrl(r.link)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Site</a>
+                                    ) : null}
+                                    {r.tripadvisor ? (
+                                      <a href={sanitizeUrl(r.tripadvisor)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Tripadvisor</a>
+                                    ) : null}
+                                    {r.gmap ? (
+                                      <a href={sanitizeUrl(r.gmap)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Google Maps</a>
+                                    ) : null}
+                                    {r.waze ? (
+                                      <a href={sanitizeUrl(r.waze)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Waze</a>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            <QuickActionButtons message={m.content} tripId={id!} />
                         </div>
                       ) : (
                         <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
