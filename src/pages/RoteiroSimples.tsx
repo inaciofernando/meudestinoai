@@ -496,11 +496,12 @@ export default function RoteiroSimples() {
           </div>
 
           {/* Floating Action Button */}
-          <div className="fixed bottom-24 right-4">
+          <div className="fixed z-50 right-4 md:right-6" style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 16px)` }}>
             <Button
               size="icon"
               className="h-12 w-12 rounded-full shadow-lg"
               onClick={() => setIsAddingPonto(true)}
+              aria-label="Adicionar ponto ao roteiro"
             >
               <Plus className="w-6 h-6" />
             </Button>
