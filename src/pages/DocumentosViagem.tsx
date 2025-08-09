@@ -5,9 +5,14 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { DocumentCard } from "@/components/DocumentCard";
+import { DocumentViewer } from "@/components/DocumentViewer";
+import { AddDocumentDialog } from "@/components/AddDocumentDialog";
+import { EditDocumentDialog } from "@/components/EditDocumentDialog";
 import {
   ArrowLeft,
   Plus,
@@ -15,9 +20,7 @@ import {
   Shield,
   Ticket,
   Plane,
-  FileCheck,
-  Edit,
-  ExternalLink
+  FileCheck
 } from "lucide-react";
 
 interface Trip {
@@ -83,7 +86,11 @@ export default function DocumentosViagem() {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAddingDocument, setIsAddingDocument] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
+  const [editingDocument, setEditingDocument] = useState<Document | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Form states
   const [newDocuments, setNewDocuments] = useState({
@@ -242,12 +249,14 @@ export default function DocumentosViagem() {
         title: "Documentos adicionados! 📄",
         description: `${savedDocs?.length || 0} documento${(savedDocs?.length || 0) > 1 ? 's' : ''} ${(savedDocs?.length || 0) > 1 ? 'foram salvos' : 'foi salvo'} com sucesso.`,
       });
-      
+
       // Reset form
       setNewDocuments({
         category: "other",
         files: []
       });
+      
+      setIsAddingDocument(false);
     } catch (error) {
       console.error("Erro ao adicionar documentos:", error);
       toast({
@@ -259,6 +268,58 @@ export default function DocumentosViagem() {
       setUploading(false);
     }
   };
+
+  const handleEditDocument = useCallback(async (updatedDoc: { title: string; description: string; category: string }) => {
+    if (!editingDocument) return;
+
+    try {
+      setSaving(true);
+      
+      const { error } = await supabase
+        .from("trip_documents")
+        .update({
+          title: updatedDoc.title,
+          description: updatedDoc.description,
+          category: updatedDoc.category,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", editingDocument.id)
+        .eq("user_id", user!.id);
+
+      if (error) {
+        console.error("Erro ao editar documento:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível editar o documento. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Atualizar lista local
+      setDocuments(prev => prev.map(doc => 
+        doc.id === editingDocument.id 
+          ? { ...doc, title: updatedDoc.title, description: updatedDoc.description, category: updatedDoc.category as Document['category'], updated_at: new Date().toISOString() }
+          : doc
+      ));
+
+      toast({
+        title: "Documento editado! ✏️",
+        description: `${updatedDoc.title} foi atualizado com sucesso.`,
+      });
+
+      setEditingDocument(null);
+    } catch (error) {
+      console.error("Erro ao editar documento:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível editar o documento. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  }, [editingDocument, user, toast]);
 
   const handleDeleteDocument = useCallback(async (document: Document) => {
     try {
@@ -373,9 +434,27 @@ export default function DocumentosViagem() {
                   <CardTitle>
                     {documents.length} documento{documents.length !== 1 ? 's' : ''}
                   </CardTitle>
-                  <Button size="icon" className="rounded-full">
-                    <Plus className="w-5 h-5" />
-                  </Button>
+                  <Dialog open={isAddingDocument} onOpenChange={setIsAddingDocument}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="icon" 
+                        className="bg-gradient-ocean hover:shadow-travel transition-all duration-300 rounded-full"
+                      >
+                        <Plus className="w-5 h-5" />
+                      </Button>
+                    </DialogTrigger>
+                  </Dialog>
+                  
+                  <AddDocumentDialog
+                    isOpen={isAddingDocument}
+                    onClose={() => setIsAddingDocument(false)}
+                    onAdd={handleAddDocuments}
+                    uploading={uploading}
+                    category={newDocuments.category}
+                    files={newDocuments.files}
+                    onCategoryChange={(category) => setNewDocuments({...newDocuments, category: category as keyof typeof DOCUMENT_CATEGORIES})}
+                    onFilesChange={(files) => setNewDocuments({...newDocuments, files})}
+                  />
                 </div>
               </CardHeader>
               <CardContent>
@@ -389,36 +468,14 @@ export default function DocumentosViagem() {
                   <div className="space-y-3">
                     {documents.map((document) => {
                       const category = DOCUMENT_CATEGORIES[document.category];
-                      const CategoryIcon = category.icon;
-                      
                       return (
-                        <div key={document.id} className="flex items-center gap-3 p-4 bg-card rounded-lg border hover:bg-accent/50 transition-colors">
-                          <div className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                            <CategoryIcon className="w-5 h-5 text-white" />
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-base truncate" title={document.title}>
-                              {document.title}
-                            </h4>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <span>{new Date(document.created_at).toLocaleDateString('pt-BR')}</span>
-                              <span>•</span>
-                              <Badge variant="outline" className="text-xs">
-                                {category.name}
-                              </Badge>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <Button variant="ghost" size="icon" className="w-8 h-8">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="w-8 h-8">
-                              <ExternalLink className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
+                        <DocumentCard
+                          key={document.id}
+                          document={document}
+                          categoryConfig={category}
+                          onClick={() => setViewingDocument(document)}
+                          onEdit={() => setEditingDocument(document)}
+                        />
                       );
                     })}
                   </div>
@@ -426,6 +483,25 @@ export default function DocumentosViagem() {
               </CardContent>
             </Card>
           </div>
+
+          <DocumentViewer
+            document={viewingDocument}
+            isOpen={!!viewingDocument}
+            onClose={() => setViewingDocument(null)}
+            onDelete={handleDeleteDocument}
+            onEdit={() => {
+              setEditingDocument(viewingDocument);
+              setViewingDocument(null);
+            }}
+          />
+
+          <EditDocumentDialog
+            document={editingDocument}
+            isOpen={!!editingDocument}
+            onClose={() => setEditingDocument(null)}
+            onSave={handleEditDocument}
+            saving={saving}
+          />
         </div>
       </ProtectedRoute>
     </PWALayout>
