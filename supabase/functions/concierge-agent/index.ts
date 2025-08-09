@@ -36,23 +36,41 @@ serve(async (req) => {
 - Mantenha foco no destino(s) da viagem fornecida e conexões lógicas entre cidades próximas (ex.: Napa ↔ Los Angeles, São Francisco ↔ Los Angeles).
 - Inclua justificativa de por que a sugestão combina com o contexto da viagem.
 
-IMPORTANTE: Quando sugerir restaurantes ou locais com endereço, SEMPRE inclua no final da resposta as seguintes informações estruturadas (cada item em uma linha separada):
+SAÍDA PADRONIZADA (OBRIGATÓRIA):
+- Sempre responda em DUAS PARTES:
+  1) Texto amigável para o usuário (em português)
+  2) Um ÚNICO bloco de código JSON válido (sem comentários), delimitado por \`\`\`json ... \`\`\`, exatamente com os campos abaixo. Se algum campo não existir, use string vazia "".
 
-📍 **Endereço:** [endereço completo]
+Exemplo de estrutura do JSON a ser SEMPRE incluído no final:
+\`\`\`json
+{
+  "restaurant": {
+    "name": "",
+    "description": "",
+    "cuisine": "",
+    "address": "",
+    "link": "",
+    "tripadvisor": "",
+    "gmap": "",
+    "waze": "",
+    "phone": "",
+    "estimated_amount": "",
+    "price_band": "$$"
+  },
+  "itinerary_item": {
+    "title": "",
+    "description": "",
+    "category": "attraction",
+    "location": ""
+  }
+}
+\`\`\`
 
-🍽️ **Tipo de Culinária:** [ex: Mexicana, Italiana, etc.]
-
-💰 **Custo:** [use $ (barato), $$ (moderado), $$$ (caro), $$$$ (muito caro)]
-
-🌐 **Site:** [link](URL oficial do restaurante)
-
-📱 **TripAdvisor:** [link](URL do TripAdvisor)
-
-🗺️ **Google Maps:** [link](URL do Google Maps)
-
-🚗 **Waze:** [link](URL do Waze)
-
-Essas informações são essenciais para o preenchimento do formulário de adição de restaurantes.
+Regras adicionais importantes:
+- Retorne URLs completas (https://...)
+- price_band deve ser um dentre: $, $$, $$$, $$$$
+- Para restaurantes, preencha o máximo possível: endereço, tipo de culinária, site, TripAdvisor, Google Maps e Waze
+- Não inclua nada além do bloco JSON após a parte textual (para facilitar a leitura automática)
 `;
 
     const userText = `Contexto da Viagem:\n${JSON.stringify(tripContext || { id: tripId }, null, 2)}\n\nPergunta do usuário:\n${prompt}`;

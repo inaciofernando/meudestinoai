@@ -53,6 +53,33 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     const text = message.replace(/\*\*/g, '');
     const results: any[] = [];
 
+    // 0) Tentar extrair bloco JSON padronizado do Concierge
+    try {
+      const jsonBlock = message.match(/```json\s*([\s\S]*?)```/i);
+      if (jsonBlock && jsonBlock[1]) {
+        const parsed = JSON.parse(jsonBlock[1]);
+        const r = parsed?.restaurant || parsed?.restaurante;
+        if (r) {
+          const mapped = {
+            name: r.name || r.nome || '',
+            description: r.description || r.observacoes || r.notes || '',
+            cuisine: r.cuisine || r.cuisine_type || r.tipo_culinaria || '',
+            address: r.address || r.endereco || '',
+            link: r.link || r.site || '',
+            tripadvisor: r.tripadvisor || r.tripadvisor_link || '',
+            gmap: r.gmap || r.google_maps || r.google_maps_link || '',
+            waze: r.waze || r.waze_link || '',
+            estimated_amount: String(r.estimated_amount || r.preco_estimado || '')
+          } as any;
+          results.push(mapped);
+          console.log('✅ Parsed restaurant JSON from concierge:', mapped);
+          return results;
+        }
+      }
+    } catch (e) {
+      console.warn('JSON parse failed:', e);
+    }
+
     // Estratégia mais ampla para capturar nomes de restaurantes
     let name = '';
     
