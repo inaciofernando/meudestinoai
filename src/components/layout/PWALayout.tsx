@@ -8,31 +8,26 @@ interface PWALayoutProps {
 
 export const PWALayout = ({ children }: PWALayoutProps) => {
   return (
-    <>
-      {/* Header fixo */}
+    <div className="h-screen w-full overflow-hidden">
+      {/* Header totalmente fixo */}
       <PWAHeader />
       
-      {/* Conteúdo principal com espaço para header e footer */}
+      {/* Área de conteúdo scrollável entre header e footer */}
       <main 
-        className="overflow-y-auto bg-gradient-sky mobile-safe-area"
+        className="bg-gradient-sky overflow-y-auto"
         style={{
-          paddingTop: 'calc(64px + env(safe-area-inset-top, 0px))', // altura do header + safe area
-          paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))', // altura do footer + safe area
-          height: '100vh',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1
+          height: 'calc(100vh - 64px - 72px)', // 100vh - altura header - altura footer
+          marginTop: '64px', // altura do header
+          marginBottom: '72px' // altura do footer
         }}
       >
-        <div className="container px-4 mx-auto py-4 min-h-full">
+        <div className="container px-4 mx-auto py-4">
           {children}
         </div>
       </main>
       
-      {/* Footer fixo */}
+      {/* Footer totalmente fixo */}
       <PWAFooter />
-    </>
+    </div>
   );
 };
