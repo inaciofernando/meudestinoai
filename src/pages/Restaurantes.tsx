@@ -16,6 +16,14 @@ import { toast } from "sonner";
 import { ImageUpload } from "@/components/ImageUpload";
 import { cn, formatCurrency } from "@/lib/utils";
 
+// Helper para garantir que abrimos exatamente o link informado
+const sanitizeUrl = (url?: string) => {
+  const u = (url || "").trim();
+  if (!u) return "";
+  if (!/^https?:\/\//i.test(u)) return `https://${u}`;
+  return u;
+};
+
 interface Restaurant {
   id: string;
   restaurant_name: string;
@@ -619,7 +627,7 @@ export default function Restaurantes() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(restaurant.restaurant_link!, '_blank')}
+                        onClick={() => window.open(sanitizeUrl(restaurant.restaurant_link!), '_blank', 'noopener')}
                         className="flex items-center gap-2"
                       >
                         <ExternalLink className="w-4 h-4" />
@@ -635,7 +643,7 @@ export default function Restaurantes() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.open(restaurant.tripadvisor_link!, '_blank')}
+                          onClick={() => window.open(sanitizeUrl(restaurant.tripadvisor_link!), '_blank', 'noopener')}
                           className="flex items-center gap-2"
                         >
                           <ExternalLink className="w-4 h-4" /> Tripadvisor
@@ -645,7 +653,7 @@ export default function Restaurantes() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.open(restaurant.google_maps_link!, '_blank')}
+                          onClick={() => window.open(sanitizeUrl(restaurant.google_maps_link!), '_blank', 'noopener')}
                           className="flex items-center gap-2"
                         >
                           <MapPin className="w-4 h-4" /> Google Maps
@@ -655,7 +663,7 @@ export default function Restaurantes() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.open(restaurant.waze_link!, '_blank')}
+                          onClick={() => window.open(sanitizeUrl(restaurant.waze_link!), '_blank', 'noopener')}
                           className="flex items-center gap-2"
                         >
                           <Route className="w-4 h-4" /> Waze

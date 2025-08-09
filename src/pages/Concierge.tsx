@@ -77,7 +77,7 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
             cuisine: r.cuisine || r.cuisine_type || r.tipo_culinaria || '',
             address,
             link: r.link || r.site || '',
-            tripadvisor: r.tripadvisor || r.tripadvisor_link || '',
+            tripadvisor: (r.tripadvisor || r.tripadvisor_link || '').toString().trim(),
             gmap: buildGMap(r.gmap || r.google_maps || r.google_maps_link || '', name, address),
             waze: r.waze || r.waze_link || '',
             estimated_amount: String(r.estimated_amount || r.preco_estimado || '')
@@ -196,7 +196,7 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
         cuisine,
         address: addressText,
         link: restaurantLinkMatch?.[1] || anyLinkMatch?.[1] || '',
-        tripadvisor: tripadvisorMatch?.[1] || '',
+        tripadvisor: (tripadvisorMatch?.[1] || '').trim(),
         gmap: normalizedGMap,
         waze: wazeMatch?.[1] || '',
         estimated_amount: estimated
@@ -235,10 +235,10 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     params.set('description', restaurant.description || '');
     params.set('cuisine', restaurant.cuisine || '');
     params.set('address', restaurant.address || '');
-    params.set('link', restaurant.link || '');
-    params.set('tripadvisor', restaurant.tripadvisor || '');
-    params.set('gmap', restaurant.gmap || '');
-    params.set('waze', restaurant.waze || '');
+    params.set('link', (restaurant.link || '').trim());
+    params.set('tripadvisor', (restaurant.tripadvisor || '').trim());
+    params.set('gmap', (restaurant.gmap || '').trim());
+    params.set('waze', (restaurant.waze || '').trim());
     params.set('estimated_amount', restaurant.estimated_amount || '');
     params.set('fromConcierge', 'true');
     // Fallback: enviar um trecho da mensagem para parsing no destino

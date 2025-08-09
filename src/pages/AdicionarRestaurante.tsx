@@ -151,7 +151,7 @@ export default function AdicionarRestaurante() {
         cuisine_type: cuisineFromConcierge || prev.cuisine_type,
         address: addressFromConcierge || prev.address,
         restaurant_link: linkFromConcierge || linkFromSource || prev.restaurant_link,
-        tripadvisor_link: tripadvisorFromConcierge || prev.tripadvisor_link,
+        tripadvisor_link: tripadvisorFromConcierge ? tripadvisorFromConcierge.trim() : prev.tripadvisor_link,
         google_maps_link: gmapFromConcierge || prev.google_maps_link,
         waze_link: wazeFromConcierge || prev.waze_link,
         estimated_amount: estimatedFromConcierge || prev.estimated_amount,
