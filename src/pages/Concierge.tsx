@@ -138,9 +138,9 @@ export default function Concierge() {
                     placeholder="Descreva o que você quer ver nesta viagem (ex: Napa, São Francisco, trilhas próximas...)"
                     className="min-h-[100px]"
                   />
-                  <Button onClick={ask} disabled={loading} className="w-full sm:w-auto h-11">
+                  <Button onClick={ask} disabled={loading} className="w-full sm:w-auto h-11" aria-label="Chamar Concierge">
                     <Send className="w-4 h-4" />
-                    {loading ? "Enviando..." : "Perguntar"}
+                    {loading ? "Enviando..." : "Chamar Concierge"}
                   </Button>
                 </div>
                 <Input type="hidden" value={tripSummary} readOnly aria-hidden />
