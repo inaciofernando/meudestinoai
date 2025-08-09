@@ -142,13 +142,13 @@ export default function Concierge() {
               )}
             </div>
 
-            {/* Input Area - Stack vertically */}
-            <div className="space-y-3">
+            {/* Input Area */}
+            <div className="flex gap-2 items-end">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Digite sua pergunta sobre a viagem..."
-                className="w-full text-base min-h-[50px]"
+                className="flex-1 text-base min-h-[50px]"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -160,11 +160,10 @@ export default function Concierge() {
                 onClick={ask} 
                 disabled={loading || !input.trim()} 
                 variant="default"
-                className="w-full h-12 text-base font-medium"
-                size="lg"
+                size="icon"
+                className="h-[50px] w-[50px] shrink-0"
               >
-                <Send className="w-5 h-5 mr-2" />
-                {loading ? "Enviando..." : "Enviar Pergunta"}
+                <Send className="w-5 h-5" />
               </Button>
             </div>
           </section>
