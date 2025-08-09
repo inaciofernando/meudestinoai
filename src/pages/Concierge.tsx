@@ -209,9 +209,30 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
   };
 
   const extractAttractionInfo = () => {
+    const text = message.replace(/\*\*/g, '');
     const lines = message.split('\n');
-    const attractions = [];
-    
+    const attractions: any[] = [];
+
+    // 0) Tentar extrair do bloco JSON padronizado
+    try {
+      const jsonBlock = message.match(/```json\s*([\s\S]*?)```/i);
+      if (jsonBlock && jsonBlock[1]) {
+        const parsed = JSON.parse(jsonBlock[1]);
+        const it = parsed?.itinerary_item;
+        if (it) {
+          attractions.push({
+            name: it.title || '',
+            description: it.description || '',
+            category: it.category || 'attraction',
+            location: it.location || ''
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Itinerary JSON parse failed:', e);
+    }
+
+    // Heurística adicional pelo texto
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (line.includes('**') && (containsAttraction || /vinícola|atração|museu|parque/i.test(line))) {
@@ -219,7 +240,9 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
         if (name.length > 3) {
           attractions.push({
             name: name.split(' - ')[0].split(':')[0].trim(),
-            description: lines[i + 1]?.trim() || ''
+            description: lines[i + 1]?.trim() || '',
+            category: 'attraction',
+            location: ''
           });
         }
       }
@@ -254,10 +277,11 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     // Navegar para página de roteiro com dados pré-preenchidos
     const params = new URLSearchParams({
       title: attraction.name,
-      description: attraction.description,
-      category: 'attraction',
+      description: attraction.description || '',
+      category: attraction.category || 'attraction',
       fromConcierge: 'true'
     });
+    if (attraction.location) params.set('location', attraction.location);
     navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
   };
 
@@ -698,29 +722,45 @@ export default function Concierge() {
                             {(() => {
                               const parsed = parseConciergeJson(m.content);
                               const r = parsed?.restaurant;
-                              if (!r) return null;
+                              const it = parsed?.itinerary_item;
+                              if (!r && !it) return null;
                               return (
-                                <div className="mt-2 pt-2 border-t text-sm">
-                                  <div className="font-semibold mb-1">Resumo dos dados</div>
-                                  <ul className="list-disc pl-5 space-y-1">
-                                    <li><span className="font-medium">{r.name || ''}</span>{r.cuisine ? ` • ${r.cuisine}` : ''}</li>
-                                    {r.address ? <li>{r.address}</li> : null}
-                                    {r.estimated_amount ? <li>Custo estimado: {r.estimated_amount}</li> : null}
-                                  </ul>
-                                  <div className="flex flex-wrap gap-2 mt-2">
-                                    {r.link ? (
-                                      <a href={sanitizeUrl(r.link)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Site</a>
-                                    ) : null}
-                                    {r.tripadvisor ? (
-                                      <a href={sanitizeUrl(r.tripadvisor)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Tripadvisor</a>
-                                    ) : null}
-                                    {r.gmap ? (
-                                      <a href={sanitizeUrl(r.gmap)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Google Maps</a>
-                                    ) : null}
-                                    {r.waze ? (
-                                      <a href={sanitizeUrl(r.waze)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Waze</a>
-                                    ) : null}
-                                  </div>
+                                <div className="mt-2 pt-2 border-t text-sm space-y-3">
+                                  {r ? (
+                                    <div>
+                                      <div className="font-semibold mb-1">Resumo do restaurante</div>
+                                      <ul className="list-disc pl-5 space-y-1">
+                                        <li><span className="font-medium">{r.name || ''}</span>{r.cuisine ? ` • ${r.cuisine}` : ''}</li>
+                                        {r.address ? <li>{r.address}</li> : null}
+                                        {r.estimated_amount ? <li>Custo estimado: {r.estimated_amount}</li> : null}
+                                      </ul>
+                                      <div className="flex flex-wrap gap-2 mt-2">
+                                        {r.link ? (
+                                          <a href={sanitizeUrl(r.link)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Site</a>
+                                        ) : null}
+                                        {r.tripadvisor ? (
+                                          <a href={sanitizeUrl(r.tripadvisor)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Tripadvisor</a>
+                                        ) : null}
+                                        {r.gmap ? (
+                                          <a href={sanitizeUrl(r.gmap)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Google Maps</a>
+                                        ) : null}
+                                        {r.waze ? (
+                                          <a href={sanitizeUrl(r.waze)} target="_blank" rel="noopener noreferrer" className="underline text-primary">Waze</a>
+                                        ) : null}
+                                      </div>
+                                    </div>
+                                  ) : null}
+
+                                  {it ? (
+                                    <div>
+                                      <div className="font-semibold mb-1">Resumo do roteiro</div>
+                                      <ul className="list-disc pl-5 space-y-1">
+                                        <li><span className="font-medium">{it.title || ''}</span>{it.category ? ` • ${it.category}` : ''}</li>
+                                        {it.location ? <li>{it.location}</li> : null}
+                                        {it.description ? <li>{it.description}</li> : null}
+                                      </ul>
+                                    </div>
+                                  ) : null}
                                 </div>
                               );
                             })()}

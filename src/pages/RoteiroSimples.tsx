@@ -123,12 +123,14 @@ export default function RoteiroSimples() {
     const titleFromConcierge = urlParams.get('title');
     const descriptionFromConcierge = urlParams.get('description');
     const categoryFromConcierge = urlParams.get('category');
+    const locationFromConcierge = urlParams.get('location');
     const fromConcierge = urlParams.get('fromConcierge');
     
     console.log("🔍 Checking Concierge params for roteiro:", { 
       titleFromConcierge, 
       descriptionFromConcierge, 
       categoryFromConcierge, 
+      locationFromConcierge,
       fromConcierge,
       fullUrl: window.location.href 
     });
@@ -139,7 +141,8 @@ export default function RoteiroSimples() {
         ...prev,
         title: titleFromConcierge,
         description: descriptionFromConcierge || '',
-        category: categoryFromConcierge || 'attraction'
+        category: categoryFromConcierge || 'attraction',
+        location: locationFromConcierge || ''
       }));
       setIsAddingPonto(true);
       
