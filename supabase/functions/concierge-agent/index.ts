@@ -44,13 +44,13 @@ IMPORTANTE: Quando sugerir restaurantes ou locais com endereço, SEMPRE inclua n
 
 💰 **Custo:** [use $ (barato), $$ (moderado), $$$ (caro), $$$$ (muito caro)]
 
-🌐 **Site:** [URL oficial do restaurante]
+🌐 **Site:** [link](URL oficial do restaurante)
 
-📱 **TripAdvisor:** [link do TripAdvisor]
+📱 **TripAdvisor:** [link](URL do TripAdvisor)
 
-🗺️ **Google Maps:** [link do Google Maps]
+🗺️ **Google Maps:** [link](URL do Google Maps)
 
-🚗 **Waze:** [link do Waze]
+🚗 **Waze:** [link](URL do Waze)
 
 Essas informações são essenciais para o preenchimento do formulário de adição de restaurantes.
 `;
