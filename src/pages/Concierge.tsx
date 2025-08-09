@@ -123,9 +123,6 @@ export default function Concierge() {
             <Card>
               <CardContent className="pt-6 space-y-4">
                 <div className="space-y-3 max-h-[45vh] overflow-y-auto pr-1">
-                  {messages.length === 0 && (
-                    <p className="text-muted-foreground text-sm">Exemplos: "O que fazer em Napa conectando com Los Angeles?", "Ideias em São Francisco que façam sentido com LA".</p>
-                  )}
                   {messages.map((m, i) => (
                     <div key={i} className={m.role === "user" ? "text-foreground" : "bg-muted/40 p-3 rounded-md"}>
                       <div className="text-xs font-medium mb-1">{m.role === "user" ? "Você" : "Concierge"}</div>
