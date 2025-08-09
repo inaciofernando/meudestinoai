@@ -3,7 +3,6 @@ import {
   Map, 
   Calendar, 
   Wallet, 
-  FileText, 
   MapPin, 
   Settings,
   Plus,
@@ -29,7 +28,6 @@ const navigation = [
   { title: "Minhas Viagens", url: "/viagens", icon: Map },
   { title: "Roteiro", url: "#", icon: Route },
   { title: "Planejamento", url: "/planejamento", icon: Calendar },
-  { title: "Documentos", url: "/documentos", icon: FileText },
   { title: "Pontos de Interesse", url: "/pontos", icon: MapPin },
 ];
 
