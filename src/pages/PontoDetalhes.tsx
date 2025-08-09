@@ -313,64 +313,66 @@ export default function PontoDetalhes() {
         <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
           {/* Header fixo com botões */}
           <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
-            <div className="flex flex-col gap-3">
-              {/* Linha 1: voltar */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/roteiro/${tripId}`)}
+                  className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
+                  aria-label="Voltar"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div>
+                  <p className="c6-text-secondary text-xs uppercase tracking-wide">Detalhes do ponto</p>
+                  <h1 className="text-xl md:text-2xl font-semibold text-foreground leading-tight break-words">{ponto.title}</h1>
+                  {ponto.location && (
+                    <p className="c6-text-secondary text-sm">{ponto.location}</p>
+                  )}
+                </div>
+              </div>
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate(`/roteiro/${tripId}`)}
-                  className="flex items-center gap-2"
+                  onClick={() => navigate(`/roteiro/${tripId}/ponto/${pontoId}/edit`)}
+                  className="rounded-lg flex items-center gap-2"
                 >
-                  <ArrowLeft className="w-4 h-4" />
-                  Voltar
+                  <Edit className="w-4 h-4" />
+                  <span className="hidden sm:inline">Editar</span>
                 </Button>
-              </div>
-
-              {/* Linha 2: título e ações (empilha no mobile) */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <h1 className="text-3xl font-bold leading-tight break-words">{ponto.title}</h1>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/roteiro/${tripId}/ponto/${pontoId}/edit`)}
-                    className="flex items-center gap-2"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Editar
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive flex items-center gap-2"
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-lg text-destructive hover:text-destructive flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="hidden sm:inline">Excluir</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir ponto</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja excluir "{ponto?.title}"? Esta ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
-                        <Trash2 className="w-4 h-4" />
-                        Excluir
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir ponto</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tem certeza que deseja excluir "{ponto?.title}"? Esta ação não pode ser desfeita.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDelete}
-                          disabled={isDeleting}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          {isDeleting ? "Excluindo..." : "Excluir"}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+                        {isDeleting ? "Excluindo..." : "Excluir"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </div>
