@@ -121,7 +121,7 @@ export default function Concierge() {
 
           <section className="flex flex-col h-[60vh]">
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
+            <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2">
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
                   <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -142,31 +142,29 @@ export default function Concierge() {
               )}
             </div>
 
-            {/* Input Area */}
-            <div className="border rounded-lg bg-background shadow-sm">
-              <div className="flex items-center gap-3 p-3">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Digite sua pergunta sobre a viagem..."
-                  className="border-0 focus-visible:ring-0 text-base bg-transparent"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      ask();
-                    }
-                  }}
-                />
-                <Button 
-                  onClick={ask} 
-                  disabled={loading || !input.trim()} 
-                  variant="default"
-                  className="px-6 py-2 font-medium"
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  {loading ? "Enviando..." : "Enviar"}
-                </Button>
-              </div>
+            {/* Input Area - Stack vertically */}
+            <div className="space-y-3">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Digite sua pergunta sobre a viagem..."
+                className="w-full text-base min-h-[50px]"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    ask();
+                  }
+                }}
+              />
+              <Button 
+                onClick={ask} 
+                disabled={loading || !input.trim()} 
+                className="w-full h-12 text-base font-medium"
+                size="lg"
+              >
+                <Send className="w-5 h-5 mr-2" />
+                {loading ? "Enviando..." : "Enviar Pergunta"}
+              </Button>
             </div>
           </section>
         </main>
