@@ -160,10 +160,10 @@ export default function Concierge() {
                 <Button 
                   onClick={ask} 
                   disabled={loading || !input.trim()} 
-                  size="icon"
-                  className="shrink-0"
+                  className="shrink-0 px-4"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-4 h-4 mr-2" />
+                  {loading ? "Enviando..." : "Enviar"}
                 </Button>
               </div>
             </div>
