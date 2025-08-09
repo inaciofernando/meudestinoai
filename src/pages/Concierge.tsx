@@ -159,6 +159,7 @@ export default function Concierge() {
               <Button 
                 onClick={ask} 
                 disabled={loading || !input.trim()} 
+                variant="default"
                 className="w-full h-12 text-base font-medium"
                 size="lg"
               >
