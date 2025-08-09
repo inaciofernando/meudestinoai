@@ -5,9 +5,10 @@ import { PWAFooter } from "./PWAFooter";
 interface PWALayoutProps {
   children: ReactNode;
   showHeader?: boolean; // Prop opcional para controlar se mostra o header
+  showFooter?: boolean; // Prop opcional para controlar se mostra o footer
 }
 
-export const PWALayout = ({ children, showHeader = true }: PWALayoutProps) => {
+export const PWALayout = ({ children, showHeader = true, showFooter = true }: PWALayoutProps) => {
   return (
     <div className="h-screen w-full flex flex-col fixed inset-0 overflow-hidden">
       {/* Header fixo no topo - só mostra se showHeader for true */}
@@ -25,9 +26,11 @@ export const PWALayout = ({ children, showHeader = true }: PWALayoutProps) => {
       </main>
       
       {/* Footer fixo na base */}
-      <div className="shrink-0">
-        <PWAFooter />
-      </div>
+      {showFooter && (
+        <div className="shrink-0">
+          <PWAFooter />
+        </div>
+      )}
     </div>
   );
 };

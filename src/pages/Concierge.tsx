@@ -99,7 +99,7 @@ export default function Concierge() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={false}>
+      <PWALayout showHeader={false} showFooter={false}>
         <header className="mb-4">
           <h1 className="text-2xl font-bold">Concierge da Viagem</h1>
           <p className="text-muted-foreground">Faça perguntas sobre esta viagem e receba recomendações contextualizadas.</p>
