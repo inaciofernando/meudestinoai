@@ -143,13 +143,13 @@ export default function Concierge() {
             </div>
 
             {/* Input Area */}
-            <div className="border rounded-lg p-2 bg-background">
-              <div className="flex gap-2 items-end">
+            <div className="border rounded-lg bg-background shadow-sm">
+              <div className="flex items-center gap-3 p-3">
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Digite sua pergunta sobre a viagem..."
-                  className="border-0 focus-visible:ring-0 text-base"
+                  className="border-0 focus-visible:ring-0 text-base bg-transparent"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -160,7 +160,8 @@ export default function Concierge() {
                 <Button 
                   onClick={ask} 
                   disabled={loading || !input.trim()} 
-                  className="shrink-0 px-4"
+                  variant="default"
+                  className="px-6 py-2 font-medium"
                 >
                   <Send className="w-4 h-4 mr-2" />
                   {loading ? "Enviando..." : "Enviar"}
