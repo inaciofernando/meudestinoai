@@ -103,6 +103,15 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     const googleMapsMatch = text.match(/(?:Google Maps|Maps)\s*:\s*\[?link\]?\(?(https?:\/\/[^\s\n)]+)/i);
     const wazeMatch = text.match(/(?:Waze)\s*:\s*\[?link\]?\(?(https?:\/\/[^\s\n)]+)/i);
     
+    // Debug: log do texto para ver o formato exato
+    console.log("🔍 DEBUG - Texto completo da mensagem:", text);
+    console.log("🔍 DEBUG - Links encontrados:", {
+      restaurant: restaurantLinkMatch,
+      tripadvisor: tripadvisorMatch,
+      googleMaps: googleMapsMatch,
+      waze: wazeMatch
+    });
+    
     // Qualquer link como fallback
     const anyLinkMatch = text.match(/(https?:\/\/[^\s)]+)/i);
 
