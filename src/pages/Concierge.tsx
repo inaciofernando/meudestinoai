@@ -79,8 +79,28 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
       if (titleLine) name = titleLine;
     }
 
-    // Campos com detecção mais flexível
+    // Extrair informações estruturadas usando os novos padrões
+    const addressPattern = /📍\s*\*\*Endereço:\*\*\s*([^\n]+)/i;
+    const cuisinePattern = /🍽️\s*\*\*Tipo de Culinária:\*\*\s*([^\n]+)/i;
+    const costPattern = /💰\s*\*\*Custo:\*\*\s*([^\n]+)/i;
+    const sitePattern = /🌐\s*\*\*Site:\*\*\s*\[link\]\(([^)]+)\)/i;
+    const tripAdvisorPattern = /📱\s*\*\*TripAdvisor:\*\*\s*\[link\]\(([^)]+)\)/i;
+    const googleMapsPattern = /🗺️\s*\*\*Google Maps:\*\*\s*\[link\]\(([^)]+)\)/i;
+    const wazePattern = /🚗\s*\*\*Waze:\*\*\s*\[link\]\(([^)]+)\)/i;
+    
+    // Extrair dicas práticas e informações de custo para observações
+    const practicalTipPattern = /Dica prática:([^📍🍽️💰🌐📱🗺️🚗]+)/i;
+    const practicalTip = practicalTipPattern.exec(text)?.[1]?.trim() || '';
+    const costInfo = costPattern.exec(text)?.[1]?.trim() || '';
+
+    // Combinar informações para observações
+    let observations = [];
+    if (costInfo) observations.push(`Custo: ${costInfo}`);
+    if (practicalTip) observations.push(`Dica prática:${practicalTip}`);
+
+    // Fallback para campos antigos se novos não existirem
     const cuisinePatterns = [
+      cuisinePattern,
       /(?:Culinária|Tipo de culinária|Cozinha|Especialidade|Tipo)\s*:\s*([^\n]+)/i,
       /Cozinha\s+([A-Za-z]+)/i,
       /(italiana|japonesa|brasileira|mexicana|chinesa|francesa|tailandesa|indiana|árabe)/i
@@ -95,13 +115,13 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
       }
     }
 
-    const addressMatch = text.match(/(?:Localização|Endereço|Local|Onde)\s*:\s*([^\n]+)/i);
+    const addressMatch = addressPattern.exec(text) || text.match(/(?:Localização|Endereço|Local|Onde)\s*:\s*([^\n]+)/i);
     
-    // Links com detecção mais ampla
-    const restaurantLinkMatch = text.match(/(?:Site|Website|Link)\s*:\s*(https?:\/\/[^\s\n]+)/i);
-    const tripadvisorMatch = text.match(/(?:TripAdvisor|Tripadvisor)\s*:\s*(https?:\/\/[^\s\n]+)/i);
-    const googleMapsMatch = text.match(/(?:Google Maps|Maps)\s*:\s*(https?:\/\/[^\s\n]+)/i);
-    const wazeMatch = text.match(/(?:Waze)\s*:\s*(https?:\/\/[^\s\n]+)/i);
+    // Links com detecção estruturada e fallback
+    const restaurantLink = sitePattern.exec(text)?.[1] || text.match(/(?:Site|Website|Link)\s*:\s*(https?:\/\/[^\s\n]+)/i)?.[1];
+    const tripadvisorLink = tripAdvisorPattern.exec(text)?.[1] || text.match(/(?:TripAdvisor|Tripadvisor)\s*:\s*(https?:\/\/[^\s\n]+)/i)?.[1];
+    const googleMapsLink = googleMapsPattern.exec(text)?.[1] || text.match(/(?:Google Maps|Maps)\s*:\s*(https?:\/\/[^\s\n]+)/i)?.[1];
+    const wazeLink = wazePattern.exec(text)?.[1] || text.match(/(?:Waze)\s*:\s*(https?:\/\/[^\s\n]+)/i)?.[1];
     
     // Qualquer link como fallback
     const anyLinkMatch = text.match(/(https?:\/\/[^\s)]+)/i);
@@ -118,7 +138,7 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     // Descrição/notas
     const descriptionParts: string[] = [];
     lines.forEach(l => {
-      if (/Por que|Dicas|Observações|conhecido por|famoso por/i.test(l) || 
+      if (/Por que|conhecido por|famoso por/i.test(l) || 
           l.startsWith('•') || l.startsWith('-')) {
         descriptionParts.push(l.replace(/^[-•]\s*/, ''));
       }
@@ -130,11 +150,12 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
       cuisine,
       address: addressMatch?.[1]?.trim(),
       description,
+      observations: observations.join('\n\n'),
       links: {
-        restaurant: restaurantLinkMatch?.[1],
-        tripadvisor: tripadvisorMatch?.[1], 
-        googleMaps: googleMapsMatch?.[1],
-        waze: wazeMatch?.[1],
+        restaurant: restaurantLink,
+        tripadvisor: tripadvisorLink, 
+        googleMaps: googleMapsLink,
+        waze: wazeLink,
         any: anyLinkMatch?.[1]
       }
     });
@@ -146,11 +167,12 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
         description,
         cuisine,
         address: addressMatch?.[1]?.trim() || '',
-        link: restaurantLinkMatch?.[1] || anyLinkMatch?.[1] || '',
-        tripadvisor: tripadvisorMatch?.[1] || '',
-        gmap: googleMapsMatch?.[1] || '',
-        waze: wazeMatch?.[1] || '',
-        estimated_amount: estimated
+        link: restaurantLink || anyLinkMatch?.[1] || '',
+        tripadvisor: tripadvisorLink || '',
+        gmap: googleMapsLink || '',
+        waze: wazeLink || '',
+        estimated_amount: estimated,
+        observations: observations.join('\n\n')
       });
     }
 
@@ -191,6 +213,7 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     params.set('gmap', restaurant.gmap || '');
     params.set('waze', restaurant.waze || '');
     params.set('estimated_amount', restaurant.estimated_amount || '');
+    params.set('observations', restaurant.observations || '');
     params.set('fromConcierge', 'true');
     // Fallback: enviar um trecho da mensagem para parsing no destino
     params.set('source', message.slice(0, 1500));
