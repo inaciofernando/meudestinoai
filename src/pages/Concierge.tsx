@@ -98,10 +98,10 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     const addressMatch = text.match(/(?:Localização|Endereço|Local|Onde)\s*:\s*([^\n]+)/i);
     
     // Links com detecção mais ampla
-    const restaurantLinkMatch = text.match(/(?:Site|Website|Link)\s*:\s*(https?:\/\/[^\s\n]+)/i);
-    const tripadvisorMatch = text.match(/(?:TripAdvisor|Tripadvisor)\s*:\s*(https?:\/\/[^\s\n]+)/i);
-    const googleMapsMatch = text.match(/(?:Google Maps|Maps)\s*:\s*(https?:\/\/[^\s\n]+)/i);
-    const wazeMatch = text.match(/(?:Waze)\s*:\s*(https?:\/\/[^\s\n]+)/i);
+    const restaurantLinkMatch = text.match(/(?:Site|Website|Link)\s*:\s*\[?link\]?\(?(https?:\/\/[^\s\n)]+)/i);
+    const tripadvisorMatch = text.match(/(?:TripAdvisor|Tripadvisor)\s*:\s*\[?link\]?\(?(https?:\/\/[^\s\n)]+)/i);
+    const googleMapsMatch = text.match(/(?:Google Maps|Maps)\s*:\s*\[?link\]?\(?(https?:\/\/[^\s\n)]+)/i);
+    const wazeMatch = text.match(/(?:Waze)\s*:\s*\[?link\]?\(?(https?:\/\/[^\s\n)]+)/i);
     
     // Qualquer link como fallback
     const anyLinkMatch = text.match(/(https?:\/\/[^\s)]+)/i);
