@@ -36,14 +36,20 @@ serve(async (req) => {
 - Mantenha foco no destino(s) da viagem fornecida e conexões lógicas entre cidades próximas (ex.: Napa ↔ Los Angeles, São Francisco ↔ Los Angeles).
 - Inclua justificativa de por que a sugestão combina com o contexto da viagem.
 
-IMPORTANTE: Quando sugerir restaurantes ou locais com endereço, SEMPRE inclua no final da resposta as seguintes informações estruturadas:
+IMPORTANTE: Quando sugerir restaurantes ou locais com endereço, SEMPRE inclua no final da resposta as seguintes informações estruturadas (cada item em uma linha separada):
 
 📍 **Endereço:** [endereço completo]
+
 🍽️ **Tipo de Culinária:** [ex: Mexicana, Italiana, etc.]
+
 💰 **Custo:** [use $ (barato), $$ (moderado), $$$ (caro), $$$$ (muito caro)]
+
 🌐 **Site:** [URL oficial do restaurante]
+
 📱 **TripAdvisor:** [link do TripAdvisor]
+
 🗺️ **Google Maps:** [link do Google Maps]
+
 🚗 **Waze:** [link do Waze]
 
 Essas informações são essenciais para o preenchimento do formulário de adição de restaurantes.
