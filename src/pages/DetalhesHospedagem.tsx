@@ -257,42 +257,51 @@ export default function DetalhesHospedagem() {
   return (
     <PWALayout>
       <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
-        <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/viagem/${tripId}/hospedagem`)}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Voltar
-              </Button>
-              <h1 className="text-2xl font-bold">{accommodation.hotel_name}</h1>
-            </div>
+      <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
+        {/* Header mobile otimizado */}
+        <div className="space-y-3">
+          {/* Linha 1: Navegação */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate(`/viagem/${tripId}/hospedagem`)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Voltar
+            </Button>
+            
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleEdit}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1"
               >
                 <Edit className="w-4 h-4" />
-                Editar
+                <span className="hidden sm:inline">Editar</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDelete}
-                className="text-destructive hover:text-destructive flex items-center gap-2"
+                className="text-destructive hover:text-destructive flex items-center gap-1"
               >
                 <Trash2 className="w-4 h-4" />
-                Excluir
+                <span className="hidden sm:inline">Excluir</span>
               </Button>
             </div>
           </div>
+          
+          {/* Linha 2: Título */}
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold leading-tight break-words">
+              {accommodation.hotel_name}
+            </h1>
+          </div>
         </div>
+      </div>
 
         <div className="flex-1 overflow-auto p-4">
           <div className="max-w-4xl mx-auto space-y-6">
