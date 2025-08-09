@@ -134,14 +134,14 @@ export default function Concierge() {
                   ))}
                 </div>
 
-                <div className="flex items-end gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
                   <Textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Descreva o que você quer ver nesta viagem (ex: Napa, São Francisco, trilhas próximas...)"
-                    className="min-h-[80px]"
+                    className="min-h-[100px]"
                   />
-                  <Button onClick={ask} disabled={loading} className="h-[80px] min-w-24">
+                  <Button onClick={ask} disabled={loading} className="w-full sm:w-auto h-11">
                     <Send className="w-4 h-4" />
                     {loading ? "Enviando..." : "Perguntar"}
                   </Button>
