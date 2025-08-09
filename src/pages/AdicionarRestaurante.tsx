@@ -132,7 +132,18 @@ export default function AdicionarRestaurante() {
     }
 
     if (fromConcierge && (nameFromConcierge || descriptionFromConcierge || linkFromConcierge || linkFromSource)) {
-      console.log("✅ Pre-filling restaurant form with concierge data");
+      console.log("✅ Pre-filling restaurant form with concierge data", {
+        nameFromConcierge,
+        descriptionFromConcierge,
+        cuisineFromConcierge,
+        addressFromConcierge,
+        linkFromConcierge,
+        tripadvisorFromConcierge,
+        gmapFromConcierge,
+        wazeFromConcierge,
+        estimatedFromConcierge,
+        linkFromSource
+      });
       setForm(prev => ({
         ...prev,
         restaurant_name: nameFromConcierge || prev.restaurant_name,

@@ -129,6 +129,8 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
   };
 
   const handleAddRestaurant = (restaurant: any) => {
+    console.log("🚀 Preparing to navigate to restaurant form with data:", restaurant);
+    
     // Navegar para página de restaurantes com dados pré-preenchidos
     const params = new URLSearchParams();
     params.set('name', restaurant.name || '');
@@ -143,7 +145,10 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     params.set('fromConcierge', 'true');
     // Fallback: enviar um trecho da mensagem para parsing no destino
     params.set('source', message.slice(0, 1500));
-    navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
+    
+    const finalUrl = `/viagem/${tripId}/restaurantes/novo?${params.toString()}`;
+    console.log("🚀 Final URL:", finalUrl);
+    navigate(finalUrl);
   };
 
   const handleAddAttraction = (attraction: any) => {
@@ -160,7 +165,14 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
   const restaurants = extractRestaurantInfo();
   const attractions = extractAttractionInfo();
 
-  console.log("🎯 Quick action results:", { restaurants, attractions, willShow: restaurants.length > 0 || attractions.length > 0 });
+  console.log("🔍 Message analysis:", { 
+    messageLength: message.length, 
+    containsRestaurant, 
+    containsAttraction,
+    extractedRestaurants: restaurants,
+    extractedAttractions: attractions,
+    messagePreview: message.slice(0, 200) + "..."
+  });
 
   // Sempre mostrar os botões de ação rápida para melhor UX
   // if (!containsRestaurant && !containsAttraction) {
