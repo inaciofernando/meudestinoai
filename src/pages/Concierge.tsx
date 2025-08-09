@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Bot, MapPin, Calendar, Plus, Mic, ArrowUp, Loader2, User, ArrowLeft, RotateCcw, Clock, Trash2, UtensilsCrossed, MapPinPlus } from "lucide-react";
+import { Bot, MapPin, Calendar, Plus, Mic, ArrowUp, Loader2, User, ArrowLeft, RotateCcw, Clock, Trash2, UtensilsCrossed, MapPinPlus, MoreVertical } from "lucide-react";
 
 interface TripCtx {
   id: string;
@@ -356,6 +357,7 @@ export default function Concierge() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // SEO basics
   useEffect(() => {
@@ -546,70 +548,78 @@ export default function Concierge() {
             </div>
             
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={startNewConversation}
-                className="gap-2"
-                aria-label="Nova conversa"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Nova Conversa
-              </Button>
-              
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Clock className="h-4 w-4" />
-                    Histórico
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9"
+                    aria-label="Menu"
+                  >
+                    <MoreVertical className="h-5 w-5" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80" align="end">
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-sm">Conversas Recentes</h3>
-                    <ScrollArea className="h-64">
-                      {historyLoading ? (
-                        <div className="flex items-center justify-center py-4">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        </div>
-                      ) : conversationHistory.length === 0 ? (
-                        <p className="text-muted-foreground text-sm py-4 text-center">
-                          Nenhuma conversa encontrada
-                        </p>
-                      ) : (
-                        <div className="space-y-1">
-                          {conversationHistory.map((conversation) => (
-                            <div
-                              key={conversation.id}
-                              className="flex items-center justify-between p-2 rounded-md hover:bg-muted group"
-                            >
-                              <button
-                                onClick={() => loadConversation(conversation)}
-                                className="flex-1 text-left text-sm text-foreground/80 hover:text-foreground truncate pr-2"
-                              >
-                                {conversation.title}
-                              </button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => deleteConversation(conversation.id)}
-                                className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:text-destructive"
-                                aria-label="Excluir conversa"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </ScrollArea>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={startNewConversation} className="gap-2">
+                    <Plus className="h-4 w-4" /> Novo chat
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setHistoryOpen(true)} className="gap-2">
+                    <Clock className="h-4 w-4" /> Histórico
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <p className="text-muted-foreground ml-12">Faça perguntas sobre esta viagem e receba recomendações contextualizadas.</p>
         </header>
+
+        <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Histórico</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2">
+              <ScrollArea className="h-80">
+                {historyLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                ) : conversationHistory.length === 0 ? (
+                  <p className="text-muted-foreground text-sm py-6 text-center">
+                    Nenhuma conversa encontrada
+                  </p>
+                ) : (
+                  <div className="space-y-1 pr-2">
+                    {conversationHistory.map((conversation) => (
+                      <div
+                        key={conversation.id}
+                        className="flex items-center justify-between p-2 rounded-md hover:bg-muted group"
+                      >
+                        <button
+                          onClick={() => { loadConversation(conversation); setHistoryOpen(false); }}
+                          className="flex-1 text-left text-sm text-foreground/80 hover:text-foreground truncate pr-2"
+                        >
+                          {conversation.title}
+                        </button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteConversation(conversation.id)}
+                          className="h-6 w-6 hover:text-destructive"
+                          aria-label="Excluir conversa"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <main>
           <section aria-labelledby="trip-context" className="mb-4">
             <Card>
