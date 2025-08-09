@@ -68,6 +68,7 @@ Exemplo de estrutura do JSON a ser SEMPRE incluído no final:
 
 Regras adicionais importantes:
 - Retorne URLs completas (https://...)
+- Para Google Maps, use o formato https://www.google.com/maps/place/... ou https://www.google.com/maps/search/?api=1&query=... (evite links encurtados como maps.app.goo.gl ou goo.gl/maps)
 - price_band deve ser um dentre: $, $$, $$$, $$$$
 - Para restaurantes, preencha o máximo possível: endereço, tipo de culinária, site, TripAdvisor, Google Maps e Waze
 - Não inclua nada além do bloco JSON após a parte textual (para facilitar a leitura automática)

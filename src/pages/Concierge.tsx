@@ -53,6 +53,15 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     const text = message.replace(/\*\*/g, '');
     const results: any[] = [];
 
+    // Helper: normaliza links do Google Maps, evitando encurtadores
+    const buildGMap = (raw: string, name: string, address: string) => {
+      const query = [name, address].filter(Boolean).join(' ').trim();
+      const queryUrl = query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : '';
+      if (!raw) return queryUrl;
+      if (/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(raw)) return queryUrl || raw;
+      return raw;
+    };
+
     // 0) Tentar extrair bloco JSON padronizado do Concierge
     try {
       const jsonBlock = message.match(/```json\s*([\s\S]*?)```/i);
@@ -60,14 +69,16 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
         const parsed = JSON.parse(jsonBlock[1]);
         const r = parsed?.restaurant || parsed?.restaurante;
         if (r) {
+          const name = r.name || r.nome || '';
+          const address = r.address || r.endereco || '';
           const mapped = {
-            name: r.name || r.nome || '',
+            name,
             description: r.description || r.observacoes || r.notes || '',
             cuisine: r.cuisine || r.cuisine_type || r.tipo_culinaria || '',
-            address: r.address || r.endereco || '',
+            address,
             link: r.link || r.site || '',
             tripadvisor: r.tripadvisor || r.tripadvisor_link || '',
-            gmap: r.gmap || r.google_maps || r.google_maps_link || '',
+            gmap: buildGMap(r.gmap || r.google_maps || r.google_maps_link || '', name, address),
             waze: r.waze || r.waze_link || '',
             estimated_amount: String(r.estimated_amount || r.preco_estimado || '')
           } as any;
@@ -177,14 +188,16 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
 
     // Se encontrou pelo menos um nome, criar o resultado
     if (name && name.length > 2) {
+      const addressText = addressMatch?.[1]?.trim() || '';
+      const normalizedGMap = buildGMap(googleMapsMatch?.[1] || '', name, addressText);
       results.push({
         name,
         description,
         cuisine,
-        address: addressMatch?.[1]?.trim() || '',
+        address: addressText,
         link: restaurantLinkMatch?.[1] || anyLinkMatch?.[1] || '',
         tripadvisor: tripadvisorMatch?.[1] || '',
-        gmap: googleMapsMatch?.[1] || '',
+        gmap: normalizedGMap,
         waze: wazeMatch?.[1] || '',
         estimated_amount: estimated
       });
