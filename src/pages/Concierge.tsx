@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Bot, MapPin, Calendar, Plus, Mic, ArrowUp, Loader2, User, ArrowLeft } from "lucide-react";
+import { Bot, MapPin, Calendar, Plus, Mic, ArrowUp, Loader2, User, ArrowLeft, RotateCcw, Clock, Trash2 } from "lucide-react";
 
 interface TripCtx {
   id: string;
@@ -21,14 +23,25 @@ interface TripCtx {
 
 interface Message { role: "user" | "assistant"; content: string }
 
+interface ConversationHistory {
+  id: string;
+  title: string;
+  messages: Message[];
+  created_at: string;
+  updated_at: string;
+}
+
 export default function Concierge() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [trip, setTrip] = useState<TripCtx | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   // SEO basics
   useEffect(() => {
@@ -66,6 +79,7 @@ export default function Concierge() {
       setTrip(data as TripCtx);
     };
     fetchTrip();
+    loadConversationHistory();
   }, [id, toast]);
 
   const tripSummary = useMemo(() => {
@@ -73,11 +87,107 @@ export default function Concierge() {
     return `Viagem: ${trip.title}. Destino: ${trip.destination ?? "não informado"}. Início: ${trip.start_date ?? "ND"}. Fim: ${trip.end_date ?? "ND"}.`;
   }, [trip]);
 
+  const loadConversationHistory = async () => {
+    if (!id) return;
+    setHistoryLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("concierge_conversations")
+        .select("*")
+        .eq("trip_id", id)
+        .order("updated_at", { ascending: false })
+        .limit(10);
+      
+      if (error) throw error;
+      const transformedData = (data || []).map(item => ({
+        ...item,
+        messages: Array.isArray(item.messages) ? (item.messages as unknown) as Message[] : []
+      }));
+      setConversationHistory(transformedData);
+    } catch (error: any) {
+      console.error("Error loading conversation history:", error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const saveConversation = async (newMessages: Message[]) => {
+    if (!id || newMessages.length === 0) return;
+    
+    try {
+      const title = newMessages[0]?.content.slice(0, 50) + (newMessages[0]?.content.length > 50 ? '...' : '');
+      
+      if (currentConversationId) {
+        // Update existing conversation
+        const { error } = await supabase
+          .from("concierge_conversations")
+          .update({
+            messages: newMessages as any,
+            title,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", currentConversationId);
+        
+        if (error) throw error;
+      } else {
+        // Create new conversation
+        const { data, error } = await supabase
+          .from("concierge_conversations")
+          .insert({
+            trip_id: id,
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            title,
+            messages: newMessages as any
+          })
+          .select()
+          .single();
+        
+        if (error) throw error;
+        setCurrentConversationId(data.id);
+      }
+      
+      loadConversationHistory();
+    } catch (error: any) {
+      console.error("Error saving conversation:", error);
+    }
+  };
+
+  const loadConversation = (conversation: ConversationHistory) => {
+    setMessages(conversation.messages);
+    setCurrentConversationId(conversation.id);
+  };
+
+  const startNewConversation = () => {
+    setMessages([]);
+    setCurrentConversationId(null);
+  };
+
+  const deleteConversation = async (conversationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("concierge_conversations")
+        .delete()
+        .eq("id", conversationId);
+      
+      if (error) throw error;
+      
+      if (currentConversationId === conversationId) {
+        startNewConversation();
+      }
+      
+      loadConversationHistory();
+      toast({ title: "Conversa excluída", description: "A conversa foi removida com sucesso." });
+    } catch (error: any) {
+      toast({ title: "Erro", description: "Não foi possível excluir a conversa.", variant: "destructive" });
+    }
+  };
+
   async function ask() {
     if (!input.trim()) return;
     setLoading(true);
     const userMessage: Message = { role: "user", content: input.trim() };
-    setMessages((m) => [...m, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
 
     try {
       const { data, error } = await supabase.functions.invoke("concierge-agent", {
@@ -90,7 +200,11 @@ export default function Concierge() {
 
       const payload: any = data || {};
       const reply: string = payload.generatedText || payload.text || payload.result || "Sem resposta.";
-      setMessages((m) => [...m, { role: "assistant", content: reply }]);
+      const finalMessages: Message[] = [...newMessages, { role: "assistant" as const, content: reply }];
+      setMessages(finalMessages);
+      
+      // Save conversation automatically
+      await saveConversation(finalMessages);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message || "Falha na requisição.", variant: "destructive" });
     } finally {
@@ -103,17 +217,82 @@ export default function Concierge() {
     <ProtectedRoute>
       <PWALayout showHeader={false} showFooter={false}>
         <header className="mb-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="h-9 w-9"
-              aria-label="Voltar"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl font-bold">Concierge da Viagem</h1>
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="h-9 w-9"
+                aria-label="Voltar"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-2xl font-bold">Concierge da Viagem</h1>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={startNewConversation}
+                className="gap-2"
+                aria-label="Nova conversa"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Nova Conversa
+              </Button>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Clock className="h-4 w-4" />
+                    Histórico
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80" align="end">
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-sm">Conversas Recentes</h3>
+                    <ScrollArea className="h-64">
+                      {historyLoading ? (
+                        <div className="flex items-center justify-center py-4">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
+                      ) : conversationHistory.length === 0 ? (
+                        <p className="text-muted-foreground text-sm py-4 text-center">
+                          Nenhuma conversa encontrada
+                        </p>
+                      ) : (
+                        <div className="space-y-1">
+                          {conversationHistory.map((conversation) => (
+                            <div
+                              key={conversation.id}
+                              className="flex items-center justify-between p-2 rounded-md hover:bg-muted group"
+                            >
+                              <button
+                                onClick={() => loadConversation(conversation)}
+                                className="flex-1 text-left text-sm text-foreground/80 hover:text-foreground truncate pr-2"
+                              >
+                                {conversation.title}
+                              </button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => deleteConversation(conversation.id)}
+                                className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:text-destructive"
+                                aria-label="Excluir conversa"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
           <p className="text-muted-foreground ml-12">Faça perguntas sobre esta viagem e receba recomendações contextualizadas.</p>
         </header>
