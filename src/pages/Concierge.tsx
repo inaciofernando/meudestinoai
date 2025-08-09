@@ -119,15 +119,16 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
 
   const handleAddRestaurant = (restaurant: any) => {
     // Navegar para página de restaurantes com dados pré-preenchidos
-    const params = new URLSearchParams({
-      name: restaurant.name || '',
-      description: restaurant.description || '',
-      cuisine: restaurant.cuisine || '',
-      address: restaurant.address || '',
-      link: restaurant.link || '',
-      estimated_amount: restaurant.estimated_amount || '',
-      fromConcierge: 'true'
-    });
+    const params = new URLSearchParams();
+    params.set('name', restaurant.name || '');
+    params.set('description', restaurant.description || '');
+    params.set('cuisine', restaurant.cuisine || '');
+    params.set('address', restaurant.address || '');
+    params.set('link', restaurant.link || '');
+    params.set('estimated_amount', restaurant.estimated_amount || '');
+    params.set('fromConcierge', 'true');
+    // Fallback: enviar um trecho da mensagem para parsing no destino
+    params.set('source', message.slice(0, 1500));
     navigate(`/viagem/${tripId}/restaurantes?${params.toString()}`);
   };
 

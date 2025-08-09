@@ -84,10 +84,18 @@ export default function Restaurantes() {
     const addressFromConcierge = urlParams.get('address');
     const linkFromConcierge = urlParams.get('link');
     const estimatedFromConcierge = urlParams.get('estimated_amount');
+    const sourceText = urlParams.get('source') || '';
+
+    // Fallback: try to extract link from source text
+    let linkFromSource = '';
+    if (!linkFromConcierge && sourceText) {
+      const match = sourceText.match(/https?:\/\/[^\s)]+/i);
+      if (match) linkFromSource = match[0];
+    }
     
-    console.log("🔍 Checking URL params:", { nameFromConcierge, descriptionFromConcierge, cuisineFromConcierge, addressFromConcierge, linkFromConcierge, estimatedFromConcierge, fromConcierge, fullUrl: window.location.href });
+    console.log("🔍 Checking URL params:", { nameFromConcierge, descriptionFromConcierge, cuisineFromConcierge, addressFromConcierge, linkFromConcierge, linkFromSource, estimatedFromConcierge, fromConcierge, fullUrl: window.location.href });
     
-    if (fromConcierge && (nameFromConcierge || descriptionFromConcierge)) {
+    if (fromConcierge && (nameFromConcierge || descriptionFromConcierge || linkFromConcierge || linkFromSource)) {
       console.log("✅ Pre-filling form with concierge data");
       setNewRestaurant(prev => ({
         ...prev,
@@ -95,7 +103,7 @@ export default function Restaurantes() {
         notes: descriptionFromConcierge || prev.notes,
         cuisine_type: cuisineFromConcierge || prev.cuisine_type,
         address: addressFromConcierge || prev.address,
-        restaurant_link: linkFromConcierge || prev.restaurant_link,
+        restaurant_link: linkFromConcierge || linkFromSource || prev.restaurant_link,
         estimated_amount: estimatedFromConcierge || prev.estimated_amount
       }));
       setShowAddForm(true);
