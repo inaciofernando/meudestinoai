@@ -154,82 +154,50 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
   //   return null;
   // }
 
-  // Fallback: se nada foi detectado, mostrar ações manuais
-  if (restaurants.length === 0 && attractions.length === 0) {
-    return (
-      <div className="mt-3">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
+  // Sempre mostrar apenas uma opção para restaurante e uma para roteiro
+  return (
+    <div className="mt-3">
+      <div className="flex flex-wrap gap-2">
+        {/* Botão para restaurante - se há sugestão, usa os dados, senão abre formulário em branco */}
+        <Button
+          variant={restaurants.length > 0 ? "secondary" : "outline"}
+          size="sm"
+          onClick={() => {
+            if (restaurants.length > 0) {
+              // Se temos sugestão de restaurante, preenche o formulário
+              handleAddRestaurant(restaurants[0]);
+            } else {
+              // Se não temos sugestão, abre formulário em branco
               const params = new URLSearchParams({ fromConcierge: 'true' });
               navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
-            }}
-            className="h-8 px-3 text-xs gap-1"
-          >
-            <UtensilsCrossed className="w-3 h-3" />
-            Abrir formulário de Restaurante
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
+            }
+          }}
+          className="h-8 px-3 text-xs gap-1"
+        >
+          <UtensilsCrossed className="w-3 h-3" />
+          {restaurants.length > 0 ? `Adicionar ${restaurants[0].name.length > 15 ? restaurants[0].name.substring(0, 15) + '…' : restaurants[0].name}` : 'Adicionar Restaurante'}
+        </Button>
+
+        {/* Botão para roteiro - se há sugestão, usa os dados, senão abre formulário em branco */}
+        <Button
+          variant={attractions.length > 0 ? "secondary" : "outline"}
+          size="sm"
+          onClick={() => {
+            if (attractions.length > 0) {
+              // Se temos sugestão de atração, preenche o formulário
+              handleAddAttraction(attractions[0]);
+            } else {
+              // Se não temos sugestão, abre formulário em branco
               const params = new URLSearchParams({ fromConcierge: 'true' });
               navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
-            }}
-            className="h-8 px-3 text-xs gap-1"
-          >
-            <MapPinPlus className="w-3 h-3" />
-            Abrir formulário de Roteiro
-          </Button>
-        </div>
+            }
+          }}
+          className="h-8 px-3 text-xs gap-1"
+        >
+          <MapPinPlus className="w-3 h-3" />
+          {attractions.length > 0 ? `Adicionar ${attractions[0].name.length > 15 ? attractions[0].name.substring(0, 15) + '…' : attractions[0].name}` : 'Adicionar ao Roteiro'}
+        </Button>
       </div>
-    );
-  }
-
-  // Caso tenhamos sugestões
-  return (
-    <div className="mt-3 space-y-2">
-      {restaurants.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">Adicionar aos restaurantes:</p>
-          <div className="flex flex-wrap gap-2">
-            {restaurants.slice(0, 3).map((restaurant, index) => (
-              <Button
-                key={index}
-                variant="secondary"
-                size="sm"
-                onClick={() => handleAddRestaurant(restaurant)}
-                className="h-8 px-3 text-xs gap-1"
-              >
-                <UtensilsCrossed className="w-3 h-3" />
-                {restaurant.name.length > 22 ? restaurant.name.substring(0, 22) + '…' : restaurant.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {attractions.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">Adicionar ao roteiro:</p>
-          <div className="flex flex-wrap gap-2">
-            {attractions.slice(0, 3).map((attraction, index) => (
-              <Button
-                key={index}
-                variant="secondary"
-                size="sm"
-                onClick={() => handleAddAttraction(attraction)}
-                className="h-8 px-3 text-xs gap-1"
-              >
-                <MapPinPlus className="w-3 h-3" />
-                {attraction.name.length > 22 ? attraction.name.substring(0, 22) + '…' : attraction.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
