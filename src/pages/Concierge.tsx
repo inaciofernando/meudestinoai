@@ -41,16 +41,19 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
   const navigate = useNavigate();
   
   // Detecta se a mensagem contém sugestões de restaurantes ou pontos turísticos
-  const containsRestaurant = /restaurante|comida|culinária|gastronomia|prato|comer|jantar|almoçar|café da manhã/i.test(message);
-  const containsAttraction = /vinícola|atração|ponto turístico|visitar|museu|parque|monumento|igreja|teatro|shopping|mercado|praia|trilha|passeio/i.test(message);
+  const containsRestaurant = /restaurante|comida|culinária|gastronomia|prato|comer|jantar|almoçar|café da manhã|zareen|food|restaurant/i.test(message);
+  const containsAttraction = /vinícola|atração|ponto turístico|visitar|museu|parque|monumento|igreja|teatro|shopping|mercado|praia|trilha|passeio|winery|attraction/i.test(message);
+  
+  console.log("🔍 Analyzing message for quick actions:", { containsRestaurant, containsAttraction, messageLength: message.length });
   
   const extractRestaurantInfo = () => {
     const lines = message.split('\n');
     const restaurants = [];
     
+    // First, try to extract from **bold** text
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      if (line.includes('**') && (containsRestaurant || /restaurante/i.test(line))) {
+      if (line.includes('**') && /restaurante|zareen|food|restaurant/i.test(line)) {
         const name = line.replace(/\*\*/g, '').replace(/^\d+\.?\s*/, '').trim();
         if (name.length > 3) {
           restaurants.push({
@@ -60,6 +63,24 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
         }
       }
     }
+    
+    // If no bold restaurants found, try to extract restaurant names mentioned
+    if (restaurants.length === 0) {
+      const restaurantMatches = message.match(/([A-Z][a-zA-Z'\s]+(?:'s)?)\s*(?=\.|,|\n|$)/g);
+      if (restaurantMatches) {
+        restaurantMatches.forEach(match => {
+          const cleaned = match.trim().replace(/[.,]$/, '');
+          if (cleaned.length > 3 && /[A-Z]/.test(cleaned)) {
+            restaurants.push({
+              name: cleaned,
+              description: 'Sugerido pelo concierge'
+            });
+          }
+        });
+      }
+    }
+    
+    console.log("🍽️ Extracted restaurants:", restaurants);
     return restaurants;
   };
 
@@ -103,23 +124,53 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
   };
 
-  if (!containsRestaurant && !containsAttraction) {
-    return null;
-  }
-
   const restaurants = extractRestaurantInfo();
   const attractions = extractAttractionInfo();
 
+  console.log("🎯 Quick action results:", { restaurants, attractions, willShow: restaurants.length > 0 || attractions.length > 0 });
+
+  // Sempre mostrar os botões de ação rápida para melhor UX
+  // if (!containsRestaurant && !containsAttraction) {
+  //   console.log("❌ No quick actions detected");
+  //   return null;
+  // }
+
   return (
     <div className="mt-3 space-y-2">
+      {/* Sempre mostrar botão para adicionar manualmente */}
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground font-medium">Ações rápidas:</p>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/viagem/${tripId}/restaurantes`)}
+            className="h-8 px-3 text-xs gap-1"
+          >
+            <UtensilsCrossed className="w-3 h-3" />
+            Adicionar Restaurante
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`/viagem/${tripId}/roteiro`)}
+            className="h-8 px-3 text-xs gap-1"
+          >
+            <MapPinPlus className="w-3 h-3" />
+            Adicionar ao Roteiro
+          </Button>
+        </div>
+      </div>
+
+      {/* Botões automáticos baseados na detecção */}
       {restaurants.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">Adicionar aos restaurantes:</p>
+          <p className="text-xs text-muted-foreground font-medium">Sugestões detectadas - Adicionar aos restaurantes:</p>
           <div className="flex flex-wrap gap-2">
             {restaurants.slice(0, 3).map((restaurant, index) => (
               <Button
                 key={index}
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => handleAddRestaurant(restaurant)}
                 className="h-8 px-3 text-xs gap-1"
@@ -134,12 +185,12 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
       
       {attractions.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">Adicionar ao roteiro:</p>
+          <p className="text-xs text-muted-foreground font-medium">Sugestões detectadas - Adicionar ao roteiro:</p>
           <div className="flex flex-wrap gap-2">
             {attractions.slice(0, 3).map((attraction, index) => (
               <Button
                 key={index}
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => handleAddAttraction(attraction)}
                 className="h-8 px-3 text-xs gap-1"
