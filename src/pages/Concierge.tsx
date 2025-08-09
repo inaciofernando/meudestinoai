@@ -4,7 +4,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,12 +131,27 @@ export default function Concierge() {
               ) : (
                 messages.map((m, i) => (
                   <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[80%] rounded-lg p-3 ${
-                      m.role === "user" 
-                        ? "bg-primary text-primary-foreground" 
-                        : "bg-muted"
-                    }`}>
-                      <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
+                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
+                      {m.role === "assistant" ? (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            a: ({node, ...props}) => (
+                              <a {...props} target="_blank" rel="noopener noreferrer" className="underline text-primary" />
+                            ),
+                            ul: (props) => <ul className="list-disc pl-5 my-2" {...props} />,
+                            ol: (props) => <ol className="list-decimal pl-5 my-2" {...props} />,
+                            li: (props) => <li className="my-1" {...props} />,
+                            h1: (props) => <h1 className="text-lg font-bold mb-2" {...props} />,
+                            h2: (props) => <h2 className="text-base font-semibold mb-2" {...props} />,
+                            p: (props) => <p className="leading-relaxed mb-2" {...props} />,
+                          }}
+                        >
+                          {m.content}
+                        </ReactMarkdown>
+                      ) : (
+                        <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -149,7 +165,7 @@ export default function Concierge() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Digite sua pergunta sobre a viagem..."
-                  className="flex-1 text-base min-h-[50px]"
+                  className="flex-1 text-base min-h-[50px] rounded-full"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
