@@ -438,7 +438,7 @@ export default function DocumentosViagem() {
                     <DialogTrigger asChild>
                       <Button 
                         size="icon" 
-                        className="bg-gradient-ocean hover:shadow-travel transition-all duration-300 rounded-full"
+                        className="rounded-full"
                       >
                         <Plus className="w-5 h-5" />
                       </Button>
@@ -474,10 +474,7 @@ export default function DocumentosViagem() {
                           document={document}
                           categoryConfig={category}
                           onClick={() => setViewingDocument(document)}
-                          onEdit={() => {
-                            console.log("Editing document:", document);
-                            setEditingDocument(document);
-                          }}
+                          onEdit={() => setEditingDocument(document)}
                         />
                       );
                     })}
@@ -501,10 +498,7 @@ export default function DocumentosViagem() {
           <EditDocumentDialog
             document={editingDocument}
             isOpen={!!editingDocument}
-            onClose={() => {
-              console.log("Closing edit dialog");
-              setEditingDocument(null);
-            }}
+            onClose={() => setEditingDocument(null)}
             onSave={handleEditDocument}
             saving={saving}
           />

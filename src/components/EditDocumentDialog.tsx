@@ -42,26 +42,12 @@ export const EditDocumentDialog = memo(({
 
   // Reset form when document changes
   useEffect(() => {
-    console.log("EditDocumentDialog: document changed", document);
     if (document) {
-      console.log("EditDocumentDialog: setting form values", {
-        title: document.title,
-        description: document.description,
-        category: document.category
-      });
       setTitle(document.title);
       setDescription(document.description || "");
       setCategory(document.category);
     }
   }, [document]);
-
-  console.log("EditDocumentDialog render:", { 
-    isOpen, 
-    document: document?.title,
-    title,
-    description,
-    category 
-  });
 
   const handleSave = () => {
     onSave({ title, description, category });
