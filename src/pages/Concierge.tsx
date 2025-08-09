@@ -144,7 +144,10 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(`/viagem/${tripId}/restaurantes`)}
+            onClick={() => {
+              const params = new URLSearchParams({ fromConcierge: 'true' });
+              navigate(`/viagem/${tripId}/restaurantes?${params.toString()}`);
+            }}
             className="h-8 px-3 text-xs gap-1"
           >
             <UtensilsCrossed className="w-3 h-3" />
@@ -153,7 +156,10 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate(`/viagem/${tripId}/roteiro`)}
+            onClick={() => {
+              const params = new URLSearchParams({ fromConcierge: 'true' });
+              navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
+            }}
             className="h-8 px-3 text-xs gap-1"
           >
             <MapPinPlus className="w-3 h-3" />

@@ -81,12 +81,22 @@ export default function Restaurantes() {
     const descriptionFromConcierge = urlParams.get('description');
     const fromConcierge = urlParams.get('fromConcierge');
     
+    console.log("🔍 Checking URL params:", { nameFromConcierge, descriptionFromConcierge, fromConcierge, fullUrl: window.location.href });
+    
     if (fromConcierge && nameFromConcierge) {
+      console.log("✅ Pre-filling form with concierge data");
       setNewRestaurant(prev => ({
         ...prev,
         restaurant_name: nameFromConcierge,
         notes: descriptionFromConcierge || ''
       }));
+      setShowAddForm(true);
+      
+      // Clean up URL parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    } else if (fromConcierge && !nameFromConcierge) {
+      console.log("🎯 From concierge but no specific restaurant - opening form");
       setShowAddForm(true);
       
       // Clean up URL parameters
