@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, Clock, Download, Trash2, ExternalLink, Save, Plus, Edit, UtensilsCrossed, MapPin, Route } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Download, Trash2, ExternalLink, Save, Plus, Edit, UtensilsCrossed, MapPin, Route, ArrowLeft } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -301,8 +301,13 @@ export default function Restaurantes() {
   return (
     <PWALayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Restaurantes</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Voltar">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">Restaurantes</h1>
+          </div>
           <Button onClick={() => navigate(`/viagem/${tripId}/restaurantes/novo`)} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Adicionar Restaurante
