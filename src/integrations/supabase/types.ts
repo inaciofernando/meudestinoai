@@ -205,6 +205,7 @@ export type Database = {
           created_at: string
           cuisine_type: string | null
           estimated_amount: number | null
+          google_maps_link: string | null
           id: string
           notes: string | null
           phone: string | null
@@ -214,16 +215,19 @@ export type Database = {
           restaurant_link: string | null
           restaurant_name: string
           trip_id: string
+          tripadvisor_link: string | null
           updated_at: string
           user_id: string
           voucher_file_name: string | null
           voucher_file_url: string | null
+          waze_link: string | null
         }
         Insert: {
           address?: string | null
           created_at?: string
           cuisine_type?: string | null
           estimated_amount?: number | null
+          google_maps_link?: string | null
           id?: string
           notes?: string | null
           phone?: string | null
@@ -233,16 +237,19 @@ export type Database = {
           restaurant_link?: string | null
           restaurant_name: string
           trip_id: string
+          tripadvisor_link?: string | null
           updated_at?: string
           user_id: string
           voucher_file_name?: string | null
           voucher_file_url?: string | null
+          waze_link?: string | null
         }
         Update: {
           address?: string | null
           created_at?: string
           cuisine_type?: string | null
           estimated_amount?: number | null
+          google_maps_link?: string | null
           id?: string
           notes?: string | null
           phone?: string | null
@@ -252,10 +259,12 @@ export type Database = {
           restaurant_link?: string | null
           restaurant_name?: string
           trip_id?: string
+          tripadvisor_link?: string | null
           updated_at?: string
           user_id?: string
           voucher_file_name?: string | null
           voucher_file_url?: string | null
+          waze_link?: string | null
         }
         Relationships: []
       }
@@ -266,6 +275,7 @@ export type Database = {
           day_number: number
           description: string | null
           estimated_cost: number | null
+          google_maps_link: string | null
           id: string
           images: string[] | null
           location: string
@@ -279,6 +289,7 @@ export type Database = {
           updated_at: string
           user_id: string
           voucher_files: Json | null
+          waze_link: string | null
         }
         Insert: {
           category: string
@@ -286,6 +297,7 @@ export type Database = {
           day_number: number
           description?: string | null
           estimated_cost?: number | null
+          google_maps_link?: string | null
           id?: string
           images?: string[] | null
           location: string
@@ -299,6 +311,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           voucher_files?: Json | null
+          waze_link?: string | null
         }
         Update: {
           category?: string
@@ -306,6 +319,7 @@ export type Database = {
           day_number?: number
           description?: string | null
           estimated_cost?: number | null
+          google_maps_link?: string | null
           id?: string
           images?: string[] | null
           location?: string
@@ -319,6 +333,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           voucher_files?: Json | null
+          waze_link?: string | null
         }
         Relationships: []
       }

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, Clock, Download, Trash2, ExternalLink, Save, Plus, Edit, UtensilsCrossed } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Download, Trash2, ExternalLink, Save, Plus, Edit, UtensilsCrossed, MapPin, Route } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +25,9 @@ interface Restaurant {
   voucher_file_url?: string;
   voucher_file_name?: string;
   restaurant_link?: string;
+  tripadvisor_link?: string;
+  google_maps_link?: string;
+  waze_link?: string;
   estimated_amount?: number;
   cuisine_type?: string;
   address?: string;
@@ -40,6 +43,9 @@ interface RestaurantForm {
   voucher_file_url: string;
   voucher_file_name: string;
   restaurant_link: string;
+  tripadvisor_link: string;
+  google_maps_link: string;
+  waze_link: string;
   estimated_amount: string;
   cuisine_type: string;
   address: string;
@@ -63,6 +69,9 @@ export default function Restaurantes() {
     voucher_file_url: "",
     voucher_file_name: "",
     restaurant_link: "",
+    tripadvisor_link: "",
+    google_maps_link: "",
+    waze_link: "",
     estimated_amount: "",
     cuisine_type: "",
     address: "",
@@ -83,14 +92,26 @@ export default function Restaurantes() {
     const cuisineFromConcierge = urlParams.get('cuisine');
     const addressFromConcierge = urlParams.get('address');
     const linkFromConcierge = urlParams.get('link');
+    const tripadvisorFromConcierge = urlParams.get('tripadvisor');
+    const gmapFromConcierge = urlParams.get('gmap');
+    const wazeFromConcierge = urlParams.get('waze');
     const estimatedFromConcierge = urlParams.get('estimated_amount');
     const sourceText = urlParams.get('source') || '';
 
-    // Fallback: try to extract link from source text
+    // Fallback: try to extract links from source text
     let linkFromSource = '';
-    if (!linkFromConcierge && sourceText) {
-      const match = sourceText.match(/https?:\/\/[^\s)]+/i);
-      if (match) linkFromSource = match[0];
+    let tripFromSource = '';
+    let gmapFromSource = '';
+    let wazeFromSource = '';
+    if (sourceText) {
+      const tripMatch = sourceText.match(/https?:\/\/(?:www\.)?tripadvisor\.\S+/i);
+      if (tripMatch) tripFromSource = tripMatch[0];
+      const gmapMatch = sourceText.match(/https?:\/\/(?:maps\.|www\.)?google\.[^\s)]+/i);
+      if (gmapMatch) gmapFromSource = gmapMatch[0];
+      const wazeMatch = sourceText.match(/https?:\/\/waze\.com\/[^\s)]+/i);
+      if (wazeMatch) wazeFromSource = wazeMatch[0];
+      const anyLink = sourceText.match(/https?:\/\/[^\s)]+/i);
+      if (anyLink) linkFromSource = anyLink[0];
     }
     
     console.log("🔍 Checking URL params:", { nameFromConcierge, descriptionFromConcierge, cuisineFromConcierge, addressFromConcierge, linkFromConcierge, linkFromSource, estimatedFromConcierge, fromConcierge, fullUrl: window.location.href });
@@ -104,6 +125,9 @@ export default function Restaurantes() {
         cuisine_type: cuisineFromConcierge || prev.cuisine_type,
         address: addressFromConcierge || prev.address,
         restaurant_link: linkFromConcierge || linkFromSource || prev.restaurant_link,
+        tripadvisor_link: tripadvisorFromConcierge || prev.tripadvisor_link,
+        google_maps_link: gmapFromConcierge || prev.google_maps_link,
+        waze_link: wazeFromConcierge || prev.waze_link,
         estimated_amount: estimatedFromConcierge || prev.estimated_amount
       }));
       setShowAddForm(true);
@@ -168,6 +192,9 @@ export default function Restaurantes() {
       voucher_file_url: "",
       voucher_file_name: "",
       restaurant_link: "",
+      tripadvisor_link: "",
+      google_maps_link: "",
+      waze_link: "",
       estimated_amount: "",
       cuisine_type: "",
       address: "",
@@ -186,6 +213,9 @@ export default function Restaurantes() {
       voucher_file_url: restaurant.voucher_file_url || "",
       voucher_file_name: restaurant.voucher_file_name || "",
       restaurant_link: restaurant.restaurant_link || "",
+      tripadvisor_link: restaurant.tripadvisor_link || "",
+      google_maps_link: restaurant.google_maps_link || "",
+      waze_link: restaurant.waze_link || "",
       estimated_amount: restaurant.estimated_amount?.toString() || "",
       cuisine_type: restaurant.cuisine_type || "",
       address: restaurant.address || "",
@@ -214,6 +244,9 @@ export default function Restaurantes() {
         voucher_file_url: newRestaurant.voucher_file_url || null,
         voucher_file_name: newRestaurant.voucher_file_name || null,
         restaurant_link: newRestaurant.restaurant_link || null,
+        tripadvisor_link: newRestaurant.tripadvisor_link || null,
+        google_maps_link: newRestaurant.google_maps_link || null,
+        waze_link: newRestaurant.waze_link || null,
         estimated_amount: newRestaurant.estimated_amount ? parseFloat(newRestaurant.estimated_amount) : null,
         cuisine_type: newRestaurant.cuisine_type || null,
         address: newRestaurant.address || null,
@@ -469,13 +502,43 @@ export default function Restaurantes() {
               </div>
 
               <div>
-                <Label htmlFor="restaurant_link">Link do Restaurante</Label>
+                <Label htmlFor="restaurant_link">Link do Restaurante (site oficial)</Label>
                 <Input
                   id="restaurant_link"
                   value={newRestaurant.restaurant_link}
                   onChange={(e) => setNewRestaurant({ ...newRestaurant, restaurant_link: e.target.value })}
                   placeholder="https://www.restaurante.com"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="tripadvisor_link">Tripadvisor</Label>
+                  <Input
+                    id="tripadvisor_link"
+                    value={newRestaurant.tripadvisor_link}
+                    onChange={(e) => setNewRestaurant({ ...newRestaurant, tripadvisor_link: e.target.value })}
+                    placeholder="https://www.tripadvisor.com/..."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="google_maps_link">Google Maps</Label>
+                  <Input
+                    id="google_maps_link"
+                    value={newRestaurant.google_maps_link}
+                    onChange={(e) => setNewRestaurant({ ...newRestaurant, google_maps_link: e.target.value })}
+                    placeholder="https://maps.google.com/..."
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="waze_link">Waze</Label>
+                  <Input
+                    id="waze_link"
+                    value={newRestaurant.waze_link}
+                    onChange={(e) => setNewRestaurant({ ...newRestaurant, waze_link: e.target.value })}
+                    placeholder="https://waze.com/ul?..."
+                  />
+                </div>
               </div>
 
               <div>
