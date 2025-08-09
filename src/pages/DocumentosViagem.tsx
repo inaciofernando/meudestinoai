@@ -438,7 +438,7 @@ export default function DocumentosViagem() {
                     <DialogTrigger asChild>
                       <Button 
                         size="icon" 
-                        className="bg-gradient-ocean hover:shadow-travel transition-all duration-300 rounded-full"
+                        className="bg-gradient-teal hover:shadow-hover transition-all duration-300 rounded-full"
                       >
                         <Plus className="w-5 h-5" />
                       </Button>
