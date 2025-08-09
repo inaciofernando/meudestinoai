@@ -5,7 +5,10 @@ import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MapPin, Calendar, Wallet, FileText } from "lucide-react";
+import { PWALayout } from "@/components/layout/PWALayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import heroImage from "@/assets/hero-travel.jpg";
+import Dashboard from "@/pages/Dashboard";
 
 export const TravelHero = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -65,81 +68,14 @@ export const TravelHero = () => {
     );
   }
 
-  // If user is logged in, show dashboard home
+  // If user is logged in, show dashboard with PWA layout and header
   if (user) {
     return (
-      <div className="relative min-h-screen bg-gradient-sky">
-        {/* Welcome Header for Logged Users */}
-        <div className="relative h-96 flex items-center justify-center overflow-hidden">
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${heroImage})` }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/40 via-transparent to-highlight/40" />
-          </div>
-          
-          <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-              Bem-vindo de volta!
-            </h1>
-            <p className="text-xl mb-6 text-white/90 drop-shadow-md">
-              Pronto para sua próxima aventura, {user.user_metadata?.full_name || user.email}?
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="hero" 
-                variant="travel" 
-                className="shadow-float"
-                onClick={() => navigate('/viagens')}
-              >
-                Gerenciar Viagens
-              </Button>
-              <Button 
-                size="hero" 
-                variant="outline" 
-                className="bg-white/10 border-white/30 text-white hover:bg-white/20"
-                onClick={() => navigate('/minhas-viagens')}
-              >
-                Minhas Viagens
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions for Logged Users */}
-        <div className="py-16 px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-foreground mb-4">
-                Acesso Rápido
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Continue de onde parou ou inicie algo novo
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {features.map((feature, index) => (
-                <Card 
-                  key={index} 
-                  className="p-6 text-center hover:shadow-card transition-smooth hover:scale-105 bg-card border-border/50 cursor-pointer"
-                  onClick={() => navigate('/viagens')}
-                >
-                  <div className="w-12 h-12 bg-gradient-ocean rounded-full flex items-center justify-center mx-auto mb-4">
-                    <feature.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-card-foreground mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    {feature.description}
-                  </p>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      <ProtectedRoute>
+        <PWALayout showHeader={true}>
+          <Dashboard />
+        </PWALayout>
+      </ProtectedRoute>
     );
   }
 
