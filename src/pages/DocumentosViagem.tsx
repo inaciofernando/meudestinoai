@@ -1,36 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { DocumentCard } from "@/components/DocumentCard";
+import { DocumentViewer } from "@/components/DocumentViewer";
+import { AddDocumentDialog } from "@/components/AddDocumentDialog";
 import {
   ArrowLeft,
   Plus,
   FileText,
-  Download,
-  Eye,
-  Trash2,
-  Upload,
   Shield,
   Ticket,
-  CreditCard,
   Plane,
-  Hotel,
-  FileCheck,
-  Calendar,
-  Clock,
-  Edit,
-  ExternalLink
+  FileCheck
 } from "lucide-react";
 
 interface Trip {
@@ -113,25 +102,34 @@ export default function DocumentosViagem() {
     }
   }, [id, user]);
 
-  const fetchTripAndDocuments = async () => {
+  const fetchTripAndDocuments = useCallback(async () => {
+    if (!id || !user) return;
+    
     try {
       setLoading(true);
 
-      // Buscar dados da viagem
-      const { data: tripData, error: tripError } = await supabase
-        .from("trips")
-        .select("*")
-        .eq("id", id)
-        .eq("user_id", user!.id)
-        .maybeSingle();
+      const [tripResult, documentsResult] = await Promise.all([
+        supabase
+          .from("trips")
+          .select("*")
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("trip_documents")
+          .select("*")
+          .eq("trip_id", id)
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+      ]);
 
-      if (tripError) {
-        console.error("Erro ao buscar viagem:", tripError);
+      if (tripResult.error) {
+        console.error("Erro ao buscar viagem:", tripResult.error);
         navigate("/viagens");
         return;
       }
 
-      if (!tripData) {
+      if (!tripResult.data) {
         toast({
           title: "Viagem não encontrada",
           description: "Esta viagem não existe ou você não tem permissão para visualizá-la.",
@@ -141,32 +139,24 @@ export default function DocumentosViagem() {
         return;
       }
 
-      setTrip(tripData);
+      setTrip(tripResult.data);
 
-      // Buscar documentos da viagem
-      const { data: documentsData, error: documentsError } = await supabase
-        .from("trip_documents")
-        .select("*")
-        .eq("trip_id", id)
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
-
-      if (documentsError) {
-        console.error("Erro ao buscar documentos:", documentsError);
+      if (documentsResult.error) {
+        console.error("Erro ao buscar documentos:", documentsResult.error);
         toast({
           title: "Erro",
           description: "Não foi possível carregar os documentos.",
           variant: "destructive"
         });
       } else {
-        setDocuments(documentsData as Document[] || []);
+        setDocuments(documentsResult.data as Document[] || []);
       }
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, user, navigate, toast]);
 
   const uploadDocument = async (file: File): Promise<string | null> => {
     try {
@@ -322,13 +312,16 @@ export default function DocumentosViagem() {
     }
   };
 
-  const filteredDocuments = selectedCategory === 'all' 
-    ? documents 
-    : documents.filter(doc => doc.category === selectedCategory);
+  const filteredDocuments = useMemo(() => 
+    selectedCategory === 'all' 
+      ? documents 
+      : documents.filter(doc => doc.category === selectedCategory),
+    [documents, selectedCategory]
+  );
 
-  const getDocumentsByCategory = (category: keyof typeof DOCUMENT_CATEGORIES) => {
+  const getDocumentsByCategory = useCallback((category: keyof typeof DOCUMENT_CATEGORIES) => {
     return documents.filter(doc => doc.category === category);
-  };
+  }, [documents]);
 
   if (loading) {
     return (
@@ -374,31 +367,22 @@ export default function DocumentosViagem() {
       <ProtectedRoute>
         <div className="min-h-screen bg-background">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg mx-4 mt-6">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(`/viagem/${id}`)}
-                className="rounded-full"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-white" />
-                  </div>
-                  <h1 className="text-2xl font-bold">Documentos da Viagem</h1>
-                </div>
-                <p className="text-muted-foreground">{trip.title} • {trip.destination}</p>
-                <div className="flex items-center gap-4 mt-2">
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    <FileText className="w-3 h-3" />
-                    {documents.length} documento{documents.length !== 1 ? 's' : ''}
-                  </Badge>
-                </div>
-              </div>
+          <div className="p-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(`/viagem/${id}`)}
+              className="mb-4"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold mb-2">Documentos da Viagem</h1>
+              <p className="text-muted-foreground">{trip.title} • {trip.destination}</p>
+              <Badge variant="outline" className="mt-2">
+                {documents.length} documento{documents.length !== 1 ? 's' : ''}
+              </Badge>
             </div>
           </div>
 
@@ -457,77 +441,18 @@ export default function DocumentosViagem() {
                         <Plus className="w-5 h-5" />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Adicionar Documento</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label>Categoria</Label>
-                          <select
-                            value={newDocuments.category}
-                            onChange={(e) => setNewDocuments({...newDocuments, category: e.target.value as keyof typeof DOCUMENT_CATEGORIES})}
-                            className="w-full p-2 border rounded-md"
-                          >
-                            {Object.entries(DOCUMENT_CATEGORIES).map(([key, config]) => (
-                              <option key={key} value={key}>{config.name}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <Label>Arquivos * (múltiplos arquivos)</Label>
-                          <Input
-                            type="file"
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                            multiple
-                            onChange={(e) => setNewDocuments({...newDocuments, files: Array.from(e.target.files || [])})}
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Formatos aceitos: PDF, JPG, PNG, DOC, DOCX. Você pode selecionar múltiplos arquivos.
-                          </p>
-                          {newDocuments.files.length > 0 && (
-                            <div className="mt-2 space-y-1">
-                              <p className="text-sm font-medium">Arquivos selecionados:</p>
-                              {newDocuments.files.map((file, index) => (
-                                <div key={index} className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                                  {file.name} ({(file.size / 1024 / 1024).toFixed(1)}MB)
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            onClick={() => setIsAddingDocument(false)}
-                            className="flex-1"
-                            disabled={uploading}
-                          >
-                            Cancelar
-                          </Button>
-                          <Button 
-                            onClick={handleAddDocuments} 
-                            className="flex-1"
-                            disabled={uploading || newDocuments.files.length === 0}
-                          >
-                            {uploading ? (
-                              <>
-                                <Upload className="w-4 h-4 mr-2 animate-spin" />
-                                Enviando...
-                              </>
-                            ) : (
-                              <>
-                                <Upload className="w-4 h-4 mr-2" />
-                                Adicionar {newDocuments.files.length > 0 ? `(${newDocuments.files.length})` : ''}
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </DialogContent>
                   </Dialog>
+                  
+                  <AddDocumentDialog
+                    isOpen={isAddingDocument}
+                    onClose={() => setIsAddingDocument(false)}
+                    onAdd={handleAddDocuments}
+                    uploading={uploading}
+                    category={newDocuments.category}
+                    files={newDocuments.files}
+                    onCategoryChange={(category) => setNewDocuments({...newDocuments, category: category as keyof typeof DOCUMENT_CATEGORIES})}
+                    onFilesChange={(files) => setNewDocuments({...newDocuments, files})}
+                  />
                 </div>
               </CardHeader>
               <CardContent>
@@ -541,33 +466,13 @@ export default function DocumentosViagem() {
                   <div className="space-y-3">
                     {filteredDocuments.map((document) => {
                       const category = DOCUMENT_CATEGORIES[document.category];
-                      const CategoryIcon = category.icon;
-
                       return (
-                        <div 
-                          key={document.id} 
-                          className="flex items-center gap-3 p-4 bg-card rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors"
+                        <DocumentCard
+                          key={document.id}
+                          document={document}
+                          categoryConfig={category}
                           onClick={() => setViewingDocument(document)}
-                        >
-                          <div className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                            <CategoryIcon className="w-5 h-5 text-white" />
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-base truncate" title={document.title}>
-                              {document.title}
-                            </h4>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <span>{new Date(document.created_at).toLocaleDateString('pt-BR')}</span>
-                              <span>•</span>
-                              <Badge variant="outline" className="text-xs">
-                                {category.name}
-                              </Badge>
-                            </div>
-                          </div>
-                          
-                          <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                        </div>
+                        />
                       );
                     })}
                   </div>
@@ -576,177 +481,12 @@ export default function DocumentosViagem() {
             </Card>
           </div>
 
-          {/* Modal de Visualização de Documento */}
-          {viewingDocument && (
-            <Dialog open={!!viewingDocument} onOpenChange={() => setViewingDocument(null)}>
-              <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-                <DialogHeader className="p-4 border-b">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setViewingDocument(null)}
-                        className="rounded-full"
-                      >
-                        <ArrowLeft className="w-5 h-5" />
-                      </Button>
-                      <div>
-                        <DialogTitle className="text-left">{viewingDocument.title}</DialogTitle>
-                        <p className="text-sm text-muted-foreground">{viewingDocument.file_name}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          try {
-                            // Mesmo código de download que já funciona
-                            const urlParts = viewingDocument.file_url.split('/');
-                            const bucketIndex = urlParts.findIndex(part => part === 'trip-documents');
-                            const filePath = urlParts.slice(bucketIndex + 1).join('/');
-                            
-                            const { data, error } = await supabase.storage
-                              .from('trip-documents')
-                              .download(filePath);
-
-                            if (error) {
-                              console.error('Erro no download:', error);
-                              toast({
-                                title: "Erro no download",
-                                description: "Não foi possível baixar o arquivo. Tente novamente.",
-                                variant: "destructive"
-                              });
-                              return;
-                            }
-
-                            const url = URL.createObjectURL(data);
-                            const link = window.document.createElement('a');
-                            link.href = url;
-                            link.download = viewingDocument.file_name;
-                            window.document.body.appendChild(link);
-                            link.click();
-                            window.document.body.removeChild(link);
-                            URL.revokeObjectURL(url);
-                          } catch (error) {
-                            console.error('Erro no download:', error);
-                            toast({
-                              title: "Erro no download",
-                              description: "Não foi possível baixar o arquivo. Tente novamente.",
-                              variant: "destructive"
-                            });
-                          }
-                        }}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Baixar
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Excluir
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir documento?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta ação não pode ser desfeita. O documento "{viewingDocument.title}" será removido permanentemente.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => {
-                                handleDeleteDocument(viewingDocument);
-                                setViewingDocument(null);
-                              }}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Excluir
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </DialogHeader>
-                <div className="flex-1 p-4">
-                  <div className="w-full h-[70vh] bg-muted rounded-lg flex items-center justify-center">
-                    {viewingDocument.file_type.startsWith('image/') ? (
-                      <img 
-                        src={viewingDocument.file_url} 
-                        alt={viewingDocument.title}
-                        className="max-w-full max-h-full object-contain rounded-lg"
-                      />
-                    ) : viewingDocument.file_type === 'application/pdf' ? (
-                      <iframe 
-                        src={viewingDocument.file_url} 
-                        className="w-full h-full rounded-lg"
-                        title={viewingDocument.title}
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-lg font-medium mb-2">Prévia não disponível</p>
-                        <p className="text-muted-foreground mb-4">
-                          Tipo de arquivo: {viewingDocument.file_type}
-                        </p>
-                        <Button
-                          onClick={async () => {
-                            try {
-                              const urlParts = viewingDocument.file_url.split('/');
-                              const bucketIndex = urlParts.findIndex(part => part === 'trip-documents');
-                              const filePath = urlParts.slice(bucketIndex + 1).join('/');
-                              
-                              const { data, error } = await supabase.storage
-                                .from('trip-documents')
-                                .download(filePath);
-
-                              if (error) {
-                                console.error('Erro no download:', error);
-                                toast({
-                                  title: "Erro no download",
-                                  description: "Não foi possível baixar o arquivo. Tente novamente.",
-                                  variant: "destructive"
-                                });
-                                return;
-                              }
-
-                              const url = URL.createObjectURL(data);
-                              const link = window.document.createElement('a');
-                              link.href = url;
-                              link.download = viewingDocument.file_name;
-                              window.document.body.appendChild(link);
-                              link.click();
-                              window.document.body.removeChild(link);
-                              URL.revokeObjectURL(url);
-                            } catch (error) {
-                              console.error('Erro no download:', error);
-                              toast({
-                                title: "Erro no download",
-                                description: "Não foi possível baixar o arquivo. Tente novamente.",
-                                variant: "destructive"
-                              });
-                            }
-                          }}
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Baixar Arquivo
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
+          <DocumentViewer
+            document={viewingDocument}
+            isOpen={!!viewingDocument}
+            onClose={() => setViewingDocument(null)}
+            onDelete={handleDeleteDocument}
+          />
         </div>
       </ProtectedRoute>
     </PWALayout>
