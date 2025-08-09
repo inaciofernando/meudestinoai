@@ -619,7 +619,7 @@ export default function Restaurantes() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(restaurant.restaurant_link, '_blank')}
+                        onClick={() => window.open(restaurant.restaurant_link!, '_blank')}
                         className="flex items-center gap-2"
                       >
                         <ExternalLink className="w-4 h-4" />
@@ -627,6 +627,43 @@ export default function Restaurantes() {
                       </Button>
                     </div>
                   )}
+
+                  {(restaurant.tripadvisor_link || restaurant.google_maps_link || restaurant.waze_link) && (
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      <strong>Links úteis:</strong>
+                      {restaurant.tripadvisor_link && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(restaurant.tripadvisor_link!, '_blank')}
+                          className="flex items-center gap-2"
+                        >
+                          <ExternalLink className="w-4 h-4" /> Tripadvisor
+                        </Button>
+                      )}
+                      {restaurant.google_maps_link && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(restaurant.google_maps_link!, '_blank')}
+                          className="flex items-center gap-2"
+                        >
+                          <MapPin className="w-4 h-4" /> Google Maps
+                        </Button>
+                      )}
+                      {restaurant.waze_link && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(restaurant.waze_link!, '_blank')}
+                          className="flex items-center gap-2"
+                        >
+                          <Route className="w-4 h-4" /> Waze
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
 
                   {restaurant.estimated_amount && (
                     <div>
