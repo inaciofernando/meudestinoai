@@ -8,14 +8,23 @@ interface PWALayoutProps {
 
 export const PWALayout = ({ children }: PWALayoutProps) => {
   return (
-    <div className="min-h-screen-mobile bg-gradient-sky flex flex-col mobile-safe-area">
-      <PWAHeader />
-      <main className="flex-1 pb-20 pt-4 overflow-y-auto">
-        <div className="container px-4 mx-auto">
+    <div className="h-screen flex flex-col bg-gradient-sky mobile-safe-area overflow-hidden">
+      {/* Header fixo */}
+      <div className="shrink-0 z-10">
+        <PWAHeader />
+      </div>
+      
+      {/* Conteúdo principal com scroll independente */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="container px-4 mx-auto py-4 min-h-full">
           {children}
         </div>
       </main>
-      <PWAFooter />
+      
+      {/* Footer fixo */}
+      <div className="shrink-0 z-10">
+        <PWAFooter />
+      </div>
     </div>
   );
 };

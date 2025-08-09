@@ -119,9 +119,9 @@ export default function Concierge() {
             </Card>
           </section>
 
-          <section className="flex flex-col h-[60vh]">
+          <section className="flex flex-col h-full">
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2">
+            <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
               {messages.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
                   <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
@@ -142,29 +142,31 @@ export default function Concierge() {
               )}
             </div>
 
-            {/* Input Area */}
-            <div className="flex gap-2 items-end">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Digite sua pergunta sobre a viagem..."
-                className="flex-1 text-base min-h-[50px]"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    ask();
-                  }
-                }}
-              />
-              <Button 
-                onClick={ask} 
-                disabled={loading || !input.trim()} 
-                variant="default"
-                size="icon"
-                className="h-[50px] w-[50px] shrink-0"
-              >
-                <Send className="w-5 h-5" />
-              </Button>
+            {/* Input Area - sempre visível na parte inferior */}
+            <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t pt-4">
+              <div className="flex gap-2 items-end">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Digite sua pergunta sobre a viagem..."
+                  className="flex-1 text-base min-h-[50px]"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      ask();
+                    }
+                  }}
+                />
+                <Button 
+                  onClick={ask} 
+                  disabled={loading || !input.trim()} 
+                  variant="default"
+                  size="icon"
+                  className="h-[50px] w-[50px] shrink-0"
+                >
+                  <Send className="w-5 h-5" />
+                </Button>
+              </div>
             </div>
           </section>
         </main>
