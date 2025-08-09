@@ -50,7 +50,7 @@ export const PWAHeader = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Left side - Mobile menu and logo */}
         <div className="flex items-center gap-4">
