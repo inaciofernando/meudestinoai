@@ -15,6 +15,7 @@ import RoteiroSimples from "./pages/RoteiroSimples";
 import PontoDetalhes from "./pages/PontoDetalhes";
 import EditarPonto from "./pages/EditarPonto";
 import DocumentosViagem from "./pages/DocumentosViagem";
+import DocumentosRedirect from "./pages/DocumentosRedirect";
 
 import Hospedagem from "./pages/Hospedagem";
 import DetalhesHospedagem from "./pages/DetalhesHospedagem";
@@ -47,6 +48,7 @@ const App: React.FC = () => (
           <Route path="/roteiro/:tripId/ponto/:pontoId" element={<PontoDetalhes />} />
           <Route path="/roteiro/:tripId/ponto/:pontoId/edit" element={<EditarPonto />} />
           <Route path="/viagem/:id/documentos" element={<DocumentosViagem />} />
+          <Route path="/documentos/:id" element={<DocumentosRedirect />} />
           
           <Route path="/viagem/:id/hospedagem" element={<Hospedagem />} />
           <Route path="/viagem/:id/hospedagem/:hospedagemId" element={<DetalhesHospedagem />} />
