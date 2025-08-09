@@ -308,45 +308,47 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
   return (
     <div className="mt-3">
       <div className="flex flex-wrap gap-2">
-        {/* Botão para restaurante - se há sugestão, usa os dados, senão abre formulário em branco */}
-        <Button
-          variant={restaurants.length > 0 ? "secondary" : "outline"}
-          size="sm"
-          onClick={() => {
-            if (restaurants.length > 0) {
-              // Se temos sugestão de restaurante, preenche o formulário
-              handleAddRestaurant(restaurants[0]);
-            } else {
-              // Se não temos sugestão, abre formulário em branco
-              const params = new URLSearchParams({ fromConcierge: 'true' });
-              navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
-            }
-          }}
-          className="h-8 px-3 text-xs gap-1"
-        >
-          <UtensilsCrossed className="w-3 h-3" />
-          {restaurants.length > 0 ? `Adicionar ${restaurants[0].name.length > 15 ? restaurants[0].name.substring(0, 15) + '…' : restaurants[0].name}` : 'Adicionar Restaurante'}
-        </Button>
-
-        {/* Botão para roteiro - se há sugestão, usa os dados, senão abre formulário em branco */}
-        <Button
-          variant={attractions.length > 0 ? "secondary" : "outline"}
-          size="sm"
-          onClick={() => {
-            if (attractions.length > 0) {
-              // Se temos sugestão de atração, preenche o formulário
-              handleAddAttraction(attractions[0]);
-            } else {
-              // Se não temos sugestão, abre formulário em branco
-              const params = new URLSearchParams({ fromConcierge: 'true' });
-              navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
-            }
-          }}
-          className="h-8 px-3 text-xs gap-1"
-        >
-          <MapPinPlus className="w-3 h-3" />
-          {attractions.length > 0 ? `Adicionar ${attractions[0].name.length > 15 ? attractions[0].name.substring(0, 15) + '…' : attractions[0].name}` : 'Adicionar ao Roteiro'}
-        </Button>
+        {/* Escolha única de ação: Salvar como Restaurante ou Roteiro */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" size="sm" className="h-8 px-3 text-xs gap-1">
+              Salvar como
+              <MoreVertical className="w-3 h-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                if (restaurants.length > 0) {
+                  handleAddRestaurant(restaurants[0]);
+                } else {
+                  const params = new URLSearchParams({ fromConcierge: 'true' });
+                  navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
+                }
+              }}
+              className="cursor-pointer"
+            >
+              <UtensilsCrossed className="w-4 h-4 mr-2" />
+              Restaurante {restaurants.length > 0 ? `– ${restaurants[0].name}` : ''}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                if (attractions.length > 0) {
+                  handleAddAttraction(attractions[0]);
+                } else {
+                  const params = new URLSearchParams({ fromConcierge: 'true' });
+                  navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
+                }
+              }}
+              className="cursor-pointer"
+            >
+              <MapPinPlus className="w-4 h-4 mr-2" />
+              Roteiro {attractions.length > 0 ? `– ${attractions[0].name}` : ''}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
