@@ -18,8 +18,7 @@ export const PWALayout = ({ children, showHeader = true, showFooter = true }: PW
         </div>
       )}
       
-      {/* Área central scrollável */}
-      <main className="flex-1 overflow-y-auto bg-gradient-sky">
+      <main className={`flex-1 overflow-y-auto bg-gradient-sky ${showFooter ? 'pb-[88px]' : ''}`}>
         <div className="container px-4 mx-auto py-4">
           {children}
         </div>
