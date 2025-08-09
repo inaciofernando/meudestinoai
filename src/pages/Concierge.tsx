@@ -129,7 +129,7 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     params.set('fromConcierge', 'true');
     // Fallback: enviar um trecho da mensagem para parsing no destino
     params.set('source', message.slice(0, 1500));
-    navigate(`/viagem/${tripId}/restaurantes?${params.toString()}`);
+    navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
   };
 
   const handleAddAttraction = (attraction: any) => {
@@ -164,7 +164,7 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
             size="sm"
             onClick={() => {
               const params = new URLSearchParams({ fromConcierge: 'true' });
-              navigate(`/viagem/${tripId}/restaurantes?${params.toString()}`);
+              navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
             }}
             className="h-8 px-3 text-xs gap-1"
           >

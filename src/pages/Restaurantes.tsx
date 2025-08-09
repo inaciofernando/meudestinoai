@@ -84,67 +84,14 @@ export default function Restaurantes() {
     if (tripId && user) {
       loadTripAndRestaurants();
     }
-    
-    // Check for pre-filled data from concierge
-    const urlParams = new URLSearchParams(window.location.search);
-    const nameFromConcierge = urlParams.get('name');
-    const descriptionFromConcierge = urlParams.get('description');
-    const fromConcierge = urlParams.get('fromConcierge');
-    const cuisineFromConcierge = urlParams.get('cuisine');
-    const addressFromConcierge = urlParams.get('address');
-    const linkFromConcierge = urlParams.get('link');
-    const tripadvisorFromConcierge = urlParams.get('tripadvisor');
-    const gmapFromConcierge = urlParams.get('gmap');
-    const wazeFromConcierge = urlParams.get('waze');
-    const estimatedFromConcierge = urlParams.get('estimated_amount');
-    const sourceText = urlParams.get('source') || '';
 
-    // Fallback: try to extract links from source text
-    let linkFromSource = '';
-    let tripFromSource = '';
-    let gmapFromSource = '';
-    let wazeFromSource = '';
-    if (sourceText) {
-      const tripMatch = sourceText.match(/https?:\/\/(?:www\.)?tripadvisor\.\S+/i);
-      if (tripMatch) tripFromSource = tripMatch[0];
-      const gmapMatch = sourceText.match(/https?:\/\/(?:maps\.|www\.)?google\.[^\s)]+/i);
-      if (gmapMatch) gmapFromSource = gmapMatch[0];
-      const wazeMatch = sourceText.match(/https?:\/\/waze\.com\/[^\s)]+/i);
-      if (wazeMatch) wazeFromSource = wazeMatch[0];
-      const anyLink = sourceText.match(/https?:\/\/[^\s)]+/i);
-      if (anyLink) linkFromSource = anyLink[0];
+    // Redireciona para a nova página de adição caso venha do concierge
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromConcierge = urlParams.get('fromConcierge');
+    if (fromConcierge) {
+      navigate(`/viagem/${tripId}/restaurantes/novo?${urlParams.toString()}`, { replace: true });
     }
-    
-    console.log("🔍 Checking URL params:", { nameFromConcierge, descriptionFromConcierge, cuisineFromConcierge, addressFromConcierge, linkFromConcierge, linkFromSource, estimatedFromConcierge, fromConcierge, fullUrl: window.location.href });
-    
-    if (fromConcierge && (nameFromConcierge || descriptionFromConcierge || linkFromConcierge || linkFromSource)) {
-      console.log("✅ Pre-filling form with concierge data");
-      setNewRestaurant(prev => ({
-        ...prev,
-        restaurant_name: nameFromConcierge || prev.restaurant_name,
-        notes: descriptionFromConcierge || prev.notes,
-        cuisine_type: cuisineFromConcierge || prev.cuisine_type,
-        address: addressFromConcierge || prev.address,
-        restaurant_link: linkFromConcierge || linkFromSource || prev.restaurant_link,
-        tripadvisor_link: tripadvisorFromConcierge || prev.tripadvisor_link,
-        google_maps_link: gmapFromConcierge || prev.google_maps_link,
-        waze_link: wazeFromConcierge || prev.waze_link,
-        estimated_amount: estimatedFromConcierge || prev.estimated_amount
-      }));
-      setShowAddForm(true);
-      
-      // Clean up URL parameters
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-    } else if (fromConcierge && !nameFromConcierge) {
-      console.log("🎯 From concierge but no specific restaurant - opening form");
-      setShowAddForm(true);
-      
-      // Clean up URL parameters
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-    }
-  }, [tripId, user]);
+  }, [tripId, user, navigate]);
 
   const loadTripAndRestaurants = async () => {
     try {
@@ -356,7 +303,7 @@ export default function Restaurantes() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Restaurantes</h1>
-          <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
+          <Button onClick={() => navigate(`/viagem/${tripId}/restaurantes/novo`)} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Adicionar Restaurante
           </Button>
@@ -566,7 +513,7 @@ export default function Restaurantes() {
               <CardContent className="flex flex-col items-center justify-center py-8">
                 <UtensilsCrossed className="w-12 h-12 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground mb-4">Nenhum restaurante cadastrado</p>
-                <Button onClick={() => setShowAddForm(true)}>
+                <Button onClick={() => navigate(`/viagem/${tripId}/restaurantes/novo`)}>
                   Adicionar Primeiro Restaurante
                 </Button>
               </CardContent>

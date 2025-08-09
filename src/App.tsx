@@ -25,6 +25,7 @@ import Auth from "./pages/Auth";
 import Concierge from "./pages/Concierge";
 import NotFound from "./pages/NotFound";
 import EditarRestaurante from "./pages/EditarRestaurante";
+import AdicionarRestaurante from "./pages/AdicionarRestaurante";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App: React.FC = () => (
           <Route path="/viagem/:id/hospedagem/:hospedagemId" element={<DetalhesHospedagem />} />
           <Route path="/viagem/:id/hotel" element={<Hotel />} />
           <Route path="/viagem/:id/restaurantes" element={<Restaurantes />} />
+          <Route path="/viagem/:id/restaurantes/novo" element={<AdicionarRestaurante />} />
           <Route path="/viagem/:id/restaurantes/:restId/editar" element={<EditarRestaurante />} />
           <Route path="/planejamento" element={<Planejamento />} />
           <Route path="/perfil" element={<Perfil />} />
