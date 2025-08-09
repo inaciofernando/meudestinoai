@@ -543,12 +543,12 @@ export default function Restaurantes() {
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
-                        size="sm"
+                        size="icon"
                         onClick={() => handleEditRestaurant(restaurant)}
-                        className="flex items-center gap-2"
+                        className="rounded-lg"
+                        aria-label="Editar restaurante"
                       >
                         <Edit className="w-4 h-4" />
-                        Editar
                       </Button>
                       <Button
                         variant="outline"
