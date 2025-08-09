@@ -803,7 +803,7 @@ export default function Concierge() {
                     </Button>
                   </div>
 
-                  <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
                     <Button
                       type="button"
                       variant="outline"
@@ -825,7 +825,7 @@ export default function Concierge() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Digite sua pergunta sobre a viagem..."
-                    className="h-14 rounded-full pl-14 pr-20 text-base shadow-sm"
+                    className="h-14 rounded-full pl-14 pr-28 md:pr-36 text-base shadow-sm"
                     onKeyPress={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
