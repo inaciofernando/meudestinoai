@@ -316,10 +316,9 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
               <MoreVertical className="w-3 h-3" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuContent align="start" sideOffset={8} className="w-56 z-50 bg-background border shadow-lg">
             <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 if (restaurants.length > 0) {
                   handleAddRestaurant(restaurants[0]);
                 } else {
@@ -330,11 +329,10 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
               className="cursor-pointer"
             >
               <UtensilsCrossed className="w-4 h-4 mr-2" />
-              Restaurante {restaurants.length > 0 ? `– ${restaurants[0].name}` : ''}
+              {`Restaurante${restaurants.length > 0 && restaurants[0].name ? ` – ${restaurants[0].name}` : ''}`}
             </DropdownMenuItem>
             <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 if (attractions.length > 0) {
                   handleAddAttraction(attractions[0]);
                 } else {
@@ -345,7 +343,9 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
               className="cursor-pointer"
             >
               <MapPinPlus className="w-4 h-4 mr-2" />
-              Roteiro {attractions.length > 0 ? `– ${attractions[0].name}` : ''}
+              {`Roteiro${attractions.length > 0 && (attractions[0].name || attractions[0].title || attractions[0].location) ? ` – ${(
+                attractions[0].name || attractions[0].title || attractions[0].location
+              )}` : ''}`}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
