@@ -797,7 +797,7 @@ export default function Concierge() {
             <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t pt-4">
               <div className="flex items-end gap-3">
                 <div className="relative flex-1">
-                  <div className="absolute left-1.5 top-1/2 -translate-y-1/2">
+                  <div className="absolute left-1.5 bottom-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -815,7 +815,7 @@ export default function Concierge() {
                     </Button>
                   </div>
 
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <div className="absolute right-4 bottom-2">
                     <Button
                       type="button"
                       variant="outline"
@@ -840,7 +840,7 @@ export default function Concierge() {
                     onChange={(e) => setInput(e.target.value)}
                     onInput={autoResize}
                     placeholder="Digite sua pergunta sobre a viagem..."
-                    className="min-h-14 max-h-40 rounded-full pl-14 pr-28 md:pr-36 py-3 text-base shadow-sm resize-none"
+                    className="min-h-14 max-h-40 rounded-full pl-14 pr-28 md:pr-36 pt-3 pb-12 text-base shadow-sm resize-none"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
