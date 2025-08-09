@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DocumentCard } from "@/components/DocumentCard";
 import { DocumentViewer } from "@/components/DocumentViewer";
 import { AddDocumentDialog } from "@/components/AddDocumentDialog";
+import { EditDocumentDialog } from "@/components/EditDocumentDialog";
 import {
   ArrowLeft,
   Plus,
@@ -86,9 +87,10 @@ export default function DocumentosViagem() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingDocument, setIsAddingDocument] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<keyof typeof DOCUMENT_CATEGORIES | 'all'>('all');
   const [uploading, setUploading] = useState(false);
   const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
+  const [editingDocument, setEditingDocument] = useState<Document | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Form states
   const [newDocuments, setNewDocuments] = useState({
@@ -267,9 +269,60 @@ export default function DocumentosViagem() {
     }
   };
 
-  const handleDeleteDocument = async (document: Document) => {
+  const handleEditDocument = useCallback(async (updatedDoc: { title: string; description: string; category: string }) => {
+    if (!editingDocument) return;
+
     try {
-      // Deletar do banco de dados
+      setSaving(true);
+      
+      const { error } = await supabase
+        .from("trip_documents")
+        .update({
+          title: updatedDoc.title,
+          description: updatedDoc.description,
+          category: updatedDoc.category,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", editingDocument.id)
+        .eq("user_id", user!.id);
+
+      if (error) {
+        console.error("Erro ao editar documento:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível editar o documento. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Atualizar lista local
+      setDocuments(prev => prev.map(doc => 
+        doc.id === editingDocument.id 
+          ? { ...doc, title: updatedDoc.title, description: updatedDoc.description, category: updatedDoc.category as Document['category'], updated_at: new Date().toISOString() }
+          : doc
+      ));
+
+      toast({
+        title: "Documento editado! ✏️",
+        description: `${updatedDoc.title} foi atualizado com sucesso.`,
+      });
+
+      setEditingDocument(null);
+    } catch (error) {
+      console.error("Erro ao editar documento:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível editar o documento. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  }, [editingDocument, user, toast]);
+
+  const handleDeleteDocument = useCallback(async (document: Document) => {
+    try {
       const { error: deleteError } = await supabase
         .from("trip_documents")
         .delete()
@@ -286,7 +339,6 @@ export default function DocumentosViagem() {
         return;
       }
 
-      // Opcional: deletar arquivo do storage também
       const fileName = document.file_url.split('/').pop();
       if (fileName) {
         const filePath = `${user!.id}/${id}/${fileName}`;
@@ -295,7 +347,6 @@ export default function DocumentosViagem() {
           .remove([filePath]);
       }
 
-      // Remover do estado local
       setDocuments(prev => prev.filter(doc => doc.id !== document.id));
 
       toast({
@@ -310,18 +361,9 @@ export default function DocumentosViagem() {
         variant: "destructive"
       });
     }
-  };
+  }, [user, id, toast]);
 
-  const filteredDocuments = useMemo(() => 
-    selectedCategory === 'all' 
-      ? documents 
-      : documents.filter(doc => doc.category === selectedCategory),
-    [documents, selectedCategory]
-  );
-
-  const getDocumentsByCategory = useCallback((category: keyof typeof DOCUMENT_CATEGORIES) => {
-    return documents.filter(doc => doc.category === category);
-  }, [documents]);
+  const filteredDocuments = useMemo(() => documents, [documents]);
 
   if (loading) {
     return (
@@ -432,6 +474,7 @@ export default function DocumentosViagem() {
                           document={document}
                           categoryConfig={category}
                           onClick={() => setViewingDocument(document)}
+                          onEdit={() => setEditingDocument(document)}
                         />
                       );
                     })}
@@ -446,6 +489,18 @@ export default function DocumentosViagem() {
             isOpen={!!viewingDocument}
             onClose={() => setViewingDocument(null)}
             onDelete={handleDeleteDocument}
+            onEdit={() => {
+              setEditingDocument(viewingDocument);
+              setViewingDocument(null);
+            }}
+          />
+
+          <EditDocumentDialog
+            document={editingDocument}
+            isOpen={!!editingDocument}
+            onClose={() => setEditingDocument(null)}
+            onSave={handleEditDocument}
+            saving={saving}
           />
         </div>
       </ProtectedRoute>

@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Download, Trash2, FileText } from "lucide-react";
+import { ArrowLeft, Download, Trash2, FileText, Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,9 +19,10 @@ interface DocumentViewerProps {
   isOpen: boolean;
   onClose: () => void;
   onDelete: (document: Document) => void;
+  onEdit: () => void;
 }
 
-export const DocumentViewer = memo(({ document, isOpen, onClose, onDelete }: DocumentViewerProps) => {
+export const DocumentViewer = memo(({ document, isOpen, onClose, onDelete, onEdit }: DocumentViewerProps) => {
   const { toast } = useToast();
 
   if (!document) return null;
@@ -83,6 +84,14 @@ export const DocumentViewer = memo(({ document, isOpen, onClose, onDelete }: Doc
               </div>
             </div>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onEdit}
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Editar
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
