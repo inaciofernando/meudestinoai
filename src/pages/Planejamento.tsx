@@ -10,7 +10,7 @@ export default function Planejamento() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout showHeader={true}>
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center gap-4 p-4 md:p-6">

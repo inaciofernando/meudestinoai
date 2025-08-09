@@ -4,15 +4,18 @@ import { PWAFooter } from "./PWAFooter";
 
 interface PWALayoutProps {
   children: ReactNode;
+  showHeader?: boolean; // Prop opcional para controlar se mostra o header
 }
 
-export const PWALayout = ({ children }: PWALayoutProps) => {
+export const PWALayout = ({ children, showHeader = true }: PWALayoutProps) => {
   return (
     <div className="h-screen w-full flex flex-col fixed inset-0 overflow-hidden">
-      {/* Header fixo no topo */}
-      <div className="shrink-0">
-        <PWAHeader />
-      </div>
+      {/* Header fixo no topo - só mostra se showHeader for true */}
+      {showHeader && (
+        <div className="shrink-0">
+          <PWAHeader />
+        </div>
+      )}
       
       {/* Área central scrollável */}
       <main className="flex-1 overflow-y-auto bg-gradient-sky">

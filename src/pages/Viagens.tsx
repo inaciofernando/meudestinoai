@@ -5,7 +5,7 @@ import Dashboard from "./Dashboard";
 export default function Viagens() {
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout showHeader={true}>
         <Dashboard />
       </PWALayout>
     </ProtectedRoute>

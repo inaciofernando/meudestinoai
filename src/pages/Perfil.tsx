@@ -208,7 +208,7 @@ export default function Perfil() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout showHeader={true}>
         <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between p-4 md:p-6 border-b">

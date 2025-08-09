@@ -186,7 +186,7 @@ export default function MinhasViagens() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout showHeader={true}>
         <div className="space-y-4">
           {/* Header */}
           <div className="flex justify-between items-center">
