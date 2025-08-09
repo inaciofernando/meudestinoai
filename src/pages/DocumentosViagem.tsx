@@ -28,7 +28,9 @@ import {
   Hotel,
   FileCheck,
   Calendar,
-  Clock
+  Clock,
+  Edit,
+  ExternalLink
 } from "lucide-react";
 
 interface Trip {
@@ -536,139 +538,36 @@ export default function DocumentosViagem() {
                     <p className="text-sm">Clique em "+" para adicionar o primeiro documento</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {filteredDocuments.map((document) => {
                       const category = DOCUMENT_CATEGORIES[document.category];
                       const CategoryIcon = category.icon;
 
                       return (
-                        <Card key={document.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex gap-4">
-                              <div className={`w-12 h-12 ${category.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                                <CategoryIcon className="w-6 h-6 text-white" />
-                              </div>
-                              
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-4">
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <h4 className="font-semibold text-lg truncate pr-2" title={document.title}>
-                                        {document.title}
-                                      </h4>
-                                      <Badge variant="outline" className="text-xs flex-shrink-0">
-                                        {category.name}
-                                      </Badge>
-                                    </div>
-                                    
-                                    {document.description && (
-                                      <p className="text-sm text-muted-foreground mb-2">{document.description}</p>
-                                    )}
-                                    
-                                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                      <div className="flex items-center gap-1 min-w-0">
-                                        <Calendar className="w-3 h-3 flex-shrink-0" />
-                                        <span className="whitespace-nowrap">
-                                          {new Date(document.created_at).toLocaleDateString('pt-BR')}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-1 min-w-0 flex-1">
-                                        <FileText className="w-3 h-3 flex-shrink-0" />
-                                        <span className="truncate" title={document.file_name}>
-                                          {document.file_name}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  
-                                   <div className="flex gap-1">
-                                     <Button
-                                       variant="ghost"
-                                       size="sm"
-                                       onClick={() => setViewingDocument(document)}
-                                     >
-                                       <Eye className="w-4 h-4" />
-                                     </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={async () => {
-                                        try {
-                                          // Extrair o caminho do arquivo da URL
-                                          const urlParts = document.file_url.split('/');
-                                          const bucketIndex = urlParts.findIndex(part => part === 'trip-documents');
-                                          const filePath = urlParts.slice(bucketIndex + 1).join('/');
-                                          
-                                          // Baixar o arquivo usando a API do Supabase
-                                          const { data, error } = await supabase.storage
-                                            .from('trip-documents')
-                                            .download(filePath);
-
-                                          if (error) {
-                                            console.error('Erro no download:', error);
-                                            toast({
-                                              title: "Erro no download",
-                                              description: "Não foi possível baixar o arquivo. Tente novamente.",
-                                              variant: "destructive"
-                                            });
-                                            return;
-                                          }
-
-                                          // Criar URL temporária e fazer download
-                                          const url = URL.createObjectURL(data);
-                                          const link = window.document.createElement('a');
-                                          link.href = url;
-                                          link.download = document.file_name;
-                                          window.document.body.appendChild(link);
-                                          link.click();
-                                          window.document.body.removeChild(link);
-                                          URL.revokeObjectURL(url);
-                                        } catch (error) {
-                                          console.error('Erro no download:', error);
-                                          toast({
-                                            title: "Erro no download",
-                                            description: "Não foi possível baixar o arquivo. Tente novamente.",
-                                            variant: "destructive"
-                                          });
-                                        }
-                                      }}
-                                    >
-                                      <Download className="w-4 h-4" />
-                                    </Button>
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="text-destructive hover:text-destructive"
-                                        >
-                                          <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Excluir documento?</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            Esta ação não pode ser desfeita. O documento "{document.title}" será removido permanentemente.
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                          <AlertDialogAction
-                                            onClick={() => handleDeleteDocument(document)}
-                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                          >
-                                            Excluir
-                                          </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </div>
-                                </div>
-                              </div>
+                        <div 
+                          key={document.id} 
+                          className="flex items-center gap-3 p-4 bg-card rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors"
+                          onClick={() => setViewingDocument(document)}
+                        >
+                          <div className={`w-10 h-10 ${category.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                            <CategoryIcon className="w-5 h-5 text-white" />
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-base truncate" title={document.title}>
+                              {document.title}
+                            </h4>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span>{new Date(document.created_at).toLocaleDateString('pt-BR')}</span>
+                              <span>•</span>
+                              <Badge variant="outline" className="text-xs">
+                                {category.name}
+                              </Badge>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
+                          
+                          <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        </div>
                       );
                     })}
                   </div>
@@ -743,6 +642,38 @@ export default function DocumentosViagem() {
                         <Download className="w-4 h-4 mr-2" />
                         Baixar
                       </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Excluir
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir documento?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. O documento "{viewingDocument.title}" será removido permanentemente.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                handleDeleteDocument(viewingDocument);
+                                setViewingDocument(null);
+                              }}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </DialogHeader>
