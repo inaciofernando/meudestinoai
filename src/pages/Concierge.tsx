@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import remarkGfm from "remark-gfm";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Bot, MapPin, Calendar, Plus, Mic, ArrowUp, Loader2, User } from "lucide-react";
+import { Bot, MapPin, Calendar, Plus, Mic, ArrowUp, Loader2, User, ArrowLeft } from "lucide-react";
 
 interface TripCtx {
   id: string;
@@ -23,6 +23,7 @@ interface Message { role: "user" | "assistant"; content: string }
 
 export default function Concierge() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [trip, setTrip] = useState<TripCtx | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -102,8 +103,19 @@ export default function Concierge() {
     <ProtectedRoute>
       <PWALayout showHeader={false} showFooter={false}>
         <header className="mb-4">
-          <h1 className="text-2xl font-bold">Concierge da Viagem</h1>
-          <p className="text-muted-foreground">Faça perguntas sobre esta viagem e receba recomendações contextualizadas.</p>
+          <div className="flex items-center gap-3 mb-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="h-9 w-9"
+              aria-label="Voltar"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">Concierge da Viagem</h1>
+          </div>
+          <p className="text-muted-foreground ml-12">Faça perguntas sobre esta viagem e receba recomendações contextualizadas.</p>
         </header>
         <main>
           <section aria-labelledby="trip-context" className="mb-4">
