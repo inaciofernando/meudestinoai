@@ -22,6 +22,7 @@ import Restaurantes from "./pages/Restaurantes";
 import Planejamento from "./pages/Planejamento";
 import Perfil from "./pages/Perfil";
 import Auth from "./pages/Auth";
+import Concierge from "./pages/Concierge";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App: React.FC = () => (
           <Route path="/planejamento" element={<Planejamento />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/configuracoes" element={<Perfil />} />
+          <Route path="/viagem/:id/concierge" element={<Concierge />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
