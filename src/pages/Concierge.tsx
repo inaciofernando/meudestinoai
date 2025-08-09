@@ -61,23 +61,31 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
       if (titleLine) name = titleLine;
     }
 
-    // 3) Campos rotulados
-    const cuisineMatch = text.match(/Culinária\s*:\s*([^\n]+)/i);
-    const addressMatch = text.match(/(?:Localização|Endereço)\s*:\s*([^\n]+)/i);
-    const linkMatch = text.match(/https?:\/\/[^\s)]+/i);
+    // 3) Campos rotulados - com mais variações
+    const cuisineMatch = text.match(/(?:Culinária|Tipo de culinária|Cozinha|Especialidade)\s*:\s*([^\n]+)/i);
+    const addressMatch = text.match(/(?:Localização|Endereço|Local)\s*:\s*([^\n]+)/i);
+    
+    // 4) Links específicos
+    const restaurantLinkMatch = text.match(/(?:Site oficial|Link do restaurante|Website)\s*:\s*(https?:\/\/[^\s\n]+)/i);
+    const tripadvisorMatch = text.match(/(?:TripAdvisor|Tripadvisor)\s*:\s*(https?:\/\/[^\s\n]+)/i);
+    const googleMapsMatch = text.match(/(?:Google Maps|Maps)\s*:\s*(https?:\/\/[^\s\n]+)/i);
+    const wazeMatch = text.match(/(?:Waze)\s*:\s*(https?:\/\/[^\s\n]+)/i);
+    
+    // Fallback para qualquer link se não encontrar específicos
+    const anyLinkMatch = text.match(/https?:\/\/[^\s)]+/i);
 
-    // 4) Preço (média de valores em US$ se houver)
-    const priceNums = Array.from(text.matchAll(/US?\$\s*([0-9]+(?:[\.,][0-9]{2})?)/gi)).map(m => parseFloat(m[1].replace(',', '.')));
+    // 5) Preço (média de valores em US$ ou R$ se houver)
+    const priceNums = Array.from(text.matchAll(/(?:US?\$|R\$)\s*([0-9]+(?:[\.,][0-9]{2})?)/gi)).map(m => parseFloat(m[1].replace(',', '.')));
     let estimated: string | undefined;
     if (priceNums.length >= 1) {
       const avg = priceNums.reduce((a, b) => a + b, 0) / priceNums.length;
       estimated = String(Math.round(avg));
     }
 
-    // 5) Notas a partir das seções e bullets
+    // 6) Notas a partir das seções e bullets
     const notesParts: string[] = [];
     lines.forEach(l => {
-      if (/Por que escolher|Dicas|Mais informações/i.test(l) || l.startsWith('•') || l.startsWith('-')) {
+      if (/Por que escolher|Dicas|Mais informações|Observações/i.test(l) || l.startsWith('•') || l.startsWith('-')) {
         notesParts.push(l.replace(/^[-•]\s*/, ''));
       }
     });
@@ -89,7 +97,10 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
         description: notes || 'Sugerido pelo concierge',
         cuisine: cuisineMatch?.[1]?.trim() || '',
         address: addressMatch?.[1]?.trim() || '',
-        link: linkMatch?.[0] || '',
+        link: restaurantLinkMatch?.[1] || anyLinkMatch?.[0] || '',
+        tripadvisor: tripadvisorMatch?.[1] || '',
+        gmap: googleMapsMatch?.[1] || '',
+        waze: wazeMatch?.[1] || '',
         estimated_amount: estimated || ''
       });
     }
@@ -125,6 +136,9 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
     params.set('cuisine', restaurant.cuisine || '');
     params.set('address', restaurant.address || '');
     params.set('link', restaurant.link || '');
+    params.set('tripadvisor', restaurant.tripadvisor || '');
+    params.set('gmap', restaurant.gmap || '');
+    params.set('waze', restaurant.waze || '');
     params.set('estimated_amount', restaurant.estimated_amount || '');
     params.set('fromConcierge', 'true');
     // Fallback: enviar um trecho da mensagem para parsing no destino
