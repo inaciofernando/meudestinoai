@@ -368,69 +368,29 @@ export default function DocumentosViagem() {
         <div className="min-h-screen bg-background">
           {/* Header */}
           <div className="p-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(`/viagem/${id}`)}
-              className="mb-4"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold mb-2">Documentos da Viagem</h1>
-              <p className="text-muted-foreground">{trip.title} • {trip.destination}</p>
-              <Badge variant="outline" className="mt-2">
-                {documents.length} documento{documents.length !== 1 ? 's' : ''}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <div className="px-4 mt-6">
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="flex items-center gap-4 mb-6">
               <Button
-                variant={selectedCategory === 'all' ? "default" : "outline"}
-                onClick={() => setSelectedCategory('all')}
-                className="min-w-fit"
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(`/viagem/${id}`)}
+                className="rounded-full"
               >
-                Todos
-                <Badge variant="secondary" className="ml-2 px-1 py-0 text-xs">
-                  {documents.length}
-                </Badge>
+                <ArrowLeft className="w-5 h-5" />
               </Button>
-              {Object.entries(DOCUMENT_CATEGORIES).map(([key, config]) => {
-                const categoryDocs = getDocumentsByCategory(key as keyof typeof DOCUMENT_CATEGORIES);
-                return (
-                  <Button
-                    key={key}
-                    variant={selectedCategory === key ? "default" : "outline"}
-                    onClick={() => setSelectedCategory(key as keyof typeof DOCUMENT_CATEGORIES)}
-                    className="min-w-fit"
-                  >
-                    {config.name}
-                    {categoryDocs.length > 0 && (
-                      <Badge variant="secondary" className="ml-2 px-1 py-0 text-xs">
-                        {categoryDocs.length}
-                      </Badge>
-                    )}
-                  </Button>
-                );
-              })}
+              <div>
+                <h1 className="text-2xl font-bold">Documentos da Viagem</h1>
+                <p className="text-muted-foreground">{trip.title} • {trip.destination}</p>
+              </div>
             </div>
           </div>
 
           {/* Content */}
-          <div className="px-4 mt-6">
+          <div className="px-4">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    {selectedCategory === 'all' 
-                      ? 'Todos os Documentos' 
-                      : DOCUMENT_CATEGORIES[selectedCategory as keyof typeof DOCUMENT_CATEGORIES]?.name
-                    }
+                  <CardTitle>
+                    {documents.length} documento{documents.length !== 1 ? 's' : ''}
                   </CardTitle>
                   <Dialog open={isAddingDocument} onOpenChange={setIsAddingDocument}>
                     <DialogTrigger asChild>
@@ -456,7 +416,7 @@ export default function DocumentosViagem() {
                 </div>
               </CardHeader>
               <CardContent>
-                {filteredDocuments.length === 0 ? (
+                {documents.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>Nenhum documento encontrado</p>
@@ -464,7 +424,7 @@ export default function DocumentosViagem() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {filteredDocuments.map((document) => {
+                    {documents.map((document) => {
                       const category = DOCUMENT_CATEGORIES[document.category];
                       return (
                         <DocumentCard

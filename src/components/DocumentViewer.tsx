@@ -80,7 +80,6 @@ export const DocumentViewer = memo(({ document, isOpen, onClose, onDelete }: Doc
               </Button>
               <div>
                 <DialogTitle className="text-left">{document.title}</DialogTitle>
-                <p className="text-sm text-muted-foreground">{document.file_name}</p>
               </div>
             </div>
             <div className="flex gap-2">
