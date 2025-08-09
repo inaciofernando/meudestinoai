@@ -290,9 +290,8 @@ export default function Hospedagem() {
             </Button>
             <h1 className="text-2xl font-bold">Hospedagem</h1>
           </div>
-          <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Adicionar Hospedagem
+          <Button onClick={() => setShowAddForm(true)} size="icon" className="rounded-lg" aria-label="Adicionar hospedagem">
+            <Plus className="w-5 h-5" />
           </Button>
         </div>
 
