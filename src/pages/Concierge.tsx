@@ -119,32 +119,53 @@ export default function Concierge() {
             </Card>
           </section>
 
-          <section aria-labelledby="chat" className="space-y-4">
-            <div className="space-y-3 max-h-[45vh] overflow-y-auto pr-1">
-              {messages.map((m, i) => (
-                <div key={i} className={m.role === "user" ? "text-foreground bg-primary/5 p-3 rounded-md ml-8" : "bg-muted/40 p-3 rounded-md mr-8"}>
-                  <div className="text-xs font-medium mb-1">{m.role === "user" ? "Você" : "Concierge"}</div>
-                  <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
+          <section className="flex flex-col h-[60vh]">
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
+              {messages.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Faça uma pergunta sobre sua viagem para começar</p>
                 </div>
-              ))}
+              ) : (
+                messages.map((m, i) => (
+                  <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[80%] rounded-lg p-3 ${
+                      m.role === "user" 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-muted"
+                    }`}>
+                      <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
-            <div className="flex gap-2 items-end">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Pergunte sobre a viagem..."
-                className="min-h-[60px] resize-none"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    ask();
-                  }
-                }}
-              />
-              <Button onClick={ask} disabled={loading || !input.trim()} size="icon" className="h-[60px] min-w-[60px]">
-                <Send className="w-5 h-5" />
-              </Button>
+            {/* Input Area */}
+            <div className="border rounded-lg p-2 bg-background">
+              <div className="flex gap-2 items-end">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Digite sua pergunta sobre a viagem..."
+                  className="border-0 focus-visible:ring-0 text-base"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      ask();
+                    }
+                  }}
+                />
+                <Button 
+                  onClick={ask} 
+                  disabled={loading || !input.trim()} 
+                  size="icon"
+                  className="shrink-0"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </section>
         </main>
