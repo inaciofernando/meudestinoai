@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PWALayout } from "@/components/layout/PWALayout";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -382,6 +383,17 @@ export default function Concierge() {
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  // Textarea auto-size like ChatGPT
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const autoResize = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "0px";
+    const next = Math.min(el.scrollHeight, 320); // ~max-h-80
+    el.style.height = next + "px";
+  };
+  useEffect(() => { autoResize(); }, [input]);
 
   // SEO basics
   useEffect(() => {
@@ -821,12 +833,15 @@ export default function Concierge() {
                     </Button>
                   </div>
 
-                  <Input
+                  <Textarea
+                    ref={textareaRef}
+                    rows={1}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
+                    onInput={autoResize}
                     placeholder="Digite sua pergunta sobre a viagem..."
-                    className="h-14 rounded-full pl-14 pr-28 md:pr-36 text-base shadow-sm"
-                    onKeyPress={(e) => {
+                    className="min-h-14 max-h-40 rounded-full pl-14 pr-28 md:pr-36 py-3 text-base shadow-sm resize-none"
+                    onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
                         ask();
