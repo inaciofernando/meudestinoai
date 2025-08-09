@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Bot, MapPin, Calendar, Plus, Mic, ArrowUp, Loader2, User, ArrowLeft, RotateCcw, Clock, Trash2 } from "lucide-react";
+import { Bot, MapPin, Calendar, Plus, Mic, ArrowUp, Loader2, User, ArrowLeft, RotateCcw, Clock, Trash2, UtensilsCrossed, MapPinPlus } from "lucide-react";
 
 interface TripCtx {
   id: string;
@@ -29,6 +29,130 @@ interface ConversationHistory {
   messages: Message[];
   created_at: string;
   updated_at: string;
+}
+
+interface QuickActionButtonsProps {
+  message: string;
+  tripId: string;
+}
+
+function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // Detecta se a mensagem contém sugestões de restaurantes ou pontos turísticos
+  const containsRestaurant = /restaurante|comida|culinária|gastronomia|prato|comer|jantar|almoçar|café da manhã/i.test(message);
+  const containsAttraction = /vinícola|atração|ponto turístico|visitar|museu|parque|monumento|igreja|teatro|shopping|mercado|praia|trilha|passeio/i.test(message);
+  
+  const extractRestaurantInfo = () => {
+    const lines = message.split('\n');
+    const restaurants = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.includes('**') && (containsRestaurant || /restaurante/i.test(line))) {
+        const name = line.replace(/\*\*/g, '').replace(/^\d+\.?\s*/, '').trim();
+        if (name.length > 3) {
+          restaurants.push({
+            name: name.split(' - ')[0].split(':')[0].trim(),
+            description: lines[i + 1]?.trim() || ''
+          });
+        }
+      }
+    }
+    return restaurants;
+  };
+
+  const extractAttractionInfo = () => {
+    const lines = message.split('\n');
+    const attractions = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.includes('**') && (containsAttraction || /vinícola|atração|museu|parque/i.test(line))) {
+        const name = line.replace(/\*\*/g, '').replace(/^\d+\.?\s*/, '').trim();
+        if (name.length > 3) {
+          attractions.push({
+            name: name.split(' - ')[0].split(':')[0].trim(),
+            description: lines[i + 1]?.trim() || ''
+          });
+        }
+      }
+    }
+    return attractions;
+  };
+
+  const handleAddRestaurant = (restaurant: any) => {
+    // Navegar para página de restaurantes com dados pré-preenchidos
+    const params = new URLSearchParams({
+      name: restaurant.name,
+      description: restaurant.description,
+      fromConcierge: 'true'
+    });
+    navigate(`/viagem/${tripId}/restaurantes?${params.toString()}`);
+  };
+
+  const handleAddAttraction = (attraction: any) => {
+    // Navegar para página de roteiro com dados pré-preenchidos
+    const params = new URLSearchParams({
+      title: attraction.name,
+      description: attraction.description,
+      category: 'attraction',
+      fromConcierge: 'true'
+    });
+    navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
+  };
+
+  if (!containsRestaurant && !containsAttraction) {
+    return null;
+  }
+
+  const restaurants = extractRestaurantInfo();
+  const attractions = extractAttractionInfo();
+
+  return (
+    <div className="mt-3 space-y-2">
+      {restaurants.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground font-medium">Adicionar aos restaurantes:</p>
+          <div className="flex flex-wrap gap-2">
+            {restaurants.slice(0, 3).map((restaurant, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                onClick={() => handleAddRestaurant(restaurant)}
+                className="h-8 px-3 text-xs gap-1"
+              >
+                <UtensilsCrossed className="w-3 h-3" />
+                {restaurant.name.length > 20 ? restaurant.name.substring(0, 20) + '...' : restaurant.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {attractions.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground font-medium">Adicionar ao roteiro:</p>
+          <div className="flex flex-wrap gap-2">
+            {attractions.slice(0, 3).map((attraction, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                onClick={() => handleAddAttraction(attraction)}
+                className="h-8 px-3 text-xs gap-1"
+              >
+                <MapPinPlus className="w-3 h-3" />
+                {attraction.name.length > 20 ? attraction.name.substring(0, 20) + '...' : attraction.name}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function Concierge() {
@@ -338,27 +462,30 @@ export default function Concierge() {
                       }`}
                     >
                       {m.role === "assistant" ? (
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            a: ({ node, ...props }) => (
-                              <a
-                                {...props}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline text-primary"
-                              />
-                            ),
-                            ul: (props) => <ul className="list-disc pl-5 my-2" {...props} />,
-                            ol: (props) => <ol className="list-decimal pl-5 my-2" {...props} />,
-                            li: (props) => <li className="my-1" {...props} />,
-                            h1: (props) => <h1 className="text-lg font-bold mb-2" {...props} />,
-                            h2: (props) => <h2 className="text-base font-semibold mb-2" {...props} />,
-                            p: (props) => <p className="leading-relaxed mb-2" {...props} />,
-                          }}
-                        >
-                          {m.content}
-                        </ReactMarkdown>
+                        <div className="space-y-3">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              a: ({ node, ...props }) => (
+                                <a
+                                  {...props}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="underline text-primary"
+                                />
+                              ),
+                              ul: (props) => <ul className="list-disc pl-5 my-2" {...props} />,
+                              ol: (props) => <ol className="list-decimal pl-5 my-2" {...props} />,
+                              li: (props) => <li className="my-1" {...props} />,
+                              h1: (props) => <h1 className="text-lg font-bold mb-2" {...props} />,
+                              h2: (props) => <h2 className="text-base font-semibold mb-2" {...props} />,
+                              p: (props) => <p className="leading-relaxed mb-2" {...props} />,
+                            }}
+                          >
+                            {m.content}
+                          </ReactMarkdown>
+                          <QuickActionButtons message={m.content} tripId={id!} />
+                        </div>
                       ) : (
                         <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
                       )}

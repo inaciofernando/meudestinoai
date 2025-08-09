@@ -74,6 +74,25 @@ export default function Restaurantes() {
     if (tripId && user) {
       loadTripAndRestaurants();
     }
+    
+    // Check for pre-filled data from concierge
+    const urlParams = new URLSearchParams(window.location.search);
+    const nameFromConcierge = urlParams.get('name');
+    const descriptionFromConcierge = urlParams.get('description');
+    const fromConcierge = urlParams.get('fromConcierge');
+    
+    if (fromConcierge && nameFromConcierge) {
+      setNewRestaurant(prev => ({
+        ...prev,
+        restaurant_name: nameFromConcierge,
+        notes: descriptionFromConcierge || ''
+      }));
+      setShowAddForm(true);
+      
+      // Clean up URL parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
   }, [tripId, user]);
 
   const loadTripAndRestaurants = async () => {

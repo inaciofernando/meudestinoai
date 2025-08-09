@@ -118,6 +118,27 @@ export default function RoteiroSimples() {
     console.log("🚀 RoteiroSimples useEffect executado - currentID:", currentId, "User:", user?.id);
     if (!user?.id || !currentId) return;
     
+    // Check for pre-filled data from concierge
+    const urlParams = new URLSearchParams(window.location.search);
+    const titleFromConcierge = urlParams.get('title');
+    const descriptionFromConcierge = urlParams.get('description');
+    const categoryFromConcierge = urlParams.get('category');
+    const fromConcierge = urlParams.get('fromConcierge');
+    
+    if (fromConcierge && titleFromConcierge) {
+      setFormData(prev => ({
+        ...prev,
+        title: titleFromConcierge,
+        description: descriptionFromConcierge || '',
+        category: categoryFromConcierge || 'attraction'
+      }));
+      setIsAddingPonto(true);
+      
+      // Clean up URL parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+    
     const fetchData = async () => {
       try {
         // Busca dados em paralelo para melhor performance
