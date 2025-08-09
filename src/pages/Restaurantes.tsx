@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +55,7 @@ interface RestaurantForm {
 
 export default function Restaurantes() {
   const { id: tripId } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [trip, setTrip] = useState<any>(null);
@@ -204,25 +205,7 @@ export default function Restaurantes() {
   };
 
   const handleEditRestaurant = (restaurant: Restaurant) => {
-    setEditingRestaurant(restaurant);
-    setNewRestaurant({
-      restaurant_name: restaurant.restaurant_name,
-      reservation_date: restaurant.reservation_date ? parseISO(restaurant.reservation_date) : undefined,
-      reservation_time: restaurant.reservation_time || "",
-      restaurant_image_url: restaurant.restaurant_image_url || "",
-      voucher_file_url: restaurant.voucher_file_url || "",
-      voucher_file_name: restaurant.voucher_file_name || "",
-      restaurant_link: restaurant.restaurant_link || "",
-      tripadvisor_link: restaurant.tripadvisor_link || "",
-      google_maps_link: restaurant.google_maps_link || "",
-      waze_link: restaurant.waze_link || "",
-      estimated_amount: restaurant.estimated_amount?.toString() || "",
-      cuisine_type: restaurant.cuisine_type || "",
-      address: restaurant.address || "",
-      phone: restaurant.phone || "",
-      notes: restaurant.notes || ""
-    });
-    setShowAddForm(true);
+    navigate(`/viagem/${tripId}/restaurantes/${restaurant.id}/editar`);
   };
 
   const handleSaveRestaurant = async () => {
