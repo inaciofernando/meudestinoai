@@ -474,7 +474,10 @@ export default function DocumentosViagem() {
                           document={document}
                           categoryConfig={category}
                           onClick={() => setViewingDocument(document)}
-                          onEdit={() => setEditingDocument(document)}
+                          onEdit={() => {
+                            console.log("Editing document:", document);
+                            setEditingDocument(document);
+                          }}
                         />
                       );
                     })}
@@ -498,7 +501,10 @@ export default function DocumentosViagem() {
           <EditDocumentDialog
             document={editingDocument}
             isOpen={!!editingDocument}
-            onClose={() => setEditingDocument(null)}
+            onClose={() => {
+              console.log("Closing edit dialog");
+              setEditingDocument(null);
+            }}
             onSave={handleEditDocument}
             saving={saving}
           />
