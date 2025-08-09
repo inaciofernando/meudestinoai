@@ -78,19 +78,16 @@ export default function Concierge() {
     setMessages((m) => [...m, userMessage]);
 
     try {
-      const res = await fetch("/functions/v1/concierge-agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input, tripId: id, tripContext: trip })
+      const { data, error } = await supabase.functions.invoke("concierge-agent", {
+        body: { prompt: input, tripId: id, tripContext: trip },
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Falha ao consultar o Concierge");
+      if (error) {
+        throw new Error(error.message || "Falha ao consultar o Concierge");
       }
 
-      const data = await res.json();
-      const reply: string = data.generatedText || data.text || data.result || "Sem resposta.";
+      const payload: any = data || {};
+      const reply: string = payload.generatedText || payload.text || payload.result || "Sem resposta.";
       setMessages((m) => [...m, { role: "assistant", content: reply }]);
     } catch (e: any) {
       toast({ title: "Erro", description: e.message || "Falha na requisição.", variant: "destructive" });
