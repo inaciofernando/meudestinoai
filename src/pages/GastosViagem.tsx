@@ -794,7 +794,7 @@ export default function GastosViagem() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout showFooter={false}>
           <div className="c6-gradient-bg min-h-screen flex items-center justify-center">
             <div className="text-center">
               <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -809,7 +809,7 @@ export default function GastosViagem() {
   if (!trip) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout showFooter={false}>
           <div className="c6-gradient-bg min-h-screen flex items-center justify-center">
             <div className="text-center">
               <p className="c6-text-secondary mb-4">Viagem não encontrada</p>
@@ -827,7 +827,7 @@ export default function GastosViagem() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout showFooter={false}>
         <div className="c6-gradient-bg min-h-screen pb-6">
           {/* Header estilo C6 Bank */}
           <div className="c6-card mx-4 mb-6">

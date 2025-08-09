@@ -298,7 +298,7 @@ export default function Restaurantes() {
 
   if (loading) {
     return (
-      <PWALayout>
+      <PWALayout showFooter={false}>
         <div className="flex justify-center items-center h-32">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -307,7 +307,7 @@ export default function Restaurantes() {
   }
 
   return (
-    <PWALayout>
+    <PWALayout showFooter={false}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

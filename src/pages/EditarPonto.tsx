@@ -195,7 +195,7 @@ export default function EditarPonto() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout showFooter={false}>
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
               <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -210,7 +210,7 @@ export default function EditarPonto() {
   if (!ponto) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout showFooter={false}>
           <div className="text-center py-12">
             <p>Ponto não encontrado</p>
             <Button onClick={() => navigate(`/roteiro/${tripId}`)} className="mt-4">
@@ -224,7 +224,7 @@ export default function EditarPonto() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout showFooter={false}>
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="flex items-center gap-4 mb-6">

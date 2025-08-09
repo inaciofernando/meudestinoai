@@ -264,7 +264,7 @@ export default function Hotel() {
 
   if (loading) {
     return (
-      <PWALayout>
+      <PWALayout showFooter={false}>
         <div className="flex justify-center items-center h-32">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -273,7 +273,7 @@ export default function Hotel() {
   }
 
   return (
-    <PWALayout>
+    <PWALayout showFooter={false}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Hotel</h1>

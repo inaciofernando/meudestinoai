@@ -275,7 +275,7 @@ export default function PontoDetalhes() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout showFooter={false}>
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
               <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -290,7 +290,7 @@ export default function PontoDetalhes() {
   if (!ponto || !trip) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout showFooter={false}>
           <div className="text-center py-12">
             <p>Ponto não encontrado</p>
             <Button onClick={() => navigate(`/roteiro/${tripId}`)} className="mt-4">
@@ -309,7 +309,7 @@ export default function PontoDetalhes() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout showFooter={false}>
         <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
           {/* Header fixo com botões */}
           <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">

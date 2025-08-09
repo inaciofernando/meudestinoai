@@ -339,7 +339,7 @@ export default function RoteiroSimples() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout showFooter={false}>
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
               <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -354,7 +354,7 @@ export default function RoteiroSimples() {
   if (!trip || !roteiro) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout showFooter={false}>
           <div className="text-center py-12">
             <p>Roteiro não encontrado</p>
             <Button onClick={() => navigate("/viagens")} className="mt-4">
@@ -368,7 +368,7 @@ export default function RoteiroSimples() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout showFooter={false}>
         <div className="space-y-4 pb-20">
           {/* Header */}
           <div className="flex items-center gap-4 p-4">

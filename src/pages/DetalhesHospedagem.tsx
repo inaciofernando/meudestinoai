@@ -238,7 +238,7 @@ export default function DetalhesHospedagem() {
 
   if (loading) {
     return (
-      <PWALayout>
+      <PWALayout showFooter={false}>
         <div className="flex items-center justify-center h-64">
           <p>Carregando...</p>
         </div>
@@ -248,7 +248,7 @@ export default function DetalhesHospedagem() {
 
   if (!accommodation) {
     return (
-      <PWALayout>
+      <PWALayout showFooter={false}>
         <div className="flex items-center justify-center h-64">
           <p>Hospedagem não encontrada</p>
         </div>
@@ -257,7 +257,7 @@ export default function DetalhesHospedagem() {
   }
 
   return (
-    <PWALayout>
+    <PWALayout showFooter={false}>
       <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
       <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
         {/* Header mobile otimizado */}

@@ -249,7 +249,7 @@ export default function AdicionarRestaurante() {
 
   if (loading) {
     return (
-      <PWALayout>
+      <PWALayout showFooter={false}>
         <div className="flex justify-center items-center h-32">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -258,7 +258,7 @@ export default function AdicionarRestaurante() {
   }
 
   return (
-    <PWALayout>
+    <PWALayout showFooter={false}>
       <div className="space-y-6">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Voltar">
