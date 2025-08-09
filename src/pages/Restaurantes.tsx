@@ -80,15 +80,23 @@ export default function Restaurantes() {
     const nameFromConcierge = urlParams.get('name');
     const descriptionFromConcierge = urlParams.get('description');
     const fromConcierge = urlParams.get('fromConcierge');
+    const cuisineFromConcierge = urlParams.get('cuisine');
+    const addressFromConcierge = urlParams.get('address');
+    const linkFromConcierge = urlParams.get('link');
+    const estimatedFromConcierge = urlParams.get('estimated_amount');
     
-    console.log("🔍 Checking URL params:", { nameFromConcierge, descriptionFromConcierge, fromConcierge, fullUrl: window.location.href });
+    console.log("🔍 Checking URL params:", { nameFromConcierge, descriptionFromConcierge, cuisineFromConcierge, addressFromConcierge, linkFromConcierge, estimatedFromConcierge, fromConcierge, fullUrl: window.location.href });
     
-    if (fromConcierge && nameFromConcierge) {
+    if (fromConcierge && (nameFromConcierge || descriptionFromConcierge)) {
       console.log("✅ Pre-filling form with concierge data");
       setNewRestaurant(prev => ({
         ...prev,
-        restaurant_name: nameFromConcierge,
-        notes: descriptionFromConcierge || ''
+        restaurant_name: nameFromConcierge || prev.restaurant_name,
+        notes: descriptionFromConcierge || prev.notes,
+        cuisine_type: cuisineFromConcierge || prev.cuisine_type,
+        address: addressFromConcierge || prev.address,
+        restaurant_link: linkFromConcierge || prev.restaurant_link,
+        estimated_amount: estimatedFromConcierge || prev.estimated_amount
       }));
       setShowAddForm(true);
       

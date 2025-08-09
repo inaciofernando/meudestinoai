@@ -47,41 +47,55 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
   console.log("🔍 Analyzing message for quick actions:", { containsRestaurant, containsAttraction, messageLength: message.length });
   
   const extractRestaurantInfo = () => {
-    const lines = message.split('\n');
-    const restaurants = [];
-    
-    // First, try to extract from **bold** text
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (line.includes('**') && /restaurante|zareen|food|restaurant/i.test(line)) {
-        const name = line.replace(/\*\*/g, '').replace(/^\d+\.?\s*/, '').trim();
-        if (name.length > 3) {
-          restaurants.push({
-            name: name.split(' - ')[0].split(':')[0].trim(),
-            description: lines[i + 1]?.trim() || ''
-          });
-        }
-      }
+    const lines = message.split('\n').map(l => l.trim()).filter(Boolean);
+    const text = message.replace(/\*\*/g, '');
+    const results: any[] = [];
+
+    // 1) Nome pelo padrão "sugiro/recomendo"
+    const nameMatch = text.match(/(?:sugir[oa]|recomend[ao])\s+(?:o|a)?\s*([A-Z][A-Za-z0-9'\-\s]+?)(?=[\.,\n])/i);
+    let name = nameMatch?.[1]?.trim();
+
+    // 2) Ou um título isolado (linha capitalizada sem rótulos)
+    if (!name) {
+      const titleLine = lines.find(l => !l.startsWith('-') && !l.startsWith('*') && !/:/.test(l) && /^[A-Z].{2,60}$/.test(l));
+      if (titleLine) name = titleLine;
     }
-    
-    // If no bold restaurants found, try to extract restaurant names mentioned
-    if (restaurants.length === 0) {
-      const restaurantMatches = message.match(/([A-Z][a-zA-Z'\s]+(?:'s)?)\s*(?=\.|,|\n|$)/g);
-      if (restaurantMatches) {
-        restaurantMatches.forEach(match => {
-          const cleaned = match.trim().replace(/[.,]$/, '');
-          if (cleaned.length > 3 && /[A-Z]/.test(cleaned)) {
-            restaurants.push({
-              name: cleaned,
-              description: 'Sugerido pelo concierge'
-            });
-          }
-        });
-      }
+
+    // 3) Campos rotulados
+    const cuisineMatch = text.match(/Culinária\s*:\s*([^\n]+)/i);
+    const addressMatch = text.match(/(?:Localização|Endereço)\s*:\s*([^\n]+)/i);
+    const linkMatch = text.match(/https?:\/\/[^\s)]+/i);
+
+    // 4) Preço (média de valores em US$ se houver)
+    const priceNums = Array.from(text.matchAll(/US?\$\s*([0-9]+(?:[\.,][0-9]{2})?)/gi)).map(m => parseFloat(m[1].replace(',', '.')));
+    let estimated: string | undefined;
+    if (priceNums.length >= 1) {
+      const avg = priceNums.reduce((a, b) => a + b, 0) / priceNums.length;
+      estimated = String(Math.round(avg));
     }
-    
-    console.log("🍽️ Extracted restaurants:", restaurants);
-    return restaurants;
+
+    // 5) Notas a partir das seções e bullets
+    const notesParts: string[] = [];
+    lines.forEach(l => {
+      if (/Por que escolher|Dicas|Mais informações/i.test(l) || l.startsWith('•') || l.startsWith('-')) {
+        notesParts.push(l.replace(/^[-•]\s*/, ''));
+      }
+    });
+    const notes = notesParts.join(' ');
+
+    if (name) {
+      results.push({
+        name,
+        description: notes || 'Sugerido pelo concierge',
+        cuisine: cuisineMatch?.[1]?.trim() || '',
+        address: addressMatch?.[1]?.trim() || '',
+        link: linkMatch?.[0] || '',
+        estimated_amount: estimated || ''
+      });
+    }
+
+    console.log('🍽️ Extracted restaurants (enhanced):', results);
+    return results;
   };
 
   const extractAttractionInfo = () => {
@@ -106,8 +120,12 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
   const handleAddRestaurant = (restaurant: any) => {
     // Navegar para página de restaurantes com dados pré-preenchidos
     const params = new URLSearchParams({
-      name: restaurant.name,
-      description: restaurant.description,
+      name: restaurant.name || '',
+      description: restaurant.description || '',
+      cuisine: restaurant.cuisine || '',
+      address: restaurant.address || '',
+      link: restaurant.link || '',
+      estimated_amount: restaurant.estimated_amount || '',
       fromConcierge: 'true'
     });
     navigate(`/viagem/${tripId}/restaurantes?${params.toString()}`);
@@ -135,11 +153,10 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
   //   return null;
   // }
 
-  return (
-    <div className="mt-3 space-y-2">
-      {/* Sempre mostrar botão para adicionar manualmente */}
-      <div className="space-y-2">
-        <p className="text-xs text-muted-foreground font-medium">Ações rápidas:</p>
+  // Fallback: se nada foi detectado, mostrar ações manuais
+  if (restaurants.length === 0 && attractions.length === 0) {
+    return (
+      <div className="mt-3">
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
@@ -151,7 +168,7 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
             className="h-8 px-3 text-xs gap-1"
           >
             <UtensilsCrossed className="w-3 h-3" />
-            Adicionar Restaurante
+            Abrir formulário de Restaurante
           </Button>
           <Button
             variant="outline"
@@ -163,15 +180,19 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
             className="h-8 px-3 text-xs gap-1"
           >
             <MapPinPlus className="w-3 h-3" />
-            Adicionar ao Roteiro
+            Abrir formulário de Roteiro
           </Button>
         </div>
       </div>
+    );
+  }
 
-      {/* Botões automáticos baseados na detecção */}
+  // Caso tenhamos sugestões
+  return (
+    <div className="mt-3 space-y-2">
       {restaurants.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">Sugestões detectadas - Adicionar aos restaurantes:</p>
+          <p className="text-xs text-muted-foreground font-medium">Adicionar aos restaurantes:</p>
           <div className="flex flex-wrap gap-2">
             {restaurants.slice(0, 3).map((restaurant, index) => (
               <Button
@@ -182,16 +203,16 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
                 className="h-8 px-3 text-xs gap-1"
               >
                 <UtensilsCrossed className="w-3 h-3" />
-                {restaurant.name.length > 20 ? restaurant.name.substring(0, 20) + '...' : restaurant.name}
+                {restaurant.name.length > 22 ? restaurant.name.substring(0, 22) + '…' : restaurant.name}
               </Button>
             ))}
           </div>
         </div>
       )}
-      
+
       {attractions.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground font-medium">Sugestões detectadas - Adicionar ao roteiro:</p>
+          <p className="text-xs text-muted-foreground font-medium">Adicionar ao roteiro:</p>
           <div className="flex flex-wrap gap-2">
             {attractions.slice(0, 3).map((attraction, index) => (
               <Button
@@ -202,7 +223,7 @@ function QuickActionButtons({ message, tripId }: QuickActionButtonsProps) {
                 className="h-8 px-3 text-xs gap-1"
               >
                 <MapPinPlus className="w-3 h-3" />
-                {attraction.name.length > 20 ? attraction.name.substring(0, 20) + '...' : attraction.name}
+                {attraction.name.length > 22 ? attraction.name.substring(0, 22) + '…' : attraction.name}
               </Button>
             ))}
           </div>
