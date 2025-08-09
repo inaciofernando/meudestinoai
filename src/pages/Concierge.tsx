@@ -9,7 +9,7 @@ import remarkGfm from "remark-gfm";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Bot, Send, MapPin, Calendar } from "lucide-react";
+import { Bot, MapPin, Calendar, Plus, Mic, ArrowUp, Loader2, User } from "lucide-react";
 
 interface TripCtx {
   id: string;
@@ -130,14 +130,33 @@ export default function Concierge() {
                 </div>
               ) : (
                 messages.map((m, i) => (
-                  <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
+                  <div
+                    key={i}
+                    className={`flex items-start gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    {m.role !== "user" && (
+                      <div className="h-7 w-7 rounded-full bg-muted text-foreground/80 flex items-center justify-center">
+                        <Bot className="h-4 w-4" />
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
+                        m.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-foreground"
+                      }`}
+                    >
                       {m.role === "assistant" ? (
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
-                            a: ({node, ...props}) => (
-                              <a {...props} target="_blank" rel="noopener noreferrer" className="underline text-primary" />
+                            a: ({ node, ...props }) => (
+                              <a
+                                {...props}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline text-primary"
+                              />
                             ),
                             ul: (props) => <ul className="list-disc pl-5 my-2" {...props} />,
                             ol: (props) => <ol className="list-decimal pl-5 my-2" {...props} />,
@@ -153,6 +172,11 @@ export default function Concierge() {
                         <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
                       )}
                     </div>
+                    {m.role === "user" && (
+                      <div className="h-7 w-7 rounded-full bg-primary/15 text-primary flex items-center justify-center">
+                        <User className="h-4 w-4" />
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -160,29 +184,73 @@ export default function Concierge() {
 
             {/* Input Area - sempre visível na parte inferior */}
             <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t pt-4">
-              <div className="flex gap-2 items-end">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Digite sua pergunta sobre a viagem..."
-                  className="flex-1 text-base min-h-[50px] rounded-full"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      ask();
-                    }
-                  }}
-                />
-                <Button 
-                  onClick={ask} 
-                  disabled={loading || !input.trim()} 
-                  variant="default"
+              <div className="flex items-end gap-3">
+                <div className="relative flex-1">
+                  <div className="absolute left-1.5 top-1/2 -translate-y-1/2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-full border-0 hover:bg-muted"
+                      onClick={() =>
+                        toast({
+                          title: "Em breve",
+                          description: "Anexos serão suportados em breve.",
+                        })
+                      }
+                      aria-label="Adicionar"
+                    >
+                      <Plus className="w-5 h-5" />
+                    </Button>
+                  </div>
+
+                  <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 rounded-full border-0 hover:bg-muted"
+                      onClick={() =>
+                        toast({
+                          title: "Em breve",
+                          description: "Entrada por voz em breve.",
+                        })
+                      }
+                      aria-label="Falar"
+                    >
+                      <Mic className="w-5 h-5" />
+                    </Button>
+                  </div>
+
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Digite sua pergunta sobre a viagem..."
+                    className="h-14 rounded-full pl-14 pr-20 text-base shadow-sm"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        ask();
+                      }
+                    }}
+                  />
+                </div>
+
+                <Button
+                  onClick={ask}
+                  disabled={loading || !input.trim()}
                   size="icon"
-                  className="h-[50px] w-[50px] shrink-0"
+                  aria-label="Enviar mensagem"
+                  className="h-14 w-14 shrink-0 rounded-full bg-foreground text-background hover:bg-foreground/90"
                 >
-                  <Send className="w-5 h-5" />
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <ArrowUp className="w-5 h-5" />
+                  )}
                 </Button>
               </div>
+              <div className="pb-4" />
             </div>
           </section>
         </main>
