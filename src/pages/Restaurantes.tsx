@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ImageUpload";
 import { cn, formatCurrency } from "@/lib/utils";
+import TripSectionHeader from "@/components/TripSectionHeader";
 
 // Helper para garantir que abrimos exatamente o link informado
 const sanitizeUrl = (url?: string) => {

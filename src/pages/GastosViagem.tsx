@@ -829,7 +829,7 @@ export default function GastosViagem() {
   return (
     <ProtectedRoute>
       <PWALayout showFooter={false}>
-        <div className="c6-gradient-bg min-h-screen pb-6">
+        
           {/* Header estilo C6 Bank */}
           <div className="c6-card mx-4 mb-6">
             <TripSectionHeader
@@ -2139,7 +2139,6 @@ export default function GastosViagem() {
               )}
             </DialogContent>
           </Dialog>
-        </div>
 
         {/* Modal de Visualização do Comprovante */}
         <Dialog open={isViewingReceipt} onOpenChange={setIsViewingReceipt}>
@@ -2372,7 +2371,6 @@ export default function GastosViagem() {
           </DialogContent>
         </Dialog>
 
-        </div>
       </PWALayout>
     </ProtectedRoute>
   );

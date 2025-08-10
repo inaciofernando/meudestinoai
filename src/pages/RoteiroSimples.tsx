@@ -32,7 +32,8 @@ import {
   Save,
   Image as ImageIcon,
   X
-} from "lucide-react";
+ } from "lucide-react";
+import TripSectionHeader from "@/components/TripSectionHeader";
 
 interface Trip {
   id: string;
