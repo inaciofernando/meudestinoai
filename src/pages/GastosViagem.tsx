@@ -1321,8 +1321,6 @@ export default function GastosViagem() {
                   </div>
                 </DialogContent>
               </Dialog>
-            </div>
-          </div>
 
           {/* KPIs essenciais - Layout simplificado */}
           <div className="px-4">
@@ -2374,6 +2372,7 @@ export default function GastosViagem() {
           </DialogContent>
         </Dialog>
 
+        </div>
       </PWALayout>
     </ProtectedRoute>
   );
