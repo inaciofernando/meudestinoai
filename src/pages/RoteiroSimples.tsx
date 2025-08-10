@@ -5,7 +5,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -397,7 +397,7 @@ export default function RoteiroSimples() {
                 .map(([day, dayPontos]) => (
                   <div key={day} className="space-y-4 mb-8">
                     {/* Day header com data e dia da semana */}
-                    <div className="flex items-center gap-3 py-3 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 border-b border-border/20">
+                    <div className="flex items-center gap-3 py-3">
                       <div className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
                         {day}
                       </div>
