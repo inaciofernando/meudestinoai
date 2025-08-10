@@ -309,17 +309,15 @@ export default function Restaurantes() {
   return (
     <PWALayout showFooter={false}>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(`/viagem/${tripId}`)} aria-label="Voltar">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-2xl font-bold">Restaurantes</h1>
-          </div>
-          <Button onClick={() => navigate(`/viagem/${tripId}/restaurantes/novo`)} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Adicionar Restaurante
-          </Button>
+        <div className="c6-card mx-4 mb-6">
+          <TripSectionHeader
+            label="Restaurantes"
+            title={trip?.title || ""}
+            subtitle={trip?.destination || ""}
+            onBack={() => navigate(`/viagem/${tripId}`)}
+            onAdd={() => navigate(`/viagem/${tripId}/restaurantes/novo`)}
+            addAriaLabel="Adicionar restaurante"
+          />
         </div>
 
         {/* Formulário para adicionar novo restaurante */}

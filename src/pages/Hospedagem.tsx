@@ -277,23 +277,16 @@ export default function Hospedagem() {
     <PWALayout showFooter={false}>
       <div className="space-y-6">
         {/* Header com botão voltar */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/viagem/${tripId}`)}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Voltar
-            </Button>
-            <h1 className="text-2xl font-bold">Hospedagem</h1>
+          <div className="c6-card mx-4 mb-6">
+            <TripSectionHeader
+              label="Hospedagem"
+              title={trip?.title || ""}
+              subtitle={trip?.destination || ""}
+              onBack={() => navigate(`/viagem/${tripId}`)}
+              onAdd={() => setShowAddForm(true)}
+              addAriaLabel="Adicionar hospedagem"
+            />
           </div>
-          <Button onClick={() => setShowAddForm(true)} size="icon" className="rounded-lg" aria-label="Adicionar hospedagem">
-            <Plus className="w-5 h-5" />
-          </Button>
-        </div>
 
         {/* Formulário para adicionar nova hospedagem */}
         {showAddForm && (

@@ -831,31 +831,21 @@ export default function GastosViagem() {
         <div className="c6-gradient-bg min-h-screen pb-6">
           {/* Header estilo C6 Bank */}
           <div className="c6-card mx-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(`/viagem/${id}`)}
-                  className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div>
-                  <p className="c6-text-secondary text-xs uppercase tracking-wide">Extrato da viagem</p>
-                  <h1 className="text-xl font-semibold text-foreground">{trip.title}</h1>
-                  <p className="c6-text-secondary text-sm">{trip.destination}</p>
-                </div>
-              </div>
-              <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
-                <DialogTrigger asChild>
-                  <Button className="c6-button-primary w-10 h-10 p-0 rounded-full">
-                    <Plus className="w-5 h-5" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Adicionar Gasto</DialogTitle>
+            <TripSectionHeader
+              label="Extrato da viagem"
+              title={trip.title}
+              subtitle={trip.destination}
+              onBack={() => navigate(`/viagem/${id}`)}
+              right={
+                <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
+                  <DialogTrigger asChild>
+                    <Button className="c6-button-primary w-10 h-10 p-0 rounded-full">
+                      <Plus className="w-5 h-5" />
+                    </Button>
+                  </DialogTrigger>
+          
+              }
+            />
                   </DialogHeader>
                   <div className="space-y-4">
                     {/* Upload de Comprovante */}

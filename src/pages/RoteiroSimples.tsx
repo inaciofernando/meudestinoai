@@ -370,19 +370,15 @@ export default function RoteiroSimples() {
     <ProtectedRoute>
       <PWALayout showFooter={false}>
         <div className="space-y-4 pb-20">
-          {/* Header */}
-          <div className="flex items-center gap-4 p-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(`/viagem/${currentId}`)}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold">{trip.destination}</h1>
-              <p className="text-sm text-muted-foreground">Roteiro de Viagem</p>
-            </div>
+          <div className="c6-card mx-4 mb-2">
+            <TripSectionHeader
+              label="Roteiro de Viagem"
+              title={trip.title}
+              subtitle={trip.destination}
+              onBack={() => navigate(`/viagem/${currentId}`)}
+              onAdd={() => setIsAddingPonto(true)}
+              addAriaLabel="Adicionar ponto"
+            />
           </div>
 
           {/* Grid de pontos estilo Airbnb */}
@@ -495,17 +491,6 @@ export default function RoteiroSimples() {
             )}
           </div>
 
-          {/* Floating Action Button */}
-          <div className="fixed z-50 right-4 md:right-6" style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + 16px)` }}>
-            <Button
-              size="icon"
-              className="h-12 w-12 rounded-full shadow-lg"
-              onClick={() => setIsAddingPonto(true)}
-              aria-label="Adicionar ponto ao roteiro"
-            >
-              <Plus className="w-6 h-6" />
-            </Button>
-          </div>
         </div>
 
         {/* Add Ponto Dialog */}
