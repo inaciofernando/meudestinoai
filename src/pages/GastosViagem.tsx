@@ -5,10 +5,11 @@ import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import TripSectionHeader from "@/components/TripSectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -837,15 +838,12 @@ export default function GastosViagem() {
               subtitle={trip.destination}
               onBack={() => navigate(`/viagem/${id}`)}
               right={
-                <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
-                  <DialogTrigger asChild>
-                    <Button className="c6-button-primary w-10 h-10 p-0 rounded-full">
-                      <Plus className="w-5 h-5" />
-                    </Button>
-                  </DialogTrigger>
-          
+                <Button className="c6-button-primary w-10 h-10 p-0 rounded-full" aria-label="Adicionar gasto" onClick={() => setIsAddingExpense(true)}>
+                  <Plus className="w-5 h-5" />
+                </Button>
               }
             />
+          </div>
                   </DialogHeader>
                   <div className="space-y-4">
                     {/* Upload de Comprovante */}
