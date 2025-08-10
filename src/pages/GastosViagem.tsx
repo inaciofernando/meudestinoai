@@ -844,7 +844,11 @@ export default function GastosViagem() {
               }
             />
           </div>
-                  </DialogHeader>
+            <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Adicionar Gasto</DialogTitle>
+                </DialogHeader>
                   <div className="space-y-4">
                     {/* Upload de Comprovante */}
                     <div>
