@@ -17,26 +17,43 @@ export default function Auth() {
   const [resetEmail, setResetEmail] = useState("");
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Recovery flow states
+  const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     let canceled = false;
 
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!canceled && session) {
-        // Defer navigation to avoid potential render race conditions
+    // Detect recovery mode from URL (hash or query)
+    const hash = window.location.hash || "";
+    const search = window.location.search || "";
+    const isRecoveryInUrl = hash.includes("type=recovery") || search.includes("type=recovery");
+
+    if (isRecoveryInUrl) {
+      setIsRecoveryFlow(true);
+    }
+
+    // Listen for auth changes first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setIsRecoveryFlow(true);
+        return;
+      }
+      if (session && !isRecoveryInUrl) {
         setTimeout(() => navigate("/"), 0);
       }
-    };
+    });
 
-    init();
-
-    // Listen for auth changes (deferred navigation)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        setTimeout(() => navigate("/"), 0);
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!canceled) {
+        if (session && !isRecoveryInUrl) {
+          // Defer navigation to avoid potential render race conditions
+          setTimeout(() => navigate("/"), 0);
+        }
       }
     });
 
@@ -179,6 +196,143 @@ export default function Auth() {
       setLoading(false);
     }
   };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Senha muito curta",
+        description: "A senha deve ter no mínimo 6 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "As senhas não conferem",
+        description: "Digite a mesma senha nos dois campos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        toast({
+          title: "Erro ao atualizar senha",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        // Remove tokens from URL and redirect
+        window.history.replaceState({}, document.title, window.location.pathname);
+        toast({
+          title: "Senha atualizada!",
+          description: "Sua senha foi redefinida com sucesso.",
+        });
+        setIsRecoveryFlow(false);
+        setNewPassword("");
+        setConfirmPassword("");
+        navigate("/");
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (isRecoveryFlow) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/5 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-10 w-16 h-16 bg-gradient-ocean rounded-full blur-sm animate-pulse"></div>
+          <div className="absolute top-1/3 right-20 w-12 h-12 bg-gradient-sunset rounded-full blur-sm animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-nature rounded-full blur-sm animate-pulse delay-500"></div>
+          <div className="absolute bottom-20 right-10 w-14 h-14 bg-gradient-ocean rounded-full blur-sm animate-pulse delay-700"></div>
+        </div>
+
+        <Card className="w-full max-w-md shadow-travel border-0 bg-card/95 backdrop-blur-sm">
+          <CardHeader className="text-center pb-6">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-gradient-ocean rounded-full flex items-center justify-center shadow-travel">
+                <Lock className="w-8 h-8 text-primary-foreground" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold bg-gradient-ocean bg-clip-text text-transparent">
+              Definir nova senha
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Crie sua nova senha para continuar
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Nova senha</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="new-password"
+                    type="password"
+                    placeholder="Mínimo 6 caracteres"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="pl-10 border-primary/20 focus:border-primary transition-smooth"
+                    minLength={6}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirmar nova senha</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="Repita a senha"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10 border-primary/20 focus:border-primary transition-smooth"
+                    minLength={6}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Button type="submit" className="w-full bg-gradient-ocean hover:shadow-travel transition-smooth" disabled={loading}>
+                  {loading ? "Atualizando..." : "Atualizar senha"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => {
+                    setIsRecoveryFlow(false);
+                    navigate("/");
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (showResetPassword) {
     return (
