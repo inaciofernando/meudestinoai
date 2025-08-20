@@ -560,7 +560,11 @@ export default function Concierge() {
       // Save conversation automatically
       await saveConversation(finalMessages);
     } catch (e: any) {
-      toast({ title: "Erro", description: e.message || "Falha na requisição.", variant: "destructive" });
+      const msg = (e && (e.message || e.error?.message)) || "Falha na requisição.";
+      const humanMsg = /non-2xx|GEMINI|unauthorized|apikey/i.test(String(msg))
+        ? "O Concierge não está configurado. Adicione a chave GEMINI nas Funções do Supabase."
+        : msg;
+      toast({ title: "Erro", description: humanMsg, variant: "destructive" });
     } finally {
       setLoading(false);
       setInput("");
@@ -619,6 +623,15 @@ export default function Concierge() {
               <div>
                 <h1 className="text-xl font-semibold">Concierge</h1>
                 <p className="text-xs text-muted-foreground">Seu assistente de viagem</p>
+                {/* Contexto compacto no header */}
+                <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground overflow-x-auto no-scrollbar">
+                  <span className="inline-flex items-center gap-1 bg-muted/60 rounded-full px-2 py-0.5 whitespace-nowrap">
+                    <MapPin className="w-3.5 h-3.5" /> {trip?.destination ?? "Destino não informado"}
+                  </span>
+                  <span className="inline-flex items-center gap-1 bg-muted/60 rounded-full px-2 py-0.5 whitespace-nowrap">
+                    <Calendar className="w-3.5 h-3.5" /> {(trip?.start_date ?? "ND")} — {(trip?.end_date ?? "ND")}
+                  </span>
+                </div>
               </div>
             </div>
             
@@ -693,19 +706,7 @@ export default function Concierge() {
         </Dialog>
 
         <main className="px-4">
-          <section aria-labelledby="trip-context" className="mb-4">
-            <Card>
-              <CardHeader>
-                <CardTitle id="trip-context" className="flex items-center gap-2 text-base">
-                  <Bot className="w-5 h-5" /> Contexto da Viagem
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground flex flex-wrap gap-4">
-                <div className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {trip?.destination ?? "Destino não informado"}</div>
-                <div className="flex items-center gap-2"><Calendar className="w-4 h-4" /> {trip?.start_date ?? "ND"} — {trip?.end_date ?? "ND"}</div>
-              </CardContent>
-            </Card>
-          </section>
+          {/* Contexto movido para o header para economizar espaço */}
 
           <section className="flex flex-col h-[calc(100vh-12rem)]">
             {/* Chat Messages */}
@@ -927,7 +928,7 @@ export default function Concierge() {
                         <Plus className="w-5 h-5" />
                       </Button>
                     </div>
-                    <div className="absolute right-2 bottom-2">
+                    <div className="absolute right-2 bottom-2 flex items-center gap-2">
                       <Button
                         type="button"
                         variant="ghost"
@@ -943,23 +944,26 @@ export default function Concierge() {
                       >
                         <Mic className="w-5 h-5" />
                       </Button>
+                      <Button
+                        onClick={ask}
+                        disabled={loading || !input.trim()}
+                        size="sm"
+                        aria-label="Enviar mensagem"
+                        className="h-9 rounded-full"
+                      >
+                        {loading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <span className="sr-only sm:not-sr-only sm:mr-1">Enviar</span>
+                            <ArrowUp className="w-4 h-4" />
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </div>
 
-                <Button
-                  onClick={ask}
-                  disabled={loading || !input.trim()}
-                  size="icon"
-                  aria-label="Enviar mensagem"
-                  className="h-14 w-14 shrink-0 rounded-full bg-foreground text-background hover:bg-foreground/90"
-                >
-                  {loading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <ArrowUp className="w-5 h-5" />
-                  )}
-                </Button>
               </div>
               <div className="pb-4" />
             </div>
