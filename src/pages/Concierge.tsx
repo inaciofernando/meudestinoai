@@ -567,11 +567,45 @@ export default function Concierge() {
     }
   }
 
+  const quickActions = [
+    { 
+      icon: UtensilsCrossed, 
+      title: "Restaurantes", 
+      description: "Onde comer bem",
+      query: "Quais são os melhores restaurantes locais que você recomenda para minha viagem?"
+    },
+    { 
+      icon: MapPinPlus, 
+      title: "Atrações", 
+      description: "O que visitar",
+      query: "Quais são as principais atrações turísticas que devo conhecer no meu destino?"
+    },
+    { 
+      icon: MapPin, 
+      title: "Transporte", 
+      description: "Como se locomover",
+      query: "Qual a melhor forma de me locomover durante minha viagem? Transporte público, uber ou aluguel de carro?"
+    },
+    { 
+      icon: Calendar, 
+      title: "Roteiro", 
+      description: "Planeje seus dias",
+      query: "Pode me sugerir um roteiro detalhado para os dias da minha viagem?"
+    }
+  ];
+
+  const handleQuickAction = (query: string) => {
+    setInput(query);
+    // Auto enviar a pergunta
+    setTimeout(() => ask(), 100);
+  };
+
   return (
     <ProtectedRoute>
       <PWALayout showHeader={false} showFooter={false}>
-        <header className="mb-4">
-          <div className="flex items-center justify-between gap-3 mb-2">
+        {/* Header */}
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+          <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -582,35 +616,35 @@ export default function Concierge() {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <h1 className="text-2xl font-bold">Concierge da Viagem</h1>
+              <div>
+                <h1 className="text-xl font-semibold">Concierge</h1>
+                <p className="text-xs text-muted-foreground">Seu assistente de viagem</p>
+              </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9"
-                    aria-label="Menu"
-                  >
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={startNewConversation} className="gap-2">
-                    <Plus className="h-4 w-4" /> Novo chat
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setHistoryOpen(true)} className="gap-2">
-                    <Clock className="h-4 w-4" /> Histórico
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9"
+                  aria-label="Menu"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={startNewConversation} className="gap-2">
+                  <Plus className="h-4 w-4" /> Novo chat
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setHistoryOpen(true)} className="gap-2">
+                  <Clock className="h-4 w-4" /> Histórico
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <p className="text-muted-foreground ml-12">Faça perguntas sobre esta viagem e receba recomendações contextualizadas.</p>
-        </header>
+        </div>
 
         <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
           <DialogContent className="sm:max-w-md">
@@ -658,7 +692,7 @@ export default function Concierge() {
           </DialogContent>
         </Dialog>
 
-        <main>
+        <main className="px-4">
           <section aria-labelledby="trip-context" className="mb-4">
             <Card>
               <CardHeader>
@@ -673,13 +707,73 @@ export default function Concierge() {
             </Card>
           </section>
 
-          <section className="flex flex-col h-full">
+          <section className="flex flex-col h-[calc(100vh-12rem)]">
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
               {messages.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8">
-                  <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Faça uma pergunta sobre sua viagem para começar</p>
+                <div className="space-y-6 px-2">
+                  {/* Hero Section */}
+                  <div className="text-center py-8">
+                    <div className="mb-6">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                        <Bot className="w-8 h-8 text-primary" />
+                      </div>
+                      <h2 className="text-2xl font-semibold mb-2">Como posso ajudar?</h2>
+                      <p className="text-muted-foreground max-w-md mx-auto">
+                        Sou seu concierge pessoal. Posso ajudá-lo com recomendações, roteiros e tudo sobre sua viagem.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium text-center">Escolhas Rápidas</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {quickActions.map((action, index) => {
+                        const Icon = action.icon;
+                        return (
+                          <Card 
+                            key={index}
+                            className="p-4 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-primary/20 hover:border-primary/40"
+                            onClick={() => handleQuickAction(action.query)}
+                          >
+                            <div className="flex flex-col items-center text-center space-y-3">
+                              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <Icon className="w-6 h-6 text-primary" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-sm">{action.title}</h4>
+                                <p className="text-xs text-muted-foreground mt-1">{action.description}</p>
+                              </div>
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Additional Suggestions */}
+                  <div className="space-y-3 mt-8">
+                    <p className="text-sm text-muted-foreground text-center">Ou pergunte algo específico:</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {[
+                        "Melhor época para visitar?",
+                        "Dicas de segurança",
+                        "Quanto levar em dinheiro?",
+                        "Documentos necessários"
+                      ].map((suggestion, index) => (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-8 px-3 rounded-full hover:bg-primary/5"
+                          onClick={() => handleQuickAction(suggestion)}
+                        >
+                          {suggestion}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 messages.map((m, i) => (
@@ -796,7 +890,7 @@ export default function Concierge() {
             </div>
 
             {/* Input Area - sempre visível na parte inferior */}
-            <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t pt-4">
+            <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t pt-4 px-4">
               <div className="flex items-end gap-3">
                 <div className="flex-1">
                   <div className="relative rounded-2xl border bg-muted/30 shadow-sm px-4 pt-2 pb-12">
