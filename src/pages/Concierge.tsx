@@ -710,95 +710,100 @@ export default function Concierge() {
           </DialogContent>
         </Dialog>
 
-        <main className="flex flex-col h-[calc(100vh-6rem)] max-w-4xl mx-auto">
-          {/* Contexto movido para o header para economizar espaço */}
-
-          <section className="flex flex-col flex-1 min-h-0">
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto space-y-3 px-4 py-2 scrollbar-thin scrollbar-thumb-muted-foreground/20">
-              {messages.length === 0 ? (
-                <div className="space-y-6 max-w-2xl mx-auto px-4">
-                  {/* Hero Section */}
-                  <div className="text-center py-6 sm:py-8">
-                    <div className="mb-6">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                        <Bot className="w-8 h-8 text-primary" />
+        <main className="flex flex-col h-screen max-w-4xl mx-auto">
+          <section className="flex flex-col flex-1 overflow-hidden">
+            {/* Chat Messages - área com scroll otimizada */}
+            <div 
+              className="flex-1 overflow-y-auto px-4 py-2" 
+              style={{ 
+                scrollBehavior: 'smooth',
+                overscrollBehavior: 'contain'
+              }}
+            >
+              <div className="space-y-3 pb-4">
+                {messages.length === 0 ? (
+                  <div className="space-y-6 max-w-2xl mx-auto px-4 pt-4">
+                    {/* Hero Section */}
+                    <div className="text-center py-6">
+                      <div className="mb-6">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                          <Bot className="w-8 h-8 text-primary" />
+                        </div>
+                        <h2 className="text-xl sm:text-2xl font-semibold mb-2">Como posso ajudar?</h2>
+                        <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+                          Sou seu concierge pessoal. Posso ajudá-lo com recomendações, roteiros e tudo sobre sua viagem.
+                        </p>
                       </div>
-                      <h2 className="text-xl sm:text-2xl font-semibold mb-2">Como posso ajudar?</h2>
-                      <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-                        Sou seu concierge pessoal. Posso ajudá-lo com recomendações, roteiros e tudo sobre sua viagem.
-                      </p>
                     </div>
-                  </div>
 
-                  {/* Quick Actions */}
-                  <div className="space-y-4">
-                    <h3 className="text-base sm:text-lg font-medium text-center">Escolhas Rápidas</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                      {quickActions.map((action, index) => {
-                        const Icon = action.icon;
-                        return (
-                          <Card 
+                    {/* Quick Actions */}
+                    <div className="space-y-4">
+                      <h3 className="text-base sm:text-lg font-medium text-center">Escolhas Rápidas</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        {quickActions.map((action, index) => {
+                          const Icon = action.icon;
+                          return (
+                            <Card 
+                              key={index}
+                              className="p-3 sm:p-4 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-primary/20 hover:border-primary/40 aspect-square flex flex-col"
+                              onClick={() => handleQuickAction(action.query)}
+                            >
+                              <div className="flex flex-col items-center justify-center text-center space-y-2 h-full">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                                </div>
+                                <div className="flex-1 flex flex-col justify-center">
+                                  <h4 className="font-medium text-xs sm:text-sm">{action.title}</h4>
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 leading-tight">{action.description}</p>
+                                </div>
+                              </div>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Additional Suggestions */}
+                    <div className="space-y-3 mt-6">
+                      <p className="text-xs sm:text-sm text-muted-foreground text-center">Ou pergunte algo específico:</p>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {[
+                          "Melhor época para visitar?",
+                          "Dicas de segurança",
+                          "Quanto levar em dinheiro?",
+                          "Documentos necessários"
+                        ].map((suggestion, index) => (
+                          <Button
                             key={index}
-                            className="p-3 sm:p-4 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-primary/20 hover:border-primary/40 aspect-square flex flex-col"
-                            onClick={() => handleQuickAction(action.query)}
+                            variant="outline"
+                            size="sm"
+                            className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 rounded-full hover:bg-primary/5 whitespace-nowrap"
+                            onClick={() => handleQuickAction(suggestion)}
                           >
-                            <div className="flex flex-col items-center justify-center text-center space-y-2 h-full">
-                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                              </div>
-                              <div className="flex-1 flex flex-col justify-center">
-                                <h4 className="font-medium text-xs sm:text-sm">{action.title}</h4>
-                                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 leading-tight">{action.description}</p>
-                              </div>
-                            </div>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Additional Suggestions */}
-                  <div className="space-y-3 mt-6 sm:mt-8">
-                    <p className="text-xs sm:text-sm text-muted-foreground text-center">Ou pergunte algo específico:</p>
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {[
-                        "Melhor época para visitar?",
-                        "Dicas de segurança",
-                        "Quanto levar em dinheiro?",
-                        "Documentos necessários"
-                      ].map((suggestion, index) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          size="sm"
-                          className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 rounded-full hover:bg-primary/5 whitespace-nowrap"
-                          onClick={() => handleQuickAction(suggestion)}
-                        >
-                          {suggestion}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                messages.map((m, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-start gap-2 sm:gap-3 ${m.role === "user" ? "justify-end" : "justify-start"} max-w-full`}
-                  >
-                    {m.role !== "user" && (
-                      <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-muted text-foreground/80 flex items-center justify-center flex-shrink-0 mt-1">
-                        <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
+                            {suggestion}
+                          </Button>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  </div>
+                ) : (
+                  messages.map((m, i) => (
                     <div
-                      className={`w-full max-w-[85%] sm:max-w-[80%] lg:max-w-[70%] rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm ${
-                        m.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground"
-                      }`}
+                      key={i}
+                      className={`flex items-start gap-2 sm:gap-3 ${m.role === "user" ? "justify-end" : "justify-start"} px-4`}
                     >
+                      {m.role !== "user" && (
+                        <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-muted text-foreground/80 flex items-center justify-center flex-shrink-0 mt-1">
+                          <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </div>
+                      )}
+                      <div
+                        className={`w-full max-w-[85%] sm:max-w-[80%] lg:max-w-[70%] rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm ${
+                          m.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-foreground"
+                        }`}
+                      >
                       {m.role === "assistant" ? (
                         <div className="space-y-3">
                             <ReactMarkdown
@@ -885,22 +890,23 @@ export default function Concierge() {
                         <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
                       )}
                     </div>
-                    {m.role === "user" && (
-                      <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary/15 text-primary flex items-center justify-center flex-shrink-0 mt-1">
-                        <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
+                      {m.role === "user" && (
+                        <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary/15 text-primary flex items-center justify-center flex-shrink-0 mt-1">
+                          <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
-            {/* Input Area - sempre visível na parte inferior */}
-            <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t">
+            {/* Input Area - fixo na parte inferior com altura estável */}
+            <div className="border-t bg-background" style={{ minHeight: '80px' }}>
               <div className="max-w-4xl mx-auto p-4">
-                <div className="flex items-end gap-2 sm:gap-3">
+                <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <div className="relative rounded-2xl border bg-muted/30 shadow-sm px-3 sm:px-4 pt-3 pb-12 sm:pb-14">
+                    <div className="relative rounded-2xl border bg-muted/30 shadow-sm p-3">
                       <Textarea
                         ref={textareaRef}
                         rows={1}
@@ -908,7 +914,8 @@ export default function Concierge() {
                         onChange={(e) => setInput(e.target.value)}
                         onInput={autoResize}
                         placeholder="Digite sua pergunta sobre a viagem..."
-                        className="min-h-10 sm:min-h-12 max-h-32 sm:max-h-40 w-full bg-transparent border-0 shadow-none resize-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm sm:text-base leading-relaxed"
+                        className="min-h-[40px] max-h-[120px] w-full bg-transparent border-0 shadow-none resize-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm leading-relaxed pr-24"
+                        style={{ paddingBottom: '0px' }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
@@ -917,12 +924,12 @@ export default function Concierge() {
                         }}
                       />
 
-                      <div className="absolute left-2 bottom-2 sm:bottom-3">
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 sm:h-9 sm:w-9 rounded-full"
+                          className="h-8 w-8 rounded-full"
                           onClick={() =>
                             toast({
                               title: "Em breve",
@@ -931,38 +938,21 @@ export default function Concierge() {
                           }
                           aria-label="Adicionar"
                         >
-                          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </Button>
-                      </div>
-                      <div className="absolute right-2 bottom-2 sm:bottom-3 flex items-center gap-1 sm:gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 sm:h-9 sm:w-9 rounded-full"
-                          onClick={() =>
-                            toast({
-                              title: "Em breve",
-                              description: "Entrada por voz em breve.",
-                            })
-                          }
-                          aria-label="Falar"
-                        >
-                          <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <Plus className="w-4 h-4" />
                         </Button>
                         <Button
                           onClick={() => ask()}
                           disabled={loading || !input.trim()}
                           size="sm"
                           aria-label="Enviar mensagem"
-                          className="h-8 sm:h-9 px-2 sm:px-3 rounded-full text-xs sm:text-sm"
+                          className="h-8 px-3 rounded-full text-xs"
                         >
                           {loading ? (
-                            <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                            <Loader2 className="w-3 h-3 animate-spin" />
                           ) : (
                             <>
                               <span className="sr-only sm:not-sr-only sm:mr-1">Enviar</span>
-                              <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <ArrowUp className="w-3 h-3" />
                             </>
                           )}
                         </Button>
