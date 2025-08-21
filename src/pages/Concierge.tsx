@@ -710,22 +710,22 @@ export default function Concierge() {
           </DialogContent>
         </Dialog>
 
-        <main className="px-4">
+        <main className="flex flex-col h-[calc(100vh-6rem)] max-w-4xl mx-auto">
           {/* Contexto movido para o header para economizar espaço */}
 
-          <section className="flex flex-col h-[calc(100vh-12rem)]">
+          <section className="flex flex-col flex-1 min-h-0">
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
+            <div className="flex-1 overflow-y-auto space-y-3 px-4 py-2 scrollbar-thin scrollbar-thumb-muted-foreground/20">
               {messages.length === 0 ? (
-                <div className="space-y-6 px-2">
+                <div className="space-y-6 max-w-2xl mx-auto px-4">
                   {/* Hero Section */}
-                  <div className="text-center py-8">
+                  <div className="text-center py-6 sm:py-8">
                     <div className="mb-6">
                       <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
                         <Bot className="w-8 h-8 text-primary" />
                       </div>
-                      <h2 className="text-2xl font-semibold mb-2">Como posso ajudar?</h2>
-                      <p className="text-muted-foreground max-w-md mx-auto">
+                      <h2 className="text-xl sm:text-2xl font-semibold mb-2">Como posso ajudar?</h2>
+                      <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto leading-relaxed">
                         Sou seu concierge pessoal. Posso ajudá-lo com recomendações, roteiros e tudo sobre sua viagem.
                       </p>
                     </div>
@@ -733,23 +733,23 @@ export default function Concierge() {
 
                   {/* Quick Actions */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-center">Escolhas Rápidas</h3>
-                    <div className="grid grid-cols-2 gap-3">
+                    <h3 className="text-base sm:text-lg font-medium text-center">Escolhas Rápidas</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                       {quickActions.map((action, index) => {
                         const Icon = action.icon;
                         return (
                           <Card 
                             key={index}
-                            className="p-4 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-primary/20 hover:border-primary/40"
+                            className="p-3 sm:p-4 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-primary/20 hover:border-primary/40 aspect-square flex flex-col"
                             onClick={() => handleQuickAction(action.query)}
                           >
-                            <div className="flex flex-col items-center text-center space-y-3">
-                              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <Icon className="w-6 h-6 text-primary" />
+                            <div className="flex flex-col items-center justify-center text-center space-y-2 h-full">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                               </div>
-                              <div>
-                                <h4 className="font-medium text-sm">{action.title}</h4>
-                                <p className="text-xs text-muted-foreground mt-1">{action.description}</p>
+                              <div className="flex-1 flex flex-col justify-center">
+                                <h4 className="font-medium text-xs sm:text-sm">{action.title}</h4>
+                                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 leading-tight">{action.description}</p>
                               </div>
                             </div>
                           </Card>
@@ -759,8 +759,8 @@ export default function Concierge() {
                   </div>
 
                   {/* Additional Suggestions */}
-                  <div className="space-y-3 mt-8">
-                    <p className="text-sm text-muted-foreground text-center">Ou pergunte algo específico:</p>
+                  <div className="space-y-3 mt-6 sm:mt-8">
+                    <p className="text-xs sm:text-sm text-muted-foreground text-center">Ou pergunte algo específico:</p>
                     <div className="flex flex-wrap gap-2 justify-center">
                       {[
                         "Melhor época para visitar?",
@@ -772,7 +772,7 @@ export default function Concierge() {
                           key={index}
                           variant="outline"
                           size="sm"
-                          className="text-xs h-8 px-3 rounded-full hover:bg-primary/5"
+                          className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 rounded-full hover:bg-primary/5 whitespace-nowrap"
                           onClick={() => handleQuickAction(suggestion)}
                         >
                           {suggestion}
@@ -785,15 +785,15 @@ export default function Concierge() {
                 messages.map((m, i) => (
                   <div
                     key={i}
-                    className={`flex items-start gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                    className={`flex items-start gap-2 sm:gap-3 ${m.role === "user" ? "justify-end" : "justify-start"} max-w-full`}
                   >
                     {m.role !== "user" && (
-                      <div className="h-7 w-7 rounded-full bg-muted text-foreground/80 flex items-center justify-center">
-                        <Bot className="h-4 w-4" />
+                      <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-muted text-foreground/80 flex items-center justify-center flex-shrink-0 mt-1">
+                        <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
                       </div>
                     )}
                     <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
+                      className={`w-full max-w-[85%] sm:max-w-[80%] lg:max-w-[70%] rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm ${
                         m.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-foreground"
@@ -886,8 +886,8 @@ export default function Concierge() {
                       )}
                     </div>
                     {m.role === "user" && (
-                      <div className="h-7 w-7 rounded-full bg-primary/15 text-primary flex items-center justify-center">
-                        <User className="h-4 w-4" />
+                      <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary/15 text-primary flex items-center justify-center flex-shrink-0 mt-1">
+                        <User className="h-3 w-3 sm:h-4 sm:w-4" />
                       </div>
                     )}
                   </div>
@@ -896,81 +896,81 @@ export default function Concierge() {
             </div>
 
             {/* Input Area - sempre visível na parte inferior */}
-            <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t pt-4 px-4">
-              <div className="flex items-end gap-3">
-                <div className="flex-1">
-                  <div className="relative rounded-2xl border bg-muted/30 shadow-sm px-4 pt-2 pb-12">
-                    <Textarea
-                      ref={textareaRef}
-                      rows={1}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onInput={autoResize}
-                      placeholder="Digite sua pergunta sobre a viagem..."
-                      className="min-h-14 max-h-40 w-full bg-transparent border-0 shadow-none resize-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          ask();
-                        }
-                      }}
-                    />
+            <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t">
+              <div className="max-w-4xl mx-auto p-4">
+                <div className="flex items-end gap-2 sm:gap-3">
+                  <div className="flex-1">
+                    <div className="relative rounded-2xl border bg-muted/30 shadow-sm px-3 sm:px-4 pt-3 pb-12 sm:pb-14">
+                      <Textarea
+                        ref={textareaRef}
+                        rows={1}
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onInput={autoResize}
+                        placeholder="Digite sua pergunta sobre a viagem..."
+                        className="min-h-10 sm:min-h-12 max-h-32 sm:max-h-40 w-full bg-transparent border-0 shadow-none resize-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm sm:text-base leading-relaxed"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            ask();
+                          }
+                        }}
+                      />
 
-                    <div className="absolute left-2 bottom-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full"
-                        onClick={() =>
-                          toast({
-                            title: "Em breve",
-                            description: "Anexos serão suportados em breve.",
-                          })
-                        }
-                        aria-label="Adicionar"
-                      >
-                        <Plus className="w-5 h-5" />
-                      </Button>
-                    </div>
-                    <div className="absolute right-2 bottom-2 flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full"
-                        onClick={() =>
-                          toast({
-                            title: "Em breve",
-                            description: "Entrada por voz em breve.",
-                          })
-                        }
-                        aria-label="Falar"
-                      >
-                        <Mic className="w-5 h-5" />
-                      </Button>
-                      <Button
-                        onClick={() => ask()}
-                        disabled={loading || !input.trim()}
-                        size="sm"
-                        aria-label="Enviar mensagem"
-                        className="h-9 rounded-full"
-                      >
-                        {loading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <span className="sr-only sm:not-sr-only sm:mr-1">Enviar</span>
-                            <ArrowUp className="w-4 h-4" />
-                          </>
-                        )}
-                      </Button>
+                      <div className="absolute left-2 bottom-2 sm:bottom-3">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 sm:h-9 sm:w-9 rounded-full"
+                          onClick={() =>
+                            toast({
+                              title: "Em breve",
+                              description: "Anexos serão suportados em breve.",
+                            })
+                          }
+                          aria-label="Adicionar"
+                        >
+                          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </Button>
+                      </div>
+                      <div className="absolute right-2 bottom-2 sm:bottom-3 flex items-center gap-1 sm:gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 sm:h-9 sm:w-9 rounded-full"
+                          onClick={() =>
+                            toast({
+                              title: "Em breve",
+                              description: "Entrada por voz em breve.",
+                            })
+                          }
+                          aria-label="Falar"
+                        >
+                          <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </Button>
+                        <Button
+                          onClick={() => ask()}
+                          disabled={loading || !input.trim()}
+                          size="sm"
+                          aria-label="Enviar mensagem"
+                          className="h-8 sm:h-9 px-2 sm:px-3 rounded-full text-xs sm:text-sm"
+                        >
+                          {loading ? (
+                            <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <span className="sr-only sm:not-sr-only sm:mr-1">Enviar</span>
+                              <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
-
               </div>
-              <div className="pb-4" />
             </div>
           </section>
         </main>
