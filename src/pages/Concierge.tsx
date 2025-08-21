@@ -536,22 +536,28 @@ export default function Concierge() {
     }
   };
 
-  async function ask() {
-    if (!input.trim()) return;
+  async function ask(promptOverride?: string) {
+    const finalPrompt = (promptOverride ?? input).trim();
+    if (!finalPrompt) return;
     setLoading(true);
-    const userMessage: Message = { role: "user", content: input.trim() };
+    const userMessage: Message = { role: "user", content: finalPrompt };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
 
     try {
-      const { data, error } = await supabase.functions.invoke("concierge-agent", {
-        body: { prompt: input, tripId: id, tripContext: trip },
-      });
+      const minimalCtx = trip
+        ? { id: trip.id, title: trip.title, destination: trip.destination ?? "", start_date: trip.start_date ?? "", end_date: trip.end_date ?? "" }
+        : (id ? { id } : {});
+      const reqBody = { prompt: finalPrompt, tripId: id ?? "", tripContext: minimalCtx };
+      console.log("🛰️ Concierge invoke body:", reqBody);
+      const { data, error } = await supabase.functions.invoke("concierge-agent", { body: reqBody });
 
       if (error) {
+        console.error("❌ Concierge invoke error:", error);
         throw new Error(error.message || "Falha ao consultar o Concierge");
       }
 
+      console.log("✅ Concierge response:", data);
       const payload: any = data || {};
       const reply: string = payload.generatedText || payload.text || payload.result || "Sem resposta.";
       const finalMessages: Message[] = [...newMessages, { role: "assistant" as const, content: reply }];
@@ -600,8 +606,7 @@ export default function Concierge() {
 
   const handleQuickAction = (query: string) => {
     setInput(query);
-    // Auto enviar a pergunta
-    setTimeout(() => ask(), 100);
+    ask(query);
   };
 
   return (
@@ -945,7 +950,7 @@ export default function Concierge() {
                         <Mic className="w-5 h-5" />
                       </Button>
                       <Button
-                        onClick={ask}
+                        onClick={() => ask()}
                         disabled={loading || !input.trim()}
                         size="sm"
                         aria-label="Enviar mensagem"
