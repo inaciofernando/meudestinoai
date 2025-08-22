@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { useParams, useNavigate } from "react-router-dom";
 import { PWALayout } from "@/components/layout/PWALayout";
@@ -19,10 +19,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart, Bar } from "recharts";
+import { ExpenseStats } from "@/components/expense/ExpenseStats";
+import { ExpenseCharts } from "@/components/expense/ExpenseCharts";
+import { ExpenseList } from "@/components/expense/ExpenseList";
+import { ExpenseFilters } from "@/components/expense/ExpenseFilters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { toZonedTime, formatInTimeZone } from "date-fns-tz";
 import {
   ArrowLeft,
   Plus,
@@ -304,46 +306,67 @@ export default function GastosViagem() {
     fetchData();
   }, [user, id, navigate]);
 
-  const selectedCurrency = CURRENCIES.find(c => c.code === (trip?.budget_currency || "BRL")) || CURRENCIES[0];
+  const selectedCurrency = useMemo(() => 
+    CURRENCIES.find(c => c.code === (trip?.budget_currency || "BRL")) || CURRENCIES[0],
+    [trip?.budget_currency]
+  );
 
-  const getTotalExpenses = () => {
-    return expenses.reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
-  };
-
-  const getRealizedExpenses = () => {
-    return expenses
+  // Memoized calculations for better performance
+  const calculations = useMemo(() => {
+    const totalExpenses = expenses.reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
+    const realizedExpenses = expenses
       .filter(expense => expense.expense_type === 'realizado')
       .reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
-  };
-
-  const getPlannedExpenses = () => {
-    return expenses
+    const plannedExpenses = expenses
       .filter(expense => expense.expense_type === 'planejado')
       .reduce((total, expense) => total + (Number(expense.amount) || 0), 0);
-  };
 
-  const getBudgetStatus = () => {
-    const totalExpenses = getTotalExpenses();
     const budget = trip?.total_budget || 0;
+    let budgetStatus: { status: "no-budget" | "over-budget" | "warning" | "on-track", percentage: number } = { status: "no-budget", percentage: 0 };
     
-    if (budget === 0) return { status: "no-budget", percentage: 0 };
-    
-    const percentage = (totalExpenses / budget) * 100;
-    
-    if (percentage > 100) return { status: "over-budget", percentage };
-    if (percentage > 80) return { status: "warning", percentage };
-    return { status: "on-track", percentage };
-  };
+    if (budget > 0) {
+      const percentage = (totalExpenses / budget) * 100;
+      if (percentage > 100) budgetStatus = { status: "over-budget", percentage };
+      else if (percentage > 80) budgetStatus = { status: "warning", percentage };
+      else budgetStatus = { status: "on-track", percentage };
+    }
 
-  // Função para filtrar gastos por tipo
-  const getFilteredExpenses = () => {
+    // Daily average calculation
+    let dailyAverage = 0;
+    if (trip?.start_date && expenses.length > 0) {
+      const startDate = new Date(trip.start_date);
+      const endDate = trip.end_date ? new Date(trip.end_date) : new Date();
+      const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+      dailyAverage = totalExpenses / daysDiff;
+    }
+
+    // Projected total
+    let projectedTotal = 0;
+    if (trip?.start_date && trip?.end_date) {
+      const startDate = new Date(trip.start_date);
+      const endDate = new Date(trip.end_date);
+      const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      projectedTotal = dailyAverage * totalDays;
+    }
+
+    return {
+      totalExpenses,
+      realizedExpenses,
+      plannedExpenses,
+      budgetStatus,
+      dailyAverage,
+      projectedTotal
+    };
+  }, [expenses, trip]);
+
+  // Filtered expenses with memoization
+  const filteredExpenses = useMemo(() => {
     if (activeFilter === 'todos') return expenses;
     return expenses.filter(expense => expense.expense_type === activeFilter);
-  };
+  }, [expenses, activeFilter]);
 
-  // Função para organizar gastos por dia
-  const getExpensesByDay = () => {
-    const filteredExpenses = getFilteredExpenses();
+  // Expenses grouped by day with memoization
+  const expensesByDay = useMemo(() => {
     const expensesByDay = filteredExpenses.reduce((acc, expense) => {
       const date = expense.date.split('T')[0];
       if (!acc[date]) {
@@ -353,52 +376,63 @@ export default function GastosViagem() {
       return acc;
     }, {} as Record<string, Expense[]>);
 
-    // Converter para array e ordenar por data (mais recente primeiro)
     return Object.entries(expensesByDay)
       .map(([date, dayExpenses]) => ({
         date,
         expenses: dayExpenses,
-        total: dayExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0),
-        mainCategory: getMostFrequentCategory(dayExpenses)
+        total: dayExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0)
       }))
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  };
+  }, [filteredExpenses]);
 
-  const getMostFrequentCategory = (dayExpenses: Expense[]) => {
-    const categoryCount = dayExpenses.reduce((acc, expense) => {
-      acc[expense.category] = (acc[expense.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+  // Callbacks for better performance
+  const handleFilterChange = useCallback((filter: 'todos' | 'planejado' | 'realizado') => {
+    setActiveFilter(filter);
+  }, []);
 
-    const mostFrequent = Object.entries(categoryCount).reduce((max, [category, count]) => 
-      count > max.count ? { category, count } : max, 
-      { category: '', count: 0 }
-    );
+  const handleToggleDay = useCallback((date: string) => {
+    setExpandedDays(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(date)) {
+        newSet.delete(date);
+      } else {
+        newSet.add(date);
+      }
+      return newSet;
+    });
+  }, []);
 
-    return EXPENSE_CATEGORIES.find(cat => cat.id === mostFrequent.category);
-  };
+  const handleViewExpense = useCallback((expense: Expense) => {
+    setSelectedExpense(expense);
+    setIsViewingExpense(true);
+  }, []);
 
-  // Funções para KPIs
-  const getDailyAverage = () => {
-    if (!trip?.start_date || expenses.length === 0) return 0;
-    
-    const startDate = new Date(trip.start_date);
-    const endDate = trip.end_date ? new Date(trip.end_date) : new Date();
-    const daysDiff = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
-    
-    return getTotalExpenses() / daysDiff;
-  };
+  const handleEditExpense = useCallback((expense: Expense) => {
+    setEditingExpense(expense);
+    setEditForm({
+      category: expense.category,
+      subcategory: expense.subcategory || "",
+      amount: expense.amount.toString(),
+      currency: expense.currency,
+      description: expense.description,
+      date: formatDateForDisplay(expense.date),
+      establishment: expense.establishment || "",
+      expense_type: expense.expense_type,
+      payment_method_type: expense.payment_method_type || "",
+      receiptFile: null
+    });
+    setIsEditingExpense(true);
+  }, []);
 
-  const getProjectedTotal = () => {
-    if (!trip?.start_date || !trip?.end_date) return 0;
-    
-    const startDate = new Date(trip.start_date);
-    const endDate = new Date(trip.end_date);
-    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    const dailyAverage = getDailyAverage();
-    
-    return dailyAverage * totalDays;
-  };
+  const handleDeleteExpenseDialog = useCallback((expense: Expense) => {
+    setSelectedExpense(expense);
+    setIsDeleteDialogOpen(true);
+  }, []);
+
+  const handleViewReceipt = useCallback((imageUrl: string) => {
+    setReceiptImageUrl(imageUrl);
+    setIsViewingReceipt(true);
+  }, []);
 
   const fetchUserPaymentMethods = async () => {
     if (!user || !trip) return;
@@ -824,26 +858,73 @@ export default function GastosViagem() {
     );
   }
 
-  const budgetStatus = getBudgetStatus();
+  const { budgetStatus } = calculations;
 
   return (
     <ProtectedRoute>
       <PWALayout showFooter={false}>
-        
-          {/* Header estilo C6 Bank */}
-          <div className="c6-card mx-4 mb-6">
-            <TripSectionHeader
-              label="Extrato da viagem"
-              title={trip.title}
-              subtitle={trip.destination}
-              onBack={() => navigate(`/viagem/${id}`)}
-              right={
-                <Button className="c6-button-primary w-10 h-10 p-0 rounded-full" aria-label="Adicionar gasto" onClick={() => setIsAddingExpense(true)}>
-                  <Plus className="w-5 h-5" />
-                </Button>
-              }
-            />
-          </div>
+        {/* Header estilo C6 Bank */}
+        <div className="c6-card mx-4 mb-6">
+          <TripSectionHeader
+            label="Extrato da viagem"
+            title={trip.title}
+            subtitle={trip.destination}
+            onBack={() => navigate(`/viagem/${id}`)}
+            right={
+              <Button 
+                className="c6-button-primary w-10 h-10 p-0 rounded-full" 
+                aria-label="Adicionar gasto" 
+                onClick={() => setIsAddingExpense(true)}
+              >
+                <Plus className="w-5 h-5" />
+              </Button>
+            }
+          />
+        </div>
+
+        <div className="space-y-6 px-4 pb-20">
+          {/* Expense Stats */}
+          <ExpenseStats
+            totalExpenses={calculations.totalExpenses}
+            realizedExpenses={calculations.realizedExpenses}
+            plannedExpenses={calculations.plannedExpenses}
+            budget={trip.total_budget || 0}
+            budgetStatus={budgetStatus}
+            currency={selectedCurrency.code}
+            dailyAverage={calculations.dailyAverage}
+            projectedTotal={calculations.projectedTotal}
+          />
+
+          {/* Expense Filters */}
+          <ExpenseFilters
+            activeFilter={activeFilter}
+            onFilterChange={handleFilterChange}
+            totalCount={expenses.length}
+            plannedCount={expenses.filter(e => e.expense_type === 'planejado').length}
+            realizedCount={expenses.filter(e => e.expense_type === 'realizado').length}
+            showChart={showChart}
+            onToggleChart={() => setShowChart(!showChart)}
+          />
+
+          {/* Expense Charts */}
+          <ExpenseCharts
+            expenses={filteredExpenses}
+            showChart={showChart}
+            onToggleChart={() => setShowChart(!showChart)}
+          />
+
+          {/* Expense List */}
+          <ExpenseList
+            expensesByDay={expensesByDay}
+            expandedDays={expandedDays}
+            onToggleDay={handleToggleDay}
+            onEditExpense={handleEditExpense}
+            onDeleteExpense={handleDeleteExpenseDialog}
+            onViewExpense={handleViewExpense}
+            onViewReceipt={handleViewReceipt}
+            currencySymbol={selectedCurrency.symbol}
+          />
+        </div>
             <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
               <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
@@ -1343,7 +1424,7 @@ export default function GastosViagem() {
                   {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
                 </p>
                 <p className="c6-text-secondary text-xs mb-3">
-                  Gasto: {formatCurrency(getTotalExpenses(), selectedCurrency.symbol)}
+                  Gasto: {formatCurrency(calculations.totalExpenses, selectedCurrency.symbol)}
                 </p>
                 
                 {/* Barra de progresso compacta */}
@@ -1370,7 +1451,7 @@ export default function GastosViagem() {
                   budgetStatus.status === "over-budget" ? "text-destructive" :
                   budgetStatus.status === "warning" ? "text-orange-600" : "text-green-600"
                 }`}>
-                  {formatCurrency(Math.max(0, (trip.total_budget || 0) - getTotalExpenses()), selectedCurrency.symbol)}
+                  {formatCurrency(Math.max(0, (trip.total_budget || 0) - calculations.totalExpenses), selectedCurrency.symbol)}
                 </p>
                 <div className="flex items-center justify-between">
                   <Badge 
@@ -1404,7 +1485,7 @@ export default function GastosViagem() {
               <div className="c6-card p-4">
                 <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO REALIZADO</p>
                 <p className="text-lg sm:text-2xl font-bold text-destructive mb-1">
-                  {formatCurrency(getRealizedExpenses(), selectedCurrency.symbol)}
+                  {formatCurrency(calculations.realizedExpenses, selectedCurrency.symbol)}
                 </p>
                 <p className="c6-text-secondary text-xs">Despesas realizadas</p>
               </div>
@@ -1413,7 +1494,7 @@ export default function GastosViagem() {
               <div className="c6-card p-4">
                 <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO PLANEJADO</p>
                 <p className="text-lg sm:text-2xl font-bold text-blue-600 mb-1">
-                  {formatCurrency(getPlannedExpenses(), selectedCurrency.symbol)}
+                  {formatCurrency(calculations.plannedExpenses, selectedCurrency.symbol)}
                 </p>
                 <p className="c6-text-secondary text-xs">Despesas planejadas</p>
               </div>
@@ -1503,7 +1584,7 @@ export default function GastosViagem() {
                 </TabsList>
               </Tabs>
 
-              {getFilteredExpenses().length === 0 ? (
+              {filteredExpenses.length === 0 ? (
                 <div className="text-center py-12">
                   <Receipt className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
                   <p className="c6-text-secondary">
@@ -1519,9 +1600,8 @@ export default function GastosViagem() {
                 </div>
               ) : (
                 <div className="space-y-0">
-                  {getExpensesByDay().map((dayData, dayIndex) => {
+                  {expensesByDay.map((dayData, dayIndex) => {
                     const isExpanded = expandedDays.has(dayData.date);
-                    const category = dayData.mainCategory;
                     
                     return (
                       <div key={dayData.date}>
@@ -2370,7 +2450,8 @@ export default function GastosViagem() {
             </div>
           </DialogContent>
         </Dialog>
-
+        {/* Modals and Dialogs - Keep existing functionality */}
+        {/* ... keep existing code (all modals and dialogs) */}
       </PWALayout>
     </ProtectedRoute>
   );
