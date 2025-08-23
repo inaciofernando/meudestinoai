@@ -103,9 +103,27 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
     navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
   };
 
-  const openExternalLink = (url: string) => {
+  const openExternalLink = (url: string, linkType?: string) => {
     if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
+      try {
+        // Tentar abrir o link
+        const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+        
+        // Verificar se o popup foi bloqueado
+        if (!newWindow) {
+          console.warn(`Popup bloqueado para ${linkType || 'link'}: ${url}`);
+          // Tentar novamente como navegação direta
+          window.location.href = url;
+        }
+      } catch (error) {
+        console.error(`Erro ao abrir ${linkType || 'link'}:`, error);
+        // Fallback: copiar para área de transferência
+        navigator.clipboard?.writeText(url).then(() => {
+          alert(`Link copiado para área de transferência: ${url}`);
+        }).catch(() => {
+          alert(`Não foi possível abrir o link: ${url}`);
+        });
+      }
     }
   };
 
@@ -172,7 +190,7 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
                 variant="outline" 
                 size="sm" 
                 className="h-8 px-3 text-xs gap-1"
-                onClick={() => openExternalLink(restaurantWithLinks.link)}
+                onClick={() => openExternalLink(restaurantWithLinks.link, 'Site')}
               >
                 <Globe className="w-3 h-3" />
                 Site
@@ -183,7 +201,7 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
                 variant="outline" 
                 size="sm" 
                 className="h-8 px-3 text-xs gap-1"
-                onClick={() => openExternalLink(restaurantWithLinks.tripadvisor)}
+                onClick={() => openExternalLink(restaurantWithLinks.tripadvisor, 'TripAdvisor')}
               >
                 <ExternalLink className="w-3 h-3" />
                 TripAdvisor
@@ -194,7 +212,7 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
                 variant="outline" 
                 size="sm" 
                 className="h-8 px-3 text-xs gap-1"
-                onClick={() => openExternalLink(restaurantWithLinks.gmap)}
+                onClick={() => openExternalLink(restaurantWithLinks.gmap, 'Google Maps')}
               >
                 <Map className="w-3 h-3" />
                 Google Maps
@@ -205,7 +223,7 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
                 variant="outline" 
                 size="sm" 
                 className="h-8 px-3 text-xs gap-1"
-                onClick={() => openExternalLink(restaurantWithLinks.waze)}
+                onClick={() => openExternalLink(restaurantWithLinks.waze, 'Waze')}
               >
                 <Navigation className="w-3 h-3" />
                 Waze
