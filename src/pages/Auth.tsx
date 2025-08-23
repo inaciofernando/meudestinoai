@@ -42,7 +42,7 @@ export default function Auth() {
         navigate("/");
       }
     });
-  }, [navigate]);
+  }, []); // Remove navigate dependency to prevent infinite loops
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
