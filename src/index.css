@@ -151,6 +151,9 @@ All colors MUST be HSL.
     --viewport-height: 100vh;
     --viewport-height-small: 100svh; 
     --viewport-height-dynamic: 100dvh;
+    /* Prevent double scrollbars */
+    overflow: hidden;
+    height: 100%;
   }
 
   body {
@@ -163,6 +166,10 @@ All colors MUST be HSL.
     -webkit-text-size-adjust: 100%;
     /* Improve scroll behavior on mobile */
     overscroll-behavior: none;
+    /* Allow body to scroll properly */
+    height: 100%;
+    overflow: auto;
+    margin: 0;
   }
 }
 

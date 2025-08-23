@@ -10,27 +10,28 @@ interface PWALayoutProps {
 
 export const PWALayout = ({ children, showHeader = true, showFooter = true }: PWALayoutProps) => {
   return (
-    <div className="h-screen w-full flex flex-col">
-      {/* Header fixo no topo - só mostra se showHeader for true */}
+    <div className="min-h-screen-mobile w-full flex flex-col bg-gradient-sky">
+      {/* Header fixo no topo */}
       {showHeader && (
-        <div className="shrink-0 sticky top-0 z-50">
+        <header className="flex-shrink-0 sticky top-0 z-50">
           <PWAHeader />
-        </div>
+        </header>
       )}
       
-      <main className="flex-1 overflow-y-auto bg-gradient-sky">
-        <div className="container px-4 mx-auto py-4 min-h-full">
+      {/* Conteúdo principal scrollável */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="container px-4 mx-auto py-4">
           {children}
         </div>
         {/* Espaçamento para o footer fixo */}
-        {showFooter && <div className="h-[88px]" />}
+        {showFooter && <div className="h-[88px] flex-shrink-0" />}
       </main>
       
       {/* Footer fixo na base */}
       {showFooter && (
-        <div className="fixed bottom-0 left-0 right-0 z-50">
+        <footer className="fixed bottom-0 left-0 right-0 z-50 flex-shrink-0">
           <PWAFooter />
-        </div>
+        </footer>
       )}
     </div>
   );
