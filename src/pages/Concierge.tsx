@@ -335,7 +335,7 @@ export default function Concierge() {
           {/* Chat Interface */}
           <div className="flex flex-col min-h-[calc(100vh-180px)] relative">
             {/* Chat messages */}
-            <div className="flex-1 space-y-4 pb-24">
+            <div className="flex-1 pb-24">
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center min-h-[50vh]">
                   <div className="text-center max-w-md">

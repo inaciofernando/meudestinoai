@@ -133,7 +133,7 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
   );
 
   return (
-    <div className="mt-3">
+    <div className="mt-4 px-4">
       <div className="flex flex-wrap gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

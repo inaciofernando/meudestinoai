@@ -30,17 +30,17 @@ const ConciergeChatMessage = memo(({ message, index }: ConciergeChatMessageProps
   return (
     <div
       key={index}
-      className={`flex items-start gap-2 sm:gap-3 ${
+      className={`flex items-start gap-3 sm:gap-4 ${
         message.role === "user" ? "justify-end" : "justify-start"
-      } px-4`}
+      } px-4 mb-6`}
     >
       {message.role !== "user" && (
-        <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-muted text-foreground/80 flex items-center justify-center flex-shrink-0 mt-1">
-          <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
+        <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-muted text-foreground/80 flex items-center justify-center flex-shrink-0 mt-1">
+          <Bot className="h-4 w-4" />
         </div>
       )}
       <div
-        className={`w-full max-w-[85%] sm:max-w-[80%] lg:max-w-[70%] rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-sm ${
+        className={`w-full max-w-[85%] sm:max-w-[75%] lg:max-w-[65%] rounded-2xl px-4 sm:px-5 py-3 sm:py-4 shadow-sm ${
           message.role === "user"
             ? "bg-primary text-primary-foreground"
             : "bg-muted text-foreground"
@@ -57,15 +57,19 @@ const ConciergeChatMessage = memo(({ message, index }: ConciergeChatMessageProps
                   {...props}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline text-primary"
+                  className="underline text-primary hover:text-primary/80"
                 />
               ),
-              ul: (props) => <ul className="list-disc pl-5 my-2" {...props} />,
-              ol: (props) => <ol className="list-decimal pl-5 my-2" {...props} />,
-              li: (props) => <li className="my-1" {...props} />,
-              h1: (props) => <h1 className="text-lg font-bold mb-2" {...props} />,
-              h2: (props) => <h2 className="text-base font-semibold mb-2" {...props} />,
-              p: (props) => <p className="leading-relaxed mb-2" {...props} />,
+              ul: (props) => <ul className="list-disc pl-6 my-3 space-y-1" {...props} />,
+              ol: (props) => <ol className="list-decimal pl-6 my-3 space-y-1" {...props} />,
+              li: (props) => <li className="my-1 leading-relaxed" {...props} />,
+              h1: (props) => <h1 className="text-lg font-bold mb-3 mt-2" {...props} />,
+              h2: (props) => <h2 className="text-base font-semibold mb-3 mt-2" {...props} />,
+              h3: (props) => <h3 className="text-sm font-semibold mb-2 mt-2" {...props} />,
+              p: (props) => <p className="leading-relaxed mb-3 last:mb-0" {...props} />,
+              strong: (props) => <strong className="font-semibold" {...props} />,
+              code: (props) => <code className="bg-background/50 px-1.5 py-0.5 rounded text-sm" {...props} />,
+              blockquote: (props) => <blockquote className="border-l-4 border-muted-foreground/20 pl-4 my-3 italic" {...props} />,
             }}
           >
             {message.content}
@@ -75,7 +79,7 @@ const ConciergeChatMessage = memo(({ message, index }: ConciergeChatMessageProps
         )}
       </div>
       {message.role === "user" && (
-        <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 mt-1">
+        <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 mt-1">
           <span className="text-xs font-medium">Eu</span>
         </div>
       )}
