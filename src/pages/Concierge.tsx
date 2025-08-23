@@ -233,9 +233,9 @@ export default function Concierge() {
   return (
     <ProtectedRoute>
       <PWALayout showHeader={true} showFooter={false}>
-        <div className="space-y-6">
+        <div className="flex flex-col h-screen">
           {/* Header */}
-          <div className="flex justify-between items-start">
+          <div className="flex-shrink-0 flex justify-between items-center p-4 border-b">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -247,7 +247,7 @@ export default function Concierge() {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground">Concierge de Viagem</h1>
+                <h1 className="text-xl font-bold text-foreground">Concierge de Viagem</h1>
               </div>
             </div>
             
@@ -274,55 +274,55 @@ export default function Concierge() {
             </DropdownMenu>
           </div>
 
-        <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Histórico</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-2">
-              <ScrollArea className="h-80">
-                {historyLoading ? (
-                  <div className="flex items-center justify-center py-6">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                ) : conversationHistory.length === 0 ? (
-                  <p className="text-muted-foreground text-sm py-6 text-center">
-                    Nenhuma conversa encontrada
-                  </p>
-                ) : (
-                  <div className="space-y-1 pr-2">
-                    {conversationHistory.map((conversation) => (
-                      <div
-                        key={conversation.id}
-                        className="flex items-center justify-between p-2 rounded-md hover:bg-muted group"
-                      >
-                        <button
-                          onClick={() => { loadConversation(conversation); setHistoryOpen(false); }}
-                          className="flex-1 text-left text-sm text-foreground/80 hover:text-foreground truncate pr-2"
+          <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Histórico</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2">
+                <ScrollArea className="h-80">
+                  {historyLoading ? (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  ) : conversationHistory.length === 0 ? (
+                    <p className="text-muted-foreground text-sm py-6 text-center">
+                      Nenhuma conversa encontrada
+                    </p>
+                  ) : (
+                    <div className="space-y-1 pr-2">
+                      {conversationHistory.map((conversation) => (
+                        <div
+                          key={conversation.id}
+                          className="flex items-center justify-between p-2 rounded-md hover:bg-muted group"
                         >
-                          {conversation.title}
-                        </button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteConversation(conversation.id)}
-                          className="h-6 w-6 hover:text-destructive"
-                          aria-label="Excluir conversa"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-            </div>
-          </DialogContent>
-        </Dialog>
+                          <button
+                            onClick={() => { loadConversation(conversation); setHistoryOpen(false); }}
+                            className="flex-1 text-left text-sm text-foreground/80 hover:text-foreground truncate pr-2"
+                          >
+                            {conversation.title}
+                          </button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteConversation(conversation.id)}
+                            className="h-6 w-6 hover:text-destructive"
+                            aria-label="Excluir conversa"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Chat Interface */}
-          <div className="flex flex-col h-[calc(100vh-120px)]">
-            <div className="flex-1 overflow-y-auto px-4 pb-4">
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto px-4 py-2">
               <div className="space-y-4">
                 {messages.length === 0 ? (
                   <ConciergeQuickActions onQuickAction={handleQuickAction} />
