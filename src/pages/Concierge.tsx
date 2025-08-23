@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { PWAHeader } from "@/components/layout/PWAHeader";
+import { PWALayout } from "@/components/layout/PWALayout";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -60,24 +60,6 @@ export default function Concierge() {
     meta.setAttribute("content", desc);
   }, [id]);
 
-  useEffect(() => {
-    const fetchTrip = async () => {
-      if (!id) return;
-      const { data, error } = await supabase
-        .from("trips")
-        .select("id,title,destination,start_date,end_date")
-        .eq("id", id)
-        .single();
-      if (error) {
-        toast({ title: "Erro", description: "Não foi possível carregar a viagem.", variant: "destructive" });
-        return;
-      }
-      setTrip(data as TripCtx);
-    };
-    fetchTrip();
-    loadConversationHistory();
-  }, [id, toast]);
-
   const loadConversationHistory = useCallback(async () => {
     if (!id) return;
     setHistoryLoading(true);
@@ -101,6 +83,24 @@ export default function Concierge() {
       setHistoryLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    const fetchTrip = async () => {
+      if (!id) return;
+      const { data, error } = await supabase
+        .from("trips")
+        .select("id,title,destination,start_date,end_date")
+        .eq("id", id)
+        .single();
+      if (error) {
+        toast({ title: "Erro", description: "Não foi possível carregar a viagem.", variant: "destructive" });
+        return;
+      }
+      setTrip(data as TripCtx);
+    };
+    fetchTrip();
+    loadConversationHistory();
+  }, [id, toast, loadConversationHistory]);
 
   const saveConversation = useCallback(async (newMessages: Message[]) => {
     if (!id || newMessages.length === 0) return;
@@ -213,7 +213,7 @@ export default function Concierge() {
     } finally {
       setLoading(false);
     }
-  }, [input, messages, trip, id, toast]);
+  }, [input, messages, trip, id, toast, saveConversation]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && !loading) {
@@ -224,27 +224,24 @@ export default function Concierge() {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col h-screen bg-background relative">
-        {/* Header PWA */}
-        <PWAHeader />
-        
-        {/* Header da página */}
-        <header className="flex-shrink-0 bg-background border-b px-4 py-3 sticky top-0 z-10">
+      <PWALayout showFooter={false}>
+        <div className="space-y-6">
+          {/* Header integrado - padrão das outras páginas */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(-1)}
-                className="h-9 w-9 p-0"
+                className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
                 aria-label="Voltar"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
-                <h1 className="text-xl font-bold">Concierge de Viagem</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground">Concierge de Viagem</h1>
                 {trip && (
-                  <p className="text-sm text-muted-foreground">{trip.title}</p>
+                  <p className="text-muted-foreground text-sm">{trip.title}</p>
                 )}
               </div>
             </div>
@@ -271,104 +268,105 @@ export default function Concierge() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </header>
 
-        <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Histórico</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-2">
-              <ScrollArea className="h-80">
-                {historyLoading ? (
-                  <div className="flex items-center justify-center py-6">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                ) : conversationHistory.length === 0 ? (
-                  <p className="text-muted-foreground text-sm py-6 text-center">
-                    Nenhuma conversa encontrada
-                  </p>
-                ) : (
-                  <div className="space-y-1 pr-2">
-                    {conversationHistory.map((conversation) => (
-                      <div
-                        key={conversation.id}
-                        className="flex items-center justify-between p-2 rounded-md hover:bg-muted group"
-                      >
-                        <button
-                          onClick={() => { loadConversation(conversation); setHistoryOpen(false); }}
-                          className="flex-1 text-left text-sm text-foreground/80 hover:text-foreground truncate pr-2"
+          <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Histórico</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2">
+                <ScrollArea className="h-80">
+                  {historyLoading ? (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  ) : conversationHistory.length === 0 ? (
+                    <p className="text-muted-foreground text-sm py-6 text-center">
+                      Nenhuma conversa encontrada
+                    </p>
+                  ) : (
+                    <div className="space-y-1 pr-2">
+                      {conversationHistory.map((conversation) => (
+                        <div
+                          key={conversation.id}
+                          className="flex items-center justify-between p-2 rounded-md hover:bg-muted group"
                         >
-                          {conversation.title}
-                        </button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteConversation(conversation.id)}
-                          className="h-6 w-6 hover:text-destructive"
-                          aria-label="Excluir conversa"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Chat messages - com padding bottom para o input fixo */}
-        <main className="flex-1 overflow-y-auto p-4 pb-24">
-          <div className="space-y-4 max-w-4xl mx-auto">
-            {messages.length === 0 ? (
-              <div className="flex items-center justify-center min-h-[50vh]">
-                <div className="text-center max-w-md">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Send className="w-8 h-8 text-primary" />
-                  </div>
-                  <h2 className="text-lg font-semibold mb-2">Como posso ajudar?</h2>
-                  <p className="text-muted-foreground text-sm">
-                    Faça uma pergunta sobre sua viagem e receba recomendações personalizadas.
-                  </p>
-                </div>
+                          <button
+                            onClick={() => { loadConversation(conversation); setHistoryOpen(false); }}
+                            className="flex-1 text-left text-sm text-foreground/80 hover:text-foreground truncate pr-2"
+                          >
+                            {conversation.title}
+                          </button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteConversation(conversation.id)}
+                            className="h-6 w-6 hover:text-destructive"
+                            aria-label="Excluir conversa"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
               </div>
-            ) : (
-              messages.map((message, index) => (
-                <ConciergeChatMessage key={index} message={message} index={index} />
-              ))
-            )}
-          </div>
-        </main>
+            </DialogContent>
+          </Dialog>
 
-        {/* Input fixo na parte inferior - posição absoluta como ChatGPT */}
-        <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 z-20">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex gap-3 items-end">
-              <div className="flex-1 relative">
-                <Textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Faça sua pergunta sobre a viagem..."
-                  className="min-h-[52px] max-h-32 resize-none pr-12 rounded-2xl border-2 focus:border-primary"
-                  disabled={loading}
-                  rows={1}
-                />
-                <Button
-                  onClick={ask}
-                  disabled={loading || !input.trim()}
-                  size="icon"
-                  className="absolute right-2 bottom-2 h-8 w-8 rounded-full"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+          {/* Chat Interface */}
+          <div className="flex flex-col min-h-[calc(100vh-180px)] relative">
+            {/* Chat messages */}
+            <div className="flex-1 space-y-4 pb-24">
+              {messages.length === 0 ? (
+                <div className="flex items-center justify-center min-h-[50vh]">
+                  <div className="text-center max-w-md">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Send className="w-8 h-8 text-primary" />
+                    </div>
+                    <h2 className="text-lg font-semibold mb-2">Como posso ajudar?</h2>
+                    <p className="text-muted-foreground text-sm">
+                      Faça uma pergunta sobre sua viagem e receba recomendações personalizadas.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                messages.map((message, index) => (
+                  <ConciergeChatMessage key={index} message={message} index={index} />
+                ))
+              )}
+            </div>
+
+            {/* Input fixo na parte inferior */}
+            <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 z-20">
+              <div className="max-w-4xl mx-auto">
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 relative">
+                    <Textarea
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Faça sua pergunta sobre a viagem..."
+                      className="min-h-[52px] max-h-32 resize-none pr-12 rounded-2xl border-2 focus:border-primary"
+                      disabled={loading}
+                      rows={1}
+                    />
+                    <Button
+                      onClick={ask}
+                      disabled={loading || !input.trim()}
+                      size="icon"
+                      className="absolute right-2 bottom-2 h-8 w-8 rounded-full"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </PWALayout>
     </ProtectedRoute>
   );
 }
