@@ -322,8 +322,8 @@ export default function Concierge() {
         </Dialog>
 
           {/* Chat Interface */}
-          <div className="flex flex-col flex-1 max-w-4xl mx-auto w-full">
-            <div className="flex-1 overflow-y-auto px-4 pb-24">
+          <div className="flex flex-col h-[calc(100vh-140px)]">
+            <div className="flex-1 overflow-y-auto px-4 pb-4">
               <div className="space-y-4">
                 {messages.length === 0 ? (
                   <ConciergeQuickActions onQuickAction={handleQuickAction} />
@@ -342,7 +342,7 @@ export default function Concierge() {
               </div>
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 z-10">
+            <div className="flex-shrink-0">
               <ConciergeInput 
                 input={input}
                 setInput={setInput}

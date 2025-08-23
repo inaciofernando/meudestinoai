@@ -43,7 +43,7 @@ const ConciergeInput = memo(({ input, setInput, loading, onSend }: ConciergeInpu
   }, [loading, handleSend]);
 
   return (
-    <div className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-3">
+    <div className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-3">
       <div className="max-w-4xl mx-auto">
         <div className="relative flex items-end gap-2">
           <div className="flex-1 min-h-[40px] relative">
