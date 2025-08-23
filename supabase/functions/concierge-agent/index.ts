@@ -106,12 +106,12 @@ Regras adicionais importantes:
 
     // Separar o texto da resposta do JSON interno
     const jsonMatch = fullText.match(/```json\s*([\s\S]*?)\s*```/);
-    let userText = fullText;
+    let cleanText = fullText;
     let structuredData = null;
 
     if (jsonMatch) {
       // Remove o bloco JSON da resposta do usuário
-      userText = fullText.replace(/```json\s*[\s\S]*?\s*```/g, '').trim();
+      cleanText = fullText.replace(/```json\s*[\s\S]*?\s*```/g, '').trim();
       
       // Tentar parsear o JSON para uso interno (opcional)
       try {
@@ -124,7 +124,7 @@ Regras adicionais importantes:
 
     // Retornar apenas o texto limpo para o usuário
     return new Response(JSON.stringify({ 
-      generatedText: userText,
+      generatedText: cleanText,
       // structuredData pode ser usado futuramente para salvar dados automaticamente
       // structuredData: structuredData 
     }), {
