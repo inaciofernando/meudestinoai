@@ -5,7 +5,6 @@ import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import TripSectionHeader from "@/components/TripSectionHeader";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
@@ -863,26 +862,35 @@ export default function GastosViagem() {
   return (
     <ProtectedRoute>
       <PWALayout showFooter={false}>
-        {/* Header estilo C6 Bank */}
-        <div className="c6-card mx-4 mb-6">
-          <TripSectionHeader
-            label="Extrato da viagem"
-            title={trip.title}
-            subtitle={trip.destination}
-            onBack={() => navigate(`/viagem/${id}`)}
-            right={
-              <Button 
-                className="c6-button-primary w-10 h-10 p-0 rounded-full" 
-                aria-label="Adicionar gasto" 
-                onClick={() => setIsAddingExpense(true)}
+        <div className="space-y-6">
+          {/* Header integrado */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(`/viagem/${id}`)}
+                className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
+                aria-label="Voltar"
               >
-                <Plus className="w-5 h-5" />
+                <ArrowLeft className="h-4 w-4" />
               </Button>
-            }
-          />
-        </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Extrato da viagem</p>
+                <h1 className="text-xl font-semibold text-foreground">{trip.title}</h1>
+                <p className="text-sm text-muted-foreground">{trip.destination}</p>
+              </div>
+            </div>
 
-        <div className="space-y-6 px-4 pb-20">
+            <Button 
+              className="w-10 h-10 p-0 rounded-full bg-gradient-ocean hover:shadow-travel transition-all duration-300" 
+              aria-label="Adicionar gasto" 
+              onClick={() => setIsAddingExpense(true)}
+            >
+              <Plus className="w-5 h-5" />
+            </Button>
+          </div>
+
           {/* Expense Stats */}
           <ExpenseStats
             totalExpenses={calculations.totalExpenses}

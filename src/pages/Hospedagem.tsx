@@ -16,7 +16,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/ImageUpload";
 import { cn, formatCurrency } from "@/lib/utils";
-import TripSectionHeader from "@/components/TripSectionHeader";
 
 interface Accommodation {
   id: string;
@@ -277,30 +276,42 @@ export default function Hospedagem() {
 
   return (
     <PWALayout showFooter={false}>
-      <div className="flex flex-col h-screen-mobile">
-        {/* Header fixo */}
-        <div className="flex-shrink-0 c6-card mx-4 mb-4">
-          <TripSectionHeader
-            label="Hospedagem"
-            title={trip?.title || ""}
-            subtitle={trip?.destination || ""}
-            onBack={() => navigate(`/viagem/${tripId}`)}
-            onAdd={() => setShowAddForm(true)}
-            addAriaLabel="Adicionar hospedagem"
-          />
+      <div className="space-y-6">
+        {/* Header integrado */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/viagem/${tripId}`)}
+              className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
+              aria-label="Voltar"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Hospedagem</p>
+              <h1 className="text-xl font-semibold text-foreground">{trip?.title || ""}</h1>
+              <p className="text-sm text-muted-foreground">{trip?.destination || ""}</p>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className="w-10 h-10 p-0 rounded-full bg-gradient-ocean hover:shadow-travel transition-all duration-300"
+            aria-label="Adicionar hospedagem"
+          >
+            <Plus className="w-5 h-5" />
+          </Button>
         </div>
 
-        {/* Conteúdo com scroll */}
-        <ScrollArea className="flex-1 px-4">
-          <div className="space-y-6 pb-6">
-
-            {/* Formulário para adicionar nova hospedagem */}
-            {showAddForm && (
-              <Card className="mb-4">
-                <CardHeader>
-                  <CardTitle>{editingAccommodation ? 'Editar Hospedagem' : 'Nova Hospedagem'}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+        {/* Formulário para adicionar nova hospedagem */}
+        {showAddForm && (
+          <Card className="mb-4">
+            <CardHeader>
+              <CardTitle>{editingAccommodation ? 'Editar Hospedagem' : 'Nova Hospedagem'}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="hotel_name">Nome do Hotel *</Label>
                 <Input
@@ -449,13 +460,13 @@ export default function Hospedagem() {
                 <Button variant="outline" onClick={handleCancelEdit}>
                   Cancelar
                 </Button>
-                </div>
-              </CardContent>
-            </Card>
-            )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-            {/* Lista de hospedagens */}
-            <div className="grid gap-4">
+        {/* Lista de hospedagens */}
+        <div className="grid gap-4">
           {accommodations.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-8">
@@ -467,7 +478,7 @@ export default function Hospedagem() {
             </Card>
           ) : (
             accommodations.map((accommodation) => (
-              <Card key={accommodation.id}>
+              <Card key={accommodation.id} className="hover:shadow-card transition-smooth">
                 <CardHeader>
                   <CardTitle>{accommodation.hotel_name}</CardTitle>
                 </CardHeader>
@@ -558,11 +569,9 @@ export default function Hospedagem() {
                    </div>
                  </CardContent>
                </Card>
-             ))
-           )}
-            </div>
-          </div>
-        </ScrollArea>
+              ))
+          )}
+        </div>
       </div>
     </PWALayout>
   );
