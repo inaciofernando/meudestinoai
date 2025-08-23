@@ -322,9 +322,8 @@ export default function Restaurantes() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Restaurantes</p>
-              <h1 className="text-xl font-semibold text-foreground">{trip?.title || ""}</h1>
-              <p className="text-sm text-muted-foreground">{trip?.destination || ""}</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Restaurantes</h1>
+              <p className="text-muted-foreground text-sm">Descubra e salve os melhores lugares para comer</p>
             </div>
           </div>
 

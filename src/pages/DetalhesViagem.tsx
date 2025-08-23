@@ -459,23 +459,22 @@ export default function DetalhesViagem() {
   return (
     <ProtectedRoute>
       <PWALayout>
-        <div className="space-y-0">
+        <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-center gap-4 p-4 md:p-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/viagens")}
-              className="h-8 w-8 p-0"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold mb-2">{trip.title}</h1>
-              <p className="text-muted-foreground flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                {trip.destination}
-              </p>
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/viagens")}
+                className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground">Detalhes da Viagem</h1>
+                <p className="text-muted-foreground text-sm">Gerencie informações e documentos da sua viagem</p>
+              </div>
             </div>
             <div className="flex gap-2">
               {isEditing ? (
