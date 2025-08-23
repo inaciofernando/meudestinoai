@@ -102,9 +102,32 @@ Regras adicionais importantes:
     }
 
     const data = await resp.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const fullText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    return new Response(JSON.stringify({ generatedText: text }), {
+    // Separar o texto da resposta do JSON interno
+    const jsonMatch = fullText.match(/```json\s*([\s\S]*?)\s*```/);
+    let userText = fullText;
+    let structuredData = null;
+
+    if (jsonMatch) {
+      // Remove o bloco JSON da resposta do usuário
+      userText = fullText.replace(/```json\s*[\s\S]*?\s*```/g, '').trim();
+      
+      // Tentar parsear o JSON para uso interno (opcional)
+      try {
+        structuredData = JSON.parse(jsonMatch[1]);
+        console.log('Extracted structured data:', structuredData);
+      } catch (parseError) {
+        console.log('Failed to parse JSON, continuing with text only:', parseError);
+      }
+    }
+
+    // Retornar apenas o texto limpo para o usuário
+    return new Response(JSON.stringify({ 
+      generatedText: userText,
+      // structuredData pode ser usado futuramente para salvar dados automaticamente
+      // structuredData: structuredData 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

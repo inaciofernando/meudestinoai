@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Send } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { ConciergeChatMessage } from "@/components/concierge/ConciergeChatMessage";
 
 interface TripCtx {
   id: string;
@@ -155,20 +156,7 @@ export default function Concierge() {
               </div>
             ) : (
               messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-xs lg:max-w-2xl px-4 py-3 rounded-2xl ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground ml-12"
-                        : "bg-muted mr-12"
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-                  </div>
-                </div>
+                <ConciergeChatMessage key={index} message={message} index={index} />
               ))
             )}
           </div>
