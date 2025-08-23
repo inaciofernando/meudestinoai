@@ -232,10 +232,10 @@ export default function Concierge() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={true} showFooter={false}>
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="flex justify-between items-start">
+      <div className="flex flex-col h-screen">
+        {/* Header fixo */}
+        <div className="flex-shrink-0 bg-background border-b px-4 py-3">
+          <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -273,6 +273,7 @@ export default function Concierge() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        </div>
 
         <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
           <DialogContent className="sm:max-w-md">
@@ -320,38 +321,36 @@ export default function Concierge() {
           </DialogContent>
         </Dialog>
 
-          {/* Chat Interface */}
-          <div className="flex flex-col h-[calc(100vh-120px)]">
-            <div className="flex-1 overflow-y-auto px-4 pb-4">
-              <div className="space-y-4">
-                {messages.length === 0 ? (
-                  <ConciergeQuickActions onQuickAction={handleQuickAction} />
-                ) : (
-                  <>
-                    {messages.map((message, index) => (
-                      <div key={index}>
-                        <ConciergeChatMessage message={message} index={index} />
-                        {message.role === "assistant" && (
-                          <ConciergeActionButtons message={message.content} tripId={id!} />
-                        )}
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="flex-shrink-0">
-              <ConciergeInput 
-                input={input}
-                setInput={setInput}
-                loading={loading}
-                onSend={ask}
-              />
-            </div>
+        {/* Área de mensagens - flex-1 para ocupar espaço restante */}
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="space-y-4 pb-4">
+            {messages.length === 0 ? (
+              <ConciergeQuickActions onQuickAction={handleQuickAction} />
+            ) : (
+              <>
+                {messages.map((message, index) => (
+                  <div key={index}>
+                    <ConciergeChatMessage message={message} index={index} />
+                    {message.role === "assistant" && (
+                      <ConciergeActionButtons message={message.content} tripId={id!} />
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
-      </PWALayout>
+
+        {/* Input fixo na parte inferior */}
+        <div className="flex-shrink-0">
+          <ConciergeInput 
+            input={input}
+            setInput={setInput}
+            loading={loading}
+            onSend={ask}
+          />
+        </div>
+      </div>
     </ProtectedRoute>
   );
 }
