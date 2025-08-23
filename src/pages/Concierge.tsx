@@ -181,6 +181,10 @@ export default function Concierge() {
     setMessages(newMessages);
     setInput("");
 
+    // Adicionar mensagem temporária de "digitando"
+    const typingMessage: Message = { role: "assistant", content: "..." };
+    setMessages([...newMessages, typingMessage]);
+
     try {
       const minimalCtx = trip
         ? { 
@@ -205,6 +209,8 @@ export default function Concierge() {
       setMessages(finalMessages);
       await saveConversation(finalMessages);
     } catch (e: any) {
+      // Remove mensagem de digitando e volta para as mensagens originais
+      setMessages(newMessages);
       const msg = (e && (e.message || e.error?.message)) || "Falha na requisição.";
       const humanMsg = /non-2xx|GEMINI|unauthorized|apikey/i.test(String(msg))
         ? "O Concierge não está configurado. Adicione a chave GEMINI nas Funções do Supabase."

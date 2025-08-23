@@ -13,7 +13,20 @@ interface ConciergeChatMessageProps {
   index: number;
 }
 
+const TypingIndicator = () => (
+  <div className="flex items-center space-x-1">
+    <span className="text-muted-foreground text-sm">IA está digitando</span>
+    <div className="flex space-x-1">
+      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></div>
+      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></div>
+      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></div>
+    </div>
+  </div>
+);
+
 const ConciergeChatMessage = memo(({ message, index }: ConciergeChatMessageProps) => {
+  const isTyping = message.role === "assistant" && message.content === "...";
+
   return (
     <div
       key={index}
@@ -33,7 +46,9 @@ const ConciergeChatMessage = memo(({ message, index }: ConciergeChatMessageProps
             : "bg-muted text-foreground"
         }`}
       >
-        {message.role === "assistant" ? (
+        {isTyping ? (
+          <TypingIndicator />
+        ) : message.role === "assistant" ? (
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
