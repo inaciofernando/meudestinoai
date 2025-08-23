@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { PWAHeader } from "@/components/layout/PWAHeader";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +21,7 @@ interface Message {
   content: string;
 }
 
-export default function ConciergeNew() {
+export default function Concierge() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -112,9 +113,12 @@ export default function ConciergeNew() {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col h-screen bg-background">
-        {/* Header fixo */}
-        <header className="flex-shrink-0 bg-background border-b px-4 py-3">
+      <div className="flex flex-col h-screen bg-background relative">
+        {/* Header PWA */}
+        <PWAHeader />
+        
+        {/* Header da página */}
+        <header className="flex-shrink-0 bg-background border-b px-4 py-3 sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -134,61 +138,68 @@ export default function ConciergeNew() {
           </div>
         </header>
 
-        {/* Chat messages */}
-        <main className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center max-w-md">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Send className="w-8 h-8 text-primary" />
+        {/* Chat messages - com padding bottom para o input fixo */}
+        <main className="flex-1 overflow-y-auto p-4 pb-24">
+          <div className="space-y-4 max-w-4xl mx-auto">
+            {messages.length === 0 ? (
+              <div className="flex items-center justify-center min-h-[50vh]">
+                <div className="text-center max-w-md">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Send className="w-8 h-8 text-primary" />
+                  </div>
+                  <h2 className="text-lg font-semibold mb-2">Como posso ajudar?</h2>
+                  <p className="text-muted-foreground text-sm">
+                    Faça uma pergunta sobre sua viagem e receba recomendações personalizadas.
+                  </p>
                 </div>
-                <h2 className="text-lg font-semibold mb-2">Como posso ajudar?</h2>
-                <p className="text-muted-foreground text-sm">
-                  Faça uma pergunta sobre sua viagem e receba recomendações personalizadas.
-                </p>
               </div>
-            </div>
-          ) : (
-            messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
+            ) : (
+              messages.map((message, index) => (
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  }`}
+                  key={index}
+                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <div
+                    className={`max-w-xs lg:max-w-2xl px-4 py-3 rounded-2xl ${
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground ml-12"
+                        : "bg-muted mr-12"
+                    }`}
+                  >
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </main>
 
-        {/* Input fixo na parte inferior */}
-        <footer className="flex-shrink-0 border-t bg-background p-4">
-          <div className="flex gap-2">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Faça sua pergunta sobre a viagem..."
-              className="min-h-[40px] max-h-32 resize-none"
-              disabled={loading}
-            />
-            <Button
-              onClick={ask}
-              disabled={loading || !input.trim()}
-              size="icon"
-              className="h-10 w-10"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+        {/* Input fixo na parte inferior - posição absoluta como ChatGPT */}
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 z-20">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex gap-3 items-end">
+              <div className="flex-1 relative">
+                <Textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Faça sua pergunta sobre a viagem..."
+                  className="min-h-[52px] max-h-32 resize-none pr-12 rounded-2xl border-2 focus:border-primary"
+                  disabled={loading}
+                  rows={1}
+                />
+                <Button
+                  onClick={ask}
+                  disabled={loading || !input.trim()}
+                  size="icon"
+                  className="absolute right-2 bottom-2 h-8 w-8 rounded-full"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
-        </footer>
+        </div>
       </div>
     </ProtectedRoute>
   );
