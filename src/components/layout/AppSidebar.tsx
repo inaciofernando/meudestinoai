@@ -1,12 +1,17 @@
+import { useState } from "react";
 import { 
   Home, 
-  Map, 
-  Calendar, 
-  Wallet, 
   MapPin, 
+  Plus, 
+  CreditCard, 
+  UtensilsCrossed, 
+  Building2, 
+  Bot,
+  User,
   Settings,
-  Plus,
-  Route
+  Plane,
+  Calendar,
+  Map
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -21,68 +26,71 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 
-const navigation = [
+const mainItems = [
   { title: "Dashboard", url: "/", icon: Home },
-  { title: "Minhas Viagens", url: "/viagens", icon: Map },
-  { title: "Roteiro", url: "#", icon: Route },
+  { title: "Minhas Viagens", url: "/minhas-viagens", icon: MapPin },
+  { title: "Nova Viagem", url: "/nova-viagem", icon: Plus },
+];
+
+const toolsItems = [
+  { title: "Concierge AI", url: "/concierge", icon: Bot },
   { title: "Planejamento", url: "/planejamento", icon: Calendar },
-  { title: "Pontos de Interesse", url: "/pontos", icon: MapPin },
+];
+
+const accountItems = [
+  { title: "Perfil", url: "/perfil", icon: User },
+  { title: "Configurações", url: "/configuracoes", icon: Settings },
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { open } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
-  const isCollapsed = state === "collapsed";
 
-  const isActive = (path: string) => currentPath === path;
-  const getNavClass = (active: boolean) =>
-    active 
-      ? "bg-primary/10 text-primary border-r-2 border-primary" 
-      : "hover:bg-primary/5 hover:text-primary";
+  const isActive = (path: string) => {
+    if (path === "/" && currentPath === "/") return true;
+    if (path !== "/" && currentPath.startsWith(path)) return true;
+    return false;
+  };
+
+  const getNavCls = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+      isActive 
+        ? "bg-primary text-primary-foreground font-medium shadow-sm" 
+        : "text-foreground/70 hover:bg-muted hover:text-foreground"
+    }`;
 
   return (
-    <Sidebar className={isCollapsed ? "w-16" : "w-64"} collapsible="icon">
-      <SidebarContent className="bg-card border-r border-border">
-        {/* Logo/Brand */}
-        <div className="p-4 border-b border-border">
-          {!isCollapsed ? (
-            <h1 className="text-xl font-bold text-primary">TravelManager</h1>
+    <Sidebar className={open ? "w-64" : "w-16"} collapsible="icon">
+      <SidebarContent className="px-3 py-4">
+        {/* Logo */}
+        <div className="mb-6 px-3">
+          {open ? (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center">
+                <Plane className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-semibold text-lg">TravelVerse</span>
+            </div>
           ) : (
-            <div className="w-8 h-8 bg-gradient-ocean rounded-lg"></div>
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center mx-auto">
+              <Plane className="w-4 h-4 text-white" />
+            </div>
           )}
         </div>
 
-        {/* Quick Action */}
-        <div className="p-4">
-          <Button 
-            variant="travel" 
-            size={isCollapsed ? "icon" : "default"} 
-            className="w-full"
-          >
-            <Plus className="w-4 h-4" />
-            {!isCollapsed && <span>Nova Viagem</span>}
-          </Button>
-        </div>
-
-        {/* Navigation */}
+        {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-muted-foreground">
-            {!isCollapsed && "Navegação"}
-          </SidebarGroupLabel>
+          {open && <SidebarGroupLabel>Principal</SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigation.map((item) => (
+              {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={getNavClass(isActive(item.url))}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      {!isCollapsed && <span className="font-medium">{item.title}</span>}
+                    <NavLink to={item.url} className={getNavCls}>
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      {open && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -91,18 +99,43 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Settings */}
-        <div className="mt-auto p-4 border-t border-border">
-          <SidebarMenuButton asChild>
-            <NavLink 
-              to="/perfil" 
-              className={getNavClass(isActive("/perfil"))}
-            >
-              <Settings className="w-5 h-5" />
-              {!isCollapsed && <span>Configurações</span>}
-            </NavLink>
-          </SidebarMenuButton>
-        </div>
+        {/* Tools */}
+        <SidebarGroup>
+          {open && <SidebarGroupLabel>Ferramentas</SidebarGroupLabel>}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {toolsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavCls}>
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      {open && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Account */}
+        <SidebarGroup>
+          {open && <SidebarGroupLabel>Conta</SidebarGroupLabel>}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {accountItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavCls}>
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      {open && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
