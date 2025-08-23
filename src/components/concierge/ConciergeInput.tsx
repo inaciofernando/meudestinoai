@@ -30,14 +30,17 @@ const ConciergeInput = memo(({ input, setInput, loading, onSend }: ConciergeInpu
     autoResize();
   }, [setInput, autoResize]);
 
+  const handleSend = useCallback(() => {
+    if (!input.trim() || loading) return;
+    onSend();
+  }, [input, loading, onSend]);
+
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && !loading) {
       e.preventDefault();
-      if (input.trim()) {
-        onSend();
-      }
+      handleSend();
     }
-  }, [input, loading, onSend]);
+  }, [loading, handleSend]);
 
   return (
     <div className="sticky bottom-0 bg-background border-t p-4">
@@ -55,10 +58,12 @@ const ConciergeInput = memo(({ input, setInput, loading, onSend }: ConciergeInpu
               style={{ height: "44px" }}
             />
             <Button
-              onClick={onSend}
+              onClick={handleSend}
               disabled={loading || !input.trim()}
               size="icon"
-              className="absolute right-2 bottom-2 h-8 w-8 rounded-full"
+              className="absolute right-2 bottom-2 h-8 w-8 rounded-full touch-manipulation"
+              type="button"
+              aria-label="Enviar mensagem"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
