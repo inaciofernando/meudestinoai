@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { UtensilsCrossed, MapPinPlus, MoreVertical } from "lucide-react";
+import { UtensilsCrossed, MapPinPlus, MoreVertical, ExternalLink, Map, Globe, Navigation } from "lucide-react";
 
 interface QuickActionButtonsProps {
   message: string;
@@ -103,6 +103,17 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
     navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
   };
 
+  const openExternalLink = (url: string) => {
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  // Get the first restaurant with links for external buttons
+  const restaurantWithLinks = extractedData.restaurants.find(r => 
+    r.tripadvisor || r.gmap || r.link || r.waze
+  );
+
   return (
     <div className="mt-3">
       <div className="flex flex-wrap gap-2">
@@ -152,6 +163,56 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* External Link Buttons */}
+        {restaurantWithLinks && (
+          <>
+            {restaurantWithLinks.link && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 px-3 text-xs gap-1"
+                onClick={() => openExternalLink(restaurantWithLinks.link)}
+              >
+                <Globe className="w-3 h-3" />
+                Site
+              </Button>
+            )}
+            {restaurantWithLinks.tripadvisor && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 px-3 text-xs gap-1"
+                onClick={() => openExternalLink(restaurantWithLinks.tripadvisor)}
+              >
+                <ExternalLink className="w-3 h-3" />
+                TripAdvisor
+              </Button>
+            )}
+            {restaurantWithLinks.gmap && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 px-3 text-xs gap-1"
+                onClick={() => openExternalLink(restaurantWithLinks.gmap)}
+              >
+                <Map className="w-3 h-3" />
+                Google Maps
+              </Button>
+            )}
+            {restaurantWithLinks.waze && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-8 px-3 text-xs gap-1"
+                onClick={() => openExternalLink(restaurantWithLinks.waze)}
+              >
+                <Navigation className="w-3 h-3" />
+                Waze
+              </Button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
