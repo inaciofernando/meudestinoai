@@ -248,7 +248,6 @@ export default function Concierge() {
               </Button>
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground">Concierge de Viagem</h1>
-                <p className="text-muted-foreground text-sm">Seu assistente inteligente para recomendações e planejamento</p>
               </div>
             </div>
             
@@ -322,7 +321,7 @@ export default function Concierge() {
         </Dialog>
 
           {/* Chat Interface */}
-          <div className="flex flex-col h-[calc(100vh-140px)]">
+          <div className="flex flex-col h-[calc(100vh-200px)]">
             <div className="flex-1 overflow-y-auto px-4 pb-4">
               <div className="space-y-4">
                 {messages.length === 0 ? (
