@@ -25,24 +25,16 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Detect recovery mode from URL (hash or query)
+    // Only detect recovery mode from URL (hash or query)
     const hash = window.location.hash || "";
     const search = window.location.search || "";
     const isRecoveryInUrl = hash.includes("type=recovery") || search.includes("type=recovery");
 
     if (isRecoveryInUrl) {
       setIsRecoveryFlow(true);
-      return;
     }
-
-    // Only check for existing session once, don't add another listener
-    // The useAuth hook already handles auth state changes globally
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session && !isRecoveryInUrl) {
-        navigate("/");
-      }
-    });
-  }, []); // Remove navigate dependency to prevent infinite loops
+    // Remove automatic redirect to prevent conflict with Index component auth check
+  }, []);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
