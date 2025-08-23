@@ -232,7 +232,7 @@ export default function Concierge() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={true}>
+      <PWALayout showHeader={true} showFooter={false}>
         <div className="space-y-6">
           {/* Header */}
           <div className="flex justify-between items-start">
