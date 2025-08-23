@@ -20,8 +20,8 @@ const ConciergeInput = memo(({ input, setInput, loading, onSend }: ConciergeInpu
     // Use requestAnimationFrame to debounce DOM manipulation
     requestAnimationFrame(() => {
       el.style.height = "0px";
-      const nextHeight = Math.min(el.scrollHeight, 320);
-      el.style.height = nextHeight + "px";
+      const nextHeight = Math.min(el.scrollHeight, 240);
+      el.style.height = Math.max(40, nextHeight) + "px";
     });
   }, []);
 
@@ -43,32 +43,32 @@ const ConciergeInput = memo(({ input, setInput, loading, onSend }: ConciergeInpu
   }, [loading, handleSend]);
 
   return (
-    <div className="sticky bottom-0 bg-background border-t p-4">
+    <div className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t p-3">
       <div className="max-w-4xl mx-auto">
         <div className="relative flex items-end gap-2">
-          <div className="flex-1 min-h-[44px] relative">
+          <div className="flex-1 min-h-[40px] relative">
             <Textarea
               ref={textareaRef}
               value={input}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
-              placeholder="Digite sua pergunta..."
-              className="min-h-[44px] max-h-80 resize-none pr-12 text-sm leading-5 py-3"
+              placeholder="Faça sua pergunta sobre a viagem..."
+              className="min-h-[40px] max-h-80 resize-none pr-12 text-sm leading-5 py-2.5 px-3 rounded-2xl border-primary/20 focus:border-primary/40"
               disabled={loading}
-              style={{ height: "44px" }}
+              style={{ height: "40px" }}
             />
             <Button
               onClick={handleSend}
               disabled={loading || !input.trim()}
               size="icon"
-              className="absolute right-2 bottom-2 h-8 w-8 rounded-full touch-manipulation"
+              className="absolute right-1.5 bottom-1.5 h-7 w-7 rounded-full bg-primary hover:bg-primary/90 disabled:bg-muted touch-manipulation"
               type="button"
               aria-label="Enviar mensagem"
             >
               {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <ArrowUp className="h-4 w-4" />
+                <ArrowUp className="h-3.5 w-3.5" />
               )}
             </Button>
           </div>
