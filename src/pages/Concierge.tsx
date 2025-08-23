@@ -232,23 +232,23 @@ export default function Concierge() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={false} showFooter={false}>
-        {/* Header */}
-        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-          <div className="flex items-center justify-between px-4 py-3">
+      <PWALayout showHeader={true}>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-start">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={() => navigate(-1)}
-                className="h-9 w-9"
+                className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
                 aria-label="Voltar"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
-                <h1 className="text-xl font-semibold">Concierge de Viagem</h1>
-                <p className="text-sm text-muted-foreground">Seu assistente inteligente para recomendações e planejamento</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground">Concierge de Viagem</h1>
+                <p className="text-muted-foreground text-sm">Seu assistente inteligente para recomendações e planejamento</p>
               </div>
             </div>
             
@@ -256,11 +256,11 @@ export default function Concierge() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="h-9 w-9"
+                  size="sm"
+                  className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
                   aria-label="Menu"
                 >
-                  <MoreVertical className="h-5 w-5" />
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -274,7 +274,6 @@ export default function Concierge() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
 
         <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
           <DialogContent className="sm:max-w-md">
@@ -322,10 +321,9 @@ export default function Concierge() {
           </DialogContent>
         </Dialog>
 
-        <main className="flex flex-col flex-1 max-w-4xl mx-auto w-full">
-          <section className="flex flex-col flex-1 overflow-hidden">
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto px-4" style={{ overscrollBehavior: 'contain' }}>
+          {/* Chat Interface */}
+          <div className="flex flex-col flex-1 max-w-4xl mx-auto w-full min-h-[60vh]">
+            <div className="flex-1 overflow-y-auto">
               <div className="space-y-3 pb-4">
                 {messages.length === 0 ? (
                   <ConciergeQuickActions onQuickAction={handleQuickAction} />
@@ -343,15 +341,15 @@ export default function Concierge() {
                 )}
               </div>
             </div>
-          </section>
 
-          <ConciergeInput 
-            input={input}
-            setInput={setInput}
-            loading={loading}
-            onSend={ask}
-          />
-        </main>
+            <ConciergeInput 
+              input={input}
+              setInput={setInput}
+              loading={loading}
+              onSend={ask}
+            />
+          </div>
+        </div>
       </PWALayout>
     </ProtectedRoute>
   );
