@@ -1,18 +1,11 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { PWALayout } from "@/components/layout/PWALayout";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Calendar, Plus, ArrowLeft, Clock, Trash2, MoreVertical, Loader2 } from "lucide-react";
-import { ConciergeChatMessage } from "@/components/concierge/ConciergeChatMessage";
-import { ConciergeQuickActions } from "@/components/concierge/ConciergeQuickActions";
-import { ConciergeInput } from "@/components/concierge/ConciergeInput";
-import { ConciergeActionButtons } from "@/components/concierge/ConciergeActionButtons";
+import { ArrowLeft, Send } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface TripCtx {
   id: string;
@@ -27,26 +20,14 @@ interface Message {
   content: string;
 }
 
-interface ConversationHistory {
-  id: string;
-  title: string;
-  messages: Message[];
-  created_at: string;
-  updated_at: string;
-}
-
-export default function Concierge() {
+export default function ConciergeNew() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [trip, setTrip] = useState<TripCtx | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
 
   // SEO basics
   useEffect(() => {
@@ -60,13 +41,6 @@ export default function Concierge() {
       document.head.appendChild(meta);
     }
     meta.setAttribute("content", desc);
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.setAttribute("rel", "canonical");
-      document.head.appendChild(canonical);
-    }
-    canonical.setAttribute("href", `${window.location.origin}/viagem/${id}/concierge`);
   }, [id]);
 
   useEffect(() => {
@@ -84,110 +58,17 @@ export default function Concierge() {
       setTrip(data as TripCtx);
     };
     fetchTrip();
-    loadConversationHistory();
   }, [id, toast]);
 
-  const loadConversationHistory = useCallback(async () => {
-    if (!id) return;
-    setHistoryLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("concierge_conversations")
-        .select("*")
-        .eq("trip_id", id)
-        .order("updated_at", { ascending: false })
-        .limit(10);
-      
-      if (error) throw error;
-      const transformedData = (data || []).map(item => ({
-        ...item,
-        messages: Array.isArray(item.messages) ? (item.messages as unknown) as Message[] : []
-      }));
-      setConversationHistory(transformedData);
-    } catch (error: any) {
-      console.error("Error loading conversation history:", error);
-    } finally {
-      setHistoryLoading(false);
-    }
-  }, [id]);
-
-  const saveConversation = useCallback(async (newMessages: Message[]) => {
-    if (!id || newMessages.length === 0) return;
-    
-    try {
-      const title = newMessages[0]?.content.slice(0, 50) + (newMessages[0]?.content.length > 50 ? '...' : '');
-      
-      if (currentConversationId) {
-        const { error } = await supabase
-          .from("concierge_conversations")
-          .update({
-            messages: newMessages as any,
-            title,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", currentConversationId);
-        
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from("concierge_conversations")
-          .insert({
-            trip_id: id,
-            user_id: (await supabase.auth.getUser()).data.user?.id,
-            title,
-            messages: newMessages as any
-          })
-          .select()
-          .single();
-        
-        if (error) throw error;
-        setCurrentConversationId(data.id);
-      }
-      
-      loadConversationHistory();
-    } catch (error: any) {
-      console.error("Error saving conversation:", error);
-    }
-  }, [id, currentConversationId, loadConversationHistory]);
-
-  const loadConversation = useCallback((conversation: ConversationHistory) => {
-    setMessages(conversation.messages);
-    setCurrentConversationId(conversation.id);
-  }, []);
-
-  const startNewConversation = useCallback(() => {
-    setMessages([]);
-    setCurrentConversationId(null);
-  }, []);
-
-  const deleteConversation = useCallback(async (conversationId: string) => {
-    try {
-      const { error } = await supabase
-        .from("concierge_conversations")
-        .delete()
-        .eq("id", conversationId);
-      
-      if (error) throw error;
-      
-      if (currentConversationId === conversationId) {
-        startNewConversation();
-      }
-      
-      loadConversationHistory();
-      toast({ title: "Conversa excluída", description: "A conversa foi removida com sucesso." });
-    } catch (error: any) {
-      toast({ title: "Erro", description: "Não foi possível excluir a conversa.", variant: "destructive" });
-    }
-  }, [currentConversationId, startNewConversation, loadConversationHistory, toast]);
-
-  const ask = useCallback(async (promptOverride?: string) => {
-    const finalPrompt = (promptOverride ?? input).trim();
+  const ask = useCallback(async () => {
+    const finalPrompt = input.trim();
     if (!finalPrompt) return;
     
     setLoading(true);
     const userMessage: Message = { role: "user", content: finalPrompt };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
+    setInput("");
 
     try {
       const minimalCtx = trip
@@ -211,8 +92,6 @@ export default function Concierge() {
       const reply: string = payload.generatedText || payload.text || payload.result || "Sem resposta.";
       const finalMessages: Message[] = [...newMessages, { role: "assistant" as const, content: reply }];
       setMessages(finalMessages);
-      
-      await saveConversation(finalMessages);
     } catch (e: any) {
       const msg = (e && (e.message || e.error?.message)) || "Falha na requisição.";
       const humanMsg = /non-2xx|GEMINI|unauthorized|apikey/i.test(String(msg))
@@ -221,120 +100,95 @@ export default function Concierge() {
       toast({ title: "Erro", description: humanMsg, variant: "destructive" });
     } finally {
       setLoading(false);
-      setInput("");
     }
-  }, [input, messages, trip, id, toast, saveConversation]);
+  }, [input, messages, trip, id, toast]);
 
-  const handleQuickAction = useCallback((query: string) => {
-    setInput(query);
-    ask(query);
-  }, [ask]);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey && !loading) {
+      e.preventDefault();
+      ask();
+    }
+  };
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col h-screen relative">
+      <div className="flex flex-col h-screen bg-background">
         {/* Header fixo */}
-        <div className="flex-shrink-0 bg-background border-b px-4 py-3">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(-1)}
-                className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
-                aria-label="Voltar"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground">Concierge de Viagem</h1>
+        <header className="flex-shrink-0 bg-background border-b px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(-1)}
+              className="h-9 w-9 p-0"
+              aria-label="Voltar"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold">Concierge de Viagem</h1>
+              {trip && (
+                <p className="text-sm text-muted-foreground">{trip.title}</p>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Chat messages */}
+        <main className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center max-w-md">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Send className="w-8 h-8 text-primary" />
+                </div>
+                <h2 className="text-lg font-semibold mb-2">Como posso ajudar?</h2>
+                <p className="text-muted-foreground text-sm">
+                  Faça uma pergunta sobre sua viagem e receba recomendações personalizadas.
+                </p>
               </div>
             </div>
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
-                  aria-label="Menu"
+          ) : (
+            messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
+                  }`}
                 >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={startNewConversation} className="gap-2">
-                  <Plus className="h-4 w-4" /> Novo chat
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setHistoryOpen(true)} className="gap-2">
-                  <Clock className="h-4 w-4" /> Histórico
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Histórico</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-2">
-              <ScrollArea className="h-80">
-                {historyLoading ? (
-                  <div className="flex items-center justify-center py-6">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                ) : conversationHistory.length === 0 ? (
-                  <p className="text-muted-foreground text-sm py-6 text-center">
-                    Nenhuma conversa encontrada
-                  </p>
-                ) : (
-                  <div className="space-y-1 pr-2">
-                    {conversationHistory.map((conversation) => (
-                      <div
-                        key={conversation.id}
-                        className="flex items-center justify-between p-2 rounded-md hover:bg-muted group"
-                      >
-                        <button
-                          onClick={() => { loadConversation(conversation); setHistoryOpen(false); }}
-                          className="flex-1 text-left text-sm text-foreground/80 hover:text-foreground truncate pr-2"
-                        >
-                          {conversation.title}
-                        </button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => deleteConversation(conversation.id)}
-                          className="h-6 w-6 hover:text-destructive"
-                          aria-label="Excluir conversa"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Área central com ações iniciais do concierge */}
-        <div className="flex-1 flex items-center justify-center px-4 pb-20">
-          <ConciergeQuickActions onQuickAction={handleQuickAction} />
-        </div>
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </main>
 
         {/* Input fixo na parte inferior */}
-        <div className="flex-shrink-0 absolute bottom-0 left-0 right-0">
-          <ConciergeInput 
-            input={input}
-            setInput={setInput}
-            loading={loading}
-            onSend={ask}
-          />
-        </div>
+        <footer className="flex-shrink-0 border-t bg-background p-4">
+          <div className="flex gap-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Faça sua pergunta sobre a viagem..."
+              className="min-h-[40px] max-h-32 resize-none"
+              disabled={loading}
+            />
+            <Button
+              onClick={ask}
+              disabled={loading || !input.trim()}
+              size="icon"
+              className="h-10 w-10"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </footer>
       </div>
     </ProtectedRoute>
   );
