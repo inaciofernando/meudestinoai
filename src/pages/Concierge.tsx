@@ -232,7 +232,7 @@ export default function Concierge() {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-screen relative">
         {/* Header fixo */}
         <div className="flex-shrink-0 bg-background border-b px-4 py-3">
           <div className="flex justify-between items-center">
@@ -322,12 +322,12 @@ export default function Concierge() {
         </Dialog>
 
         {/* Área central com ações iniciais do concierge */}
-        <div className="flex-1 flex items-center justify-center px-4">
+        <div className="flex-1 flex items-center justify-center px-4 pb-20">
           <ConciergeQuickActions onQuickAction={handleQuickAction} />
         </div>
 
         {/* Input fixo na parte inferior */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 absolute bottom-0 left-0 right-0">
           <ConciergeInput 
             input={input}
             setInput={setInput}

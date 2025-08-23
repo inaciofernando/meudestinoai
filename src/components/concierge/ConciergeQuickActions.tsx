@@ -43,39 +43,39 @@ const ConciergeQuickActions = memo(({ onQuickAction }: ConciergeQuickActionsProp
   ];
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto px-4 pt-2">
-      {/* Hero Section - Compacta */}
-      <div className="text-center py-3">
-        <div className="mb-4">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-            <Bot className="w-6 h-6 text-primary" />
+    <div className="space-y-3 max-w-md mx-auto px-4">
+      {/* Hero Section - Muito compacta */}
+      <div className="text-center py-2">
+        <div className="mb-3">
+          <div className="w-10 h-10 mx-auto mb-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <Bot className="w-5 h-5 text-primary" />
           </div>
-          <h2 className="text-lg font-semibold mb-1">Como posso ajudar?</h2>
-          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+          <h2 className="text-base font-semibold mb-1">Como posso ajudar?</h2>
+          <p className="text-muted-foreground text-xs max-w-xs mx-auto">
             Seu assistente de viagem para recomendações e planejamento.
           </p>
         </div>
       </div>
 
-      {/* Quick Actions - Cards menores */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-medium text-center text-muted-foreground">Escolhas Rápidas</h3>
+      {/* Quick Actions - Cards bem menores */}
+      <div className="space-y-2">
+        <h3 className="text-xs font-medium text-center text-muted-foreground">Escolhas Rápidas</h3>
         <div className="grid grid-cols-2 gap-2">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             return (
               <Card
                 key={index}
-                className="p-2 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-primary/20 hover:border-primary/40 h-16 flex items-center"
+                className="p-2 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02] border-primary/20 hover:border-primary/40 h-12 flex items-center"
                 onClick={() => onQuickAction(action.query)}
               >
                 <div className="flex items-center gap-2 w-full">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-primary" />
+                  <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-3 h-3 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-xs truncate">{action.title}</h4>
-                    <p className="text-[10px] text-muted-foreground truncate">
+                    <h4 className="font-medium text-[10px] truncate">{action.title}</h4>
+                    <p className="text-[9px] text-muted-foreground truncate">
                       {action.description}
                     </p>
                   </div>
@@ -86,9 +86,9 @@ const ConciergeQuickActions = memo(({ onQuickAction }: ConciergeQuickActionsProp
         </div>
       </div>
 
-      {/* Additional Suggestions - Compactas */}
-      <div className="space-y-2">
-        <p className="text-xs text-muted-foreground text-center">
+      {/* Additional Suggestions - Muito compactas */}
+      <div className="space-y-1">
+        <p className="text-[10px] text-muted-foreground text-center">
           Ou pergunte algo específico:
         </p>
         <div className="flex flex-wrap gap-1 justify-center">
@@ -97,7 +97,7 @@ const ConciergeQuickActions = memo(({ onQuickAction }: ConciergeQuickActionsProp
               key={index}
               variant="outline"
               size="sm"
-              className="text-[10px] h-6 px-2 rounded-full hover:bg-primary/5 whitespace-nowrap"
+              className="text-[9px] h-5 px-2 rounded-full hover:bg-primary/5 whitespace-nowrap"
               onClick={() => onQuickAction(suggestion)}
             >
               {suggestion}
