@@ -321,8 +321,10 @@ export default function Concierge() {
           </DialogContent>
         </Dialog>
 
-        {/* Área central vazia - flex-1 para ocupar espaço restante */}
-        <div className="flex-1"></div>
+        {/* Área central com ações iniciais do concierge */}
+        <div className="flex-1 flex items-center justify-center px-4">
+          <ConciergeQuickActions onQuickAction={handleQuickAction} />
+        </div>
 
         {/* Input fixo na parte inferior */}
         <div className="flex-shrink-0">
