@@ -25,8 +25,6 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    let canceled = false;
-
     // Detect recovery mode from URL (hash or query)
     const hash = window.location.hash || "";
     const search = window.location.search || "";
@@ -34,33 +32,16 @@ export default function Auth() {
 
     if (isRecoveryInUrl) {
       setIsRecoveryFlow(true);
+      return;
     }
 
-    // Listen for auth changes first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setIsRecoveryFlow(true);
-        return;
-      }
-      if (session && !isRecoveryInUrl) {
-        setTimeout(() => navigate("/"), 0);
-      }
-    });
-
-    // Then check for existing session
+    // Only check for existing session once, don't add another listener
+    // The useAuth hook already handles auth state changes globally
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!canceled) {
-        if (session && !isRecoveryInUrl) {
-          // Defer navigation to avoid potential render race conditions
-          setTimeout(() => navigate("/"), 0);
-        }
+      if (session && !isRecoveryInUrl) {
+        navigate("/");
       }
     });
-
-    return () => {
-      canceled = true;
-      subscription.unsubscribe();
-    };
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
