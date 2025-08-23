@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format, parseISO } from "date-fns";
 import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -276,26 +277,30 @@ export default function Hospedagem() {
 
   return (
     <PWALayout showFooter={false}>
-      <div className="space-y-6">
-        {/* Header com botão voltar */}
-          <div className="c6-card mx-4 mb-6">
-            <TripSectionHeader
-              label="Hospedagem"
-              title={trip?.title || ""}
-              subtitle={trip?.destination || ""}
-              onBack={() => navigate(`/viagem/${tripId}`)}
-              onAdd={() => setShowAddForm(true)}
-              addAriaLabel="Adicionar hospedagem"
-            />
-          </div>
+      <div className="flex flex-col h-screen-mobile">
+        {/* Header fixo */}
+        <div className="flex-shrink-0 c6-card mx-4 mb-4">
+          <TripSectionHeader
+            label="Hospedagem"
+            title={trip?.title || ""}
+            subtitle={trip?.destination || ""}
+            onBack={() => navigate(`/viagem/${tripId}`)}
+            onAdd={() => setShowAddForm(true)}
+            addAriaLabel="Adicionar hospedagem"
+          />
+        </div>
 
-        {/* Formulário para adicionar nova hospedagem */}
-        {showAddForm && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{editingAccommodation ? 'Editar Hospedagem' : 'Nova Hospedagem'}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Conteúdo com scroll */}
+        <ScrollArea className="flex-1 px-4">
+          <div className="space-y-6 pb-6">
+
+            {/* Formulário para adicionar nova hospedagem */}
+            {showAddForm && (
+              <Card className="mb-4">
+                <CardHeader>
+                  <CardTitle>{editingAccommodation ? 'Editar Hospedagem' : 'Nova Hospedagem'}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="hotel_name">Nome do Hotel *</Label>
                 <Input
@@ -444,13 +449,13 @@ export default function Hospedagem() {
                 <Button variant="outline" onClick={handleCancelEdit}>
                   Cancelar
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                </div>
+              </CardContent>
+            </Card>
+            )}
 
-        {/* Lista de hospedagens */}
-        <div className="grid gap-4">
+            {/* Lista de hospedagens */}
+            <div className="grid gap-4">
           {accommodations.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-8">
@@ -518,18 +523,46 @@ export default function Hospedagem() {
                     </div>
                   )}
 
+                   {accommodation.reservation_amount && (
+                     <div>
+                       <strong>Valor da Reserva:</strong> {formatCurrency(accommodation.reservation_amount)}
+                     </div>
+                   )}
 
-                  {accommodation.notes && (
-                    <div>
-                      <strong>Observações:</strong>
-                      <p className="text-muted-foreground mt-1">{accommodation.notes}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                   {accommodation.notes && (
+                     <div>
+                       <strong>Observações:</strong>
+                       <p className="text-muted-foreground mt-1">{accommodation.notes}</p>
+                     </div>
+                   )}
+
+                   <div className="flex gap-2">
+                     <Button
+                       variant="outline"
+                       size="sm"
+                       onClick={() => handleEditAccommodation(accommodation)}
+                       className="flex items-center gap-2"
+                     >
+                       <Edit className="w-4 h-4" />
+                       Editar
+                     </Button>
+                     <Button
+                       variant="outline"
+                       size="sm"
+                       onClick={() => handleDeleteAccommodation(accommodation.id)}
+                       className="flex items-center gap-2 text-destructive hover:text-destructive"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                       Excluir
+                     </Button>
+                   </div>
+                 </CardContent>
+               </Card>
+             ))
+           )}
+            </div>
+          </div>
+        </ScrollArea>
       </div>
     </PWALayout>
   );
