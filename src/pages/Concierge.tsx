@@ -247,16 +247,8 @@ export default function Concierge() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-xl font-semibold">Concierge</h1>
-                <p className="text-xs text-muted-foreground">Seu assistente de viagem</p>
-                <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground overflow-x-auto no-scrollbar">
-                  <span className="inline-flex items-center gap-1 bg-muted/60 rounded-full px-2 py-0.5 whitespace-nowrap">
-                    <MapPin className="w-3.5 h-3.5" /> {trip?.destination ?? "Destino não informado"}
-                  </span>
-                  <span className="inline-flex items-center gap-1 bg-muted/60 rounded-full px-2 py-0.5 whitespace-nowrap">
-                    <Calendar className="w-3.5 h-3.5" /> {(trip?.start_date ?? "ND")} — {(trip?.end_date ?? "ND")}
-                  </span>
-                </div>
+                <h1 className="text-xl font-semibold">Concierge de Viagem</h1>
+                <p className="text-sm text-muted-foreground">Seu assistente inteligente para recomendações e planejamento</p>
               </div>
             </div>
             
