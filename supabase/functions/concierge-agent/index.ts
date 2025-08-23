@@ -122,9 +122,11 @@ Regras adicionais importantes:
       }
     }
 
-    // Retornar apenas o texto limpo para o usuário
+    // Retornar o texto limpo + JSON oculto para uso dos botões de ação
+    // O frontend receberá o texto limpo, mas os botões poderão acessar o fullText
     return new Response(JSON.stringify({ 
       generatedText: cleanText,
+      fullResponse: fullText, // Inclui o JSON para os botões de ação
       // structuredData pode ser usado futuramente para salvar dados automaticamente
       // structuredData: structuredData 
     }), {

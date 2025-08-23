@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Send, Plus, Clock, Trash2, MoreVertical, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { ConciergeChatMessage } from "@/components/concierge/ConciergeChatMessage";
+import { ConciergeActionButtons } from "@/components/concierge/ConciergeActionButtons";
 
 interface TripCtx {
   id: string;
@@ -45,6 +46,7 @@ export default function Concierge() {
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [fullResponses, setFullResponses] = useState<Map<number, string>>(new Map());
 
   // SEO basics
   useEffect(() => {
@@ -149,6 +151,7 @@ export default function Concierge() {
   const startNewConversation = useCallback(() => {
     setMessages([]);
     setCurrentConversationId(null);
+    setFullResponses(new Map()); // Limpar respostas completas
   }, []);
 
   const deleteConversation = useCallback(async (conversationId: string) => {
@@ -205,8 +208,16 @@ export default function Concierge() {
 
       const payload: any = data || {};
       const reply: string = payload.generatedText || payload.text || payload.result || "Sem resposta.";
+      const fullResponse: string = payload.fullResponse || reply; // Para os botões de ação
+      
       const finalMessages: Message[] = [...newMessages, { role: "assistant" as const, content: reply }];
       setMessages(finalMessages);
+      
+      // Armazenar resposta completa para os botões de ação
+      const responseIndex = finalMessages.length - 1;
+      setFullResponses(prev => new Map(prev).set(responseIndex, fullResponse));
+      
+      // Salvar a versão normal para histórico
       await saveConversation(finalMessages);
     } catch (e: any) {
       // Remove mensagem de digitando e volta para as mensagens originais
@@ -337,11 +348,16 @@ export default function Concierge() {
                     </p>
                   </div>
                 </div>
-              ) : (
-                messages.map((message, index) => (
+            ) : (
+              messages.map((message, index) => (
+                <div key={index}>
                   <ConciergeChatMessage key={index} message={message} index={index} />
-                ))
-              )}
+                  {message.role === "assistant" && message.content !== "..." && (
+                    <ConciergeActionButtons message={fullResponses.get(index) || message.content} tripId={id!} />
+                  )}
+                </div>
+              ))
+            )}
             </div>
 
             {/* Input fixo na parte inferior */}
