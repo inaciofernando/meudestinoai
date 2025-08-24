@@ -289,10 +289,20 @@ export default function NovaViagem() {
                   />
                 </div>
 
-                <TripLocations
-                  locations={locations}
-                  onChange={setLocations}
-                />
+                {/* Seção de Locais da Viagem */}
+                <div className="space-y-4 p-6 bg-card rounded-lg border shadow-sm">
+                  <div className="flex items-center gap-2 border-b border-border pb-3">
+                    <div className="w-3 h-3 bg-primary rounded-full"></div>
+                    <h3 className="text-lg font-semibold text-foreground">Locais da Viagem</h3>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      Para recomendações personalizadas
+                    </span>
+                  </div>
+                  <TripLocations
+                    locations={locations}
+                    onChange={setLocations}
+                  />
+                </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Imagens da Viagem</label>
