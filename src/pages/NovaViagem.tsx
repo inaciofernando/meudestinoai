@@ -119,7 +119,7 @@ export default function NovaViagem() {
       setImages([]);
       setLocations([]);
 
-      navigate(`/detalhes-viagem/${tripData[0].id}`);
+      navigate("/");
     } catch (error) {
       console.error("Erro ao criar viagem:", error);
       toast({
