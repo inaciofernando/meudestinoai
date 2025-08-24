@@ -455,18 +455,18 @@ export default function EditarPonto() {
                 </div>
               </div>
 
-              {/* Descrição */}
-               <div className="space-y-2">
-                 <Label htmlFor="description">Descrição</Label>
-                 <Textarea
-                   id="description"
-                   value={formData.description}
-                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                   placeholder="Descrição detalhada do local ou atividade"
-                   rows={4}
-                   className="min-h-[100px]"
-                 />
-               </div>
+               {/* Descrição */}
+                <div className="space-y-2">
+                  <Label htmlFor="description">Descrição</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Descrição detalhada do local ou atividade"
+                    rows={6}
+                    className="min-h-[140px]"
+                  />
+                </div>
 
               {/* Upload de imagens */}
               <div className="space-y-2">

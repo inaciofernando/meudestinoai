@@ -697,8 +697,8 @@ export default function RoteiroSimples() {
                    value={formData.description}
                    onChange={(e) => setFormData({...formData, description: e.target.value})}
                    placeholder="Detalhes sobre o local ou atividade"
-                   rows={4}
-                   className="min-h-[100px]"
+                   rows={6}
+                   className="min-h-[140px]"
                  />
                </div>
 
