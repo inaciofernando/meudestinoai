@@ -16,6 +16,7 @@ import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 import { VoucherUpload } from "@/components/VoucherUpload";
 import { cn } from "@/lib/utils";
 import { format, addDays, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface RoteiroPonto {
   id: string;
@@ -140,7 +141,7 @@ export default function EditarPonto() {
       for (let d = new Date(startDate); d <= endDate; d = addDays(d, 1)) {
         const dayNumber = Math.ceil((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
         const formattedDate = format(d, "dd/MM/yyyy");
-        const weekday = format(d, "EEEE").substring(0, 3).toUpperCase();
+        const weekday = format(d, "EEEE", { locale: ptBR }).substring(0, 3).toUpperCase();
         
         days.push({
           value: dayNumber,
