@@ -229,10 +229,17 @@ export const ExpenseList = memo(({
                                 {expense.receipt_image_url && (
                                   <>
                                     <span>•</span>
-                                    <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onViewReceipt(expense.receipt_image_url!);
+                                      }}
+                                      className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors cursor-pointer"
+                                      title="Visualizar comprovante ampliado"
+                                    >
                                       <Receipt className="w-3 h-3" />
-                                      <span>Comprovante</span>
-                                    </div>
+                                      <span>Ver Comprovante</span>
+                                    </button>
                                   </>
                                 )}
                               </div>
