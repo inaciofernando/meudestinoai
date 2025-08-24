@@ -314,10 +314,8 @@ export default function NovaViagem() {
                               mode="single"
                               selected={field.value}
                               onSelect={field.onChange}
-                              disabled={(date) =>
-                                date < new Date(new Date().setHours(0, 0, 0, 0))
-                              }
                               initialFocus
+                              className="p-3 pointer-events-auto"
                             />
                           </PopoverContent>
                         </Popover>
@@ -358,11 +356,10 @@ export default function NovaViagem() {
                               onSelect={field.onChange}
                               disabled={(date) => {
                                 const startDate = form.getValues("start_date");
-                                return startDate 
-                                  ? date < startDate 
-                                  : date < new Date(new Date().setHours(0, 0, 0, 0));
+                                return startDate ? date < startDate : false;
                               }}
                               initialFocus
+                              className="p-3 pointer-events-auto"
                             />
                           </PopoverContent>
                         </Popover>
