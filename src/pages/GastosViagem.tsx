@@ -917,11 +917,11 @@ export default function GastosViagem() {
 
         {/* Add Expense Dialog */}
         <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-md h-[95vh] overflow-hidden flex flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle>Adicionar Gasto</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
               {/* Upload de Recibo - Primeira ação */}
               <div>
                 <Label className="text-base font-semibold">📸 Adicionar Comprovante/Recibo</Label>
@@ -1057,7 +1057,7 @@ export default function GastosViagem() {
               </div>
 
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0 sticky bottom-0 bg-background pt-4 mt-4 border-t">
                 <Button 
                   onClick={() => setIsAddingExpense(false)}
                   variant="outline"
