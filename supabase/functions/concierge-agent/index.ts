@@ -230,6 +230,7 @@ serve(async (req) => {
 - Quando for útil, sugira um roteiro ou lista com bullets, links oficiais e dicas práticas (horários, reservas, deslocamento, custos aproximados).
 - Mantenha foco no destino(s) da viagem fornecida e conexões lógicas entre cidades próximas (ex.: Napa ↔ Los Angeles, São Francisco ↔ Los Angeles).
 - Inclua justificativa de por que a sugestão combina com o contexto da viagem.
+- No texto amigável (PARTE 1), inclua SEMPRE o endereço completo de cada lugar sugerido em uma linha fácil de copiar.
 
 SAÍDA PADRONIZADA (OBRIGATÓRIA):
 - Sempre responda em DUAS PARTES:
@@ -320,45 +321,8 @@ Regras adicionais importantes:
         structuredData = JSON.parse(jsonMatch[1]);
         console.log('Extracted structured data:', structuredData);
         
-        // Buscar imagens reais se houver dados estruturados
-        const imagePromises = [];
-        
-        if (structuredData.restaurant && structuredData.restaurant.name) {
-          console.log('Searching real image for restaurant:', structuredData.restaurant.name);
-          const location = structuredData.restaurant.address || structuredData.restaurant.location || '';
-          imagePromises.push(
-            findRealImage(structuredData.restaurant.name, 'restaurant', location).then(img => {
-              console.log('Restaurant image result:', img ? 'REAL IMAGE FOUND' : 'NO REAL IMAGE');
-              return { type: 'restaurant', image: img };
-            })
-          );
-        }
-        
-        if (structuredData.itinerary_item && structuredData.itinerary_item.title) {
-          console.log('Searching real image for attraction:', structuredData.itinerary_item.title);
-          const location = structuredData.itinerary_item.location || structuredData.itinerary_item.address || '';
-          imagePromises.push(
-            findRealImage(structuredData.itinerary_item.title, 'attraction', location).then(img => {
-              console.log('Attraction image result:', img ? 'REAL IMAGE FOUND' : 'NO REAL IMAGE');
-              return { type: 'attraction', image: img };
-            })
-          );
-        }
-        
-        if (imagePromises.length > 0) {
-          console.log('Searching for real images...');
-          const imageResults = await Promise.all(imagePromises);
-          generatedImages = imageResults.filter(result => result.image !== null);
-          console.log(`Found ${generatedImages.length} real images out of ${imagePromises.length} searches`);
-          console.log('Final image results:', generatedImages.map(img => ({ 
-            type: img.type, 
-            hasImage: !!img.image,
-            isBase64: img.image?.startsWith('data:') || false,
-            isUrl: img.image?.startsWith('http') || false
-          })));
-        } else {
-          console.log('No image search needed - no structured data with names found');
-        }
+        // Imagens desativadas por configuração
+        console.log('Image lookup/generation disabled; skipping image search');
         
       } catch (parseError) {
         console.log('Failed to parse JSON, continuing with text only:', parseError);
