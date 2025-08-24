@@ -1525,6 +1525,27 @@ export default function GastosViagem() {
           </AlertDialogContent>
         </AlertDialog>
 
+        {/* Expense Detail Modal */}
+        <ExpenseDetailModal
+          expense={selectedExpense}
+          isOpen={isViewingExpense}
+          onClose={() => {
+            setIsViewingExpense(false);
+            setSelectedExpense(null);
+          }}
+          onEdit={(expense) => {
+            setIsViewingExpense(false);
+            handleEditExpense(expense);
+          }}
+          onDelete={(expense) => {
+            setIsViewingExpense(false);
+            setSelectedExpense(expense);
+            setIsDeleteDialogOpen(true);
+          }}
+          onViewReceipt={handleViewReceipt}
+          currencySymbol={selectedCurrency.symbol}
+        />
+
         {/* Receipt Viewer Dialog */}
         <Dialog open={isViewingReceipt} onOpenChange={setIsViewingReceipt}>
           <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
