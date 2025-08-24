@@ -257,8 +257,8 @@ export default function EditarPonto() {
         .from("roteiro_pontos")
         .update({
           day_number: formData.day_number,
-          time_start: formData.time_start,
-          time_end: formData.time_end || null,
+          time_start: formData.is_all_day ? null : formData.time_start,
+          time_end: formData.is_all_day ? null : (formData.time_end || null),
           title: formData.title,
           description: formData.description,
           location: formData.location,
