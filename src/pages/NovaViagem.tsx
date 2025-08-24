@@ -114,6 +114,11 @@ export default function NovaViagem() {
         description: "Viagem criada com sucesso",
       });
 
+      // Clear form after success
+      form.reset();
+      setImages([]);
+      setLocations([]);
+
       navigate(`/detalhes-viagem/${tripData[0].id}`);
     } catch (error) {
       console.error("Erro ao criar viagem:", error);
@@ -130,12 +135,31 @@ export default function NovaViagem() {
   const addLocationFromDestination = () => {
     const destinationValue = form.getValues("destination");
     if (destinationValue && destinationValue.trim()) {
+      const locationName = destinationValue.trim();
+      
+      // Check if destination already exists
+      const isDuplicate = locations.some(
+        location => location.location_name.toLowerCase() === locationName.toLowerCase()
+      );
+      
+      if (isDuplicate) {
+        toast({
+          title: "Destino duplicado",
+          description: "Este destino já foi adicionado à lista",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const newLocation: TripLocation = {
-        location_name: destinationValue.trim(),
+        location_name: locationName,
         location_type: 'city',
         order_index: locations.length
       };
       setLocations([...locations, newLocation]);
+      
+      // Clear destination input after adding
+      form.setValue("destination", "");
     }
   };
 
