@@ -54,8 +54,8 @@ export default function EditarPonto() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     day_number: 1,
-    time_start: "09:00",
-    time_end: "",
+    time_start: "08:00",
+    time_end: "09:00",
     title: "",
     description: "",
     location: "",
@@ -68,6 +68,50 @@ export default function EditarPonto() {
       description?: string;
     }>
   });
+
+  // Função para adicionar uma hora a um horário
+  const addOneHour = (time: string): string => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const newHours = (hours + 1) % 24;
+    return `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
+  // Função para validar se hora fim é maior que hora início
+  const isEndTimeValid = (startTime: string, endTime: string): boolean => {
+    if (!endTime) return true; // hora fim é opcional
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+    
+    const startTotalMinutes = startHours * 60 + startMinutes;
+    const endTotalMinutes = endHours * 60 + endMinutes;
+    
+    return endTotalMinutes > startTotalMinutes;
+  };
+
+  // Função para lidar com mudança na hora início
+  const handleStartTimeChange = (newStartTime: string) => {
+    const currentEndTime = formData.time_end;
+    let newEndTime = currentEndTime;
+    
+    // Se não há hora fim ou se a hora fim atual seria inválida, ajustar para uma hora depois
+    if (!currentEndTime || !isEndTimeValid(newStartTime, currentEndTime)) {
+      newEndTime = addOneHour(newStartTime);
+    }
+    
+    setFormData(prev => ({
+      ...prev, 
+      time_start: newStartTime,
+      time_end: newEndTime
+    }));
+  };
+
+  // Função para lidar com mudança na hora fim
+  const handleEndTimeChange = (newEndTime: string) => {
+    setFormData(prev => ({
+      ...prev, 
+      time_end: newEndTime
+    }));
+  };
 
   useEffect(() => {
     if (!user?.id || !pontoId) return;
@@ -304,17 +348,21 @@ export default function EditarPonto() {
                     id="start-time"
                     type="time"
                     value={formData.time_start}
-                    onChange={(e) => setFormData(prev => ({ ...prev, time_start: e.target.value }))}
+                    onChange={(e) => handleStartTimeChange(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="end-time">Horário Fim</Label>
+                  <Label htmlFor="end-time">Horário Fim (opcional)</Label>
                   <Input
                     id="end-time"
                     type="time"
                     value={formData.time_end}
-                    onChange={(e) => setFormData(prev => ({ ...prev, time_end: e.target.value }))}
+                    onChange={(e) => handleEndTimeChange(e.target.value)}
+                    className={!isEndTimeValid(formData.time_start, formData.time_end) ? "border-red-500" : ""}
                   />
+                  {!isEndTimeValid(formData.time_start, formData.time_end) && (
+                    <p className="text-red-500 text-sm mt-1">A hora fim deve ser maior que a hora início</p>
+                  )}
                 </div>
               </div>
 
