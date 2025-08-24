@@ -915,149 +915,161 @@ export default function GastosViagem() {
           />
         </div>
 
-        {/* Add Expense Dialog */}
+        {/* Add Expense Dialog - Curadoria UX otimizada */}
         <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
-          <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Adicionar Gasto</DialogTitle>
+          <DialogContent className="max-w-sm w-[95vw] h-[90vh] p-0 gap-0 flex flex-col">
+            {/* Header fixo */}
+            <DialogHeader className="flex-shrink-0 px-6 py-4 border-b">
+              <DialogTitle className="text-lg">Adicionar Gasto</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 pb-4">
-              {/* Upload de Recibo - Primeira ação */}
-              <div>
-                <Label className="text-base font-semibold">📸 Adicionar Comprovante/Recibo</Label>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Comece fazendo upload do recibo - a IA preencherá os campos automaticamente
-                </p>
-                {isProcessingReceipt && (
-                  <div className="flex items-center gap-2 mb-2 text-sm text-blue-600">
-                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    Processando recibo com IA...
+            
+            {/* Conteúdo com scroll */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="space-y-4">
+                {/* Upload de Recibo - Seção compacta */}
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">📸</span>
+                    <Label className="font-medium">Recibo (IA preencherá automaticamente)</Label>
                   </div>
-                )}
-                <ImageUpload
-                  images={newExpense.receiptImages}
-                  onImagesChange={handleReceiptImagesChange}
-                  maxImages={1}
-                />
-              </div>
+                  {isProcessingReceipt && (
+                    <div className="flex items-center gap-2 mb-2 text-sm text-blue-600">
+                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      Processando recibo com IA...
+                    </div>
+                  )}
+                  <ImageUpload
+                    images={newExpense.receiptImages}
+                    onImagesChange={handleReceiptImagesChange}
+                    maxImages={1}
+                  />
+                </div>
 
-              <Separator />
-
-              <div>
-                <Label htmlFor="category">Categoria *</Label>
-                <Select 
-                  value={newExpense.category} 
-                  onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}
-                  disabled={isProcessingReceipt}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EXPENSE_CATEGORIES.map(category => (
-                      <SelectItem key={category.id} value={category.id}>
-                        <div className="flex items-center gap-2">
-                          <category.icon className="w-4 h-4" />
-                          {category.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label>Descrição *</Label>
-                <Textarea
-                  value={newExpense.description}
-                  onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
-                  placeholder="Ex: Almoço no restaurante, táxi para o hotel..."
-                  rows={3}
-                  disabled={isProcessingReceipt}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Valor *</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newExpense.amount}
-                      onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
-                      placeholder="0,00"
-                      className="pl-10"
+                {/* Campos obrigatórios em destaque */}
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium">Categoria *</Label>
+                    <Select 
+                      value={newExpense.category} 
+                      onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}
                       disabled={isProcessingReceipt}
+                    >
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                      <SelectContent className="z-50">
+                        {EXPENSE_CATEGORIES.map(category => (
+                          <SelectItem key={category.id} value={category.id}>
+                            <div className="flex items-center gap-2">
+                              <category.icon className="w-4 h-4" />
+                              {category.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Descrição *</Label>
+                    <Textarea
+                      value={newExpense.description}
+                      onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
+                      placeholder="Ex: Almoço, táxi, hotel..."
+                      rows={2}
+                      disabled={isProcessingReceipt}
+                      className="resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">Valor *</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={newExpense.amount}
+                        onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
+                        placeholder="0,00"
+                        className="pl-10 h-11"
+                        disabled={isProcessingReceipt}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Campos secundários compactos */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm">Data</Label>
+                    <Input
+                      type="date"
+                      value={newExpense.date}
+                      onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
+                      disabled={isProcessingReceipt}
+                      className="h-11"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Tipo *</Label>
+                    <Select 
+                      value={newExpense.expense_type} 
+                      onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
+                      disabled={isProcessingReceipt}
+                    >
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Tipo" />
+                      </SelectTrigger>
+                      <SelectContent className="z-50">
+                        {EXPENSE_TYPES.map(type => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm">Método de Pagamento</Label>
+                    <Select 
+                      value={newExpense.payment_method_type} 
+                      onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
+                      disabled={isProcessingReceipt}
+                    >
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Selecione o método" />
+                      </SelectTrigger>
+                      <SelectContent className="z-50">
+                        {PAYMENT_METHODS.map(method => (
+                          <SelectItem key={method.id} value={method.name}>
+                            {method.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm">Estabelecimento</Label>
+                    <Input
+                      value={newExpense.establishment}
+                      onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
+                      placeholder="Nome do local"
+                      disabled={isProcessingReceipt}
+                      className="h-11"
                     />
                   </div>
                 </div>
-                <div>
-                  <Label>Data</Label>
-                  <Input
-                    type="date"
-                    value={newExpense.date}
-                    onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
-                    disabled={isProcessingReceipt}
-                  />
-                </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Tipo de Gasto *</Label>
-                  <Select 
-                    value={newExpense.expense_type} 
-                    onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
-                    disabled={isProcessingReceipt}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EXPENSE_TYPES.map(type => (
-                        <SelectItem key={type.id} value={type.id}>
-                          {type.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Método de Pagamento</Label>
-                  <Select 
-                    value={newExpense.payment_method_type} 
-                    onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
-                    disabled={isProcessingReceipt}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o método" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAYMENT_METHODS.map(method => (
-                        <SelectItem key={method.id} value={method.name}>
-                          {method.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label>Estabelecimento</Label>
-                <Input
-                  value={newExpense.establishment}
-                  onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
-                  placeholder="Ex: Restaurante Villa Rosa, Hotel Copacabana..."
-                  disabled={isProcessingReceipt}
-                />
-              </div>
-
-
-              <div className="flex gap-2">
+            {/* Botões fixos na parte inferior */}
+            <div className="flex-shrink-0 border-t bg-background p-4">
+              <div className="flex gap-3">
                 <Button 
                   onClick={() => setIsAddingExpense(false)}
                   variant="outline"
@@ -1071,7 +1083,7 @@ export default function GastosViagem() {
                   disabled={isProcessingReceipt || !newExpense.category || !newExpense.description || !newExpense.amount}
                   className="flex-1"
                 >
-                  {isProcessingReceipt ? "Processando..." : "Adicionar Gasto"}
+                  {isProcessingReceipt ? "Processando..." : "Salvar"}
                 </Button>
               </div>
             </div>
