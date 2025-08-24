@@ -355,43 +355,45 @@ export default function DetalhesHospedagem() {
               </CardContent>
             </Card>
 
-            {/* Documentos e Links */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Documentos e Links</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {accommodation.voucher_file_url && (
-                  <div className="flex items-center gap-2">
-                    <strong>Voucher:</strong>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDownloadVoucher(accommodation.voucher_file_url!, accommodation.voucher_file_name!)}
-                      className="flex items-center gap-2"
-                    >
-                      <Download className="w-4 h-4" />
-                      {accommodation.voucher_file_name}
-                    </Button>
-                  </div>
-                )}
+            {/* Documentos e Links - só mostra se houver voucher ou link */}
+            {(accommodation.voucher_file_url || accommodation.hotel_link) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Documentos e Links</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {accommodation.voucher_file_url && (
+                    <div className="flex items-center gap-2">
+                      <strong>Voucher:</strong>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownloadVoucher(accommodation.voucher_file_url!, accommodation.voucher_file_name!)}
+                        className="flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        {accommodation.voucher_file_name}
+                      </Button>
+                    </div>
+                  )}
 
-                {accommodation.hotel_link && (
-                  <div className="flex items-center gap-2">
-                    <strong>Link do Hotel:</strong>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(accommodation.hotel_link, '_blank')}
-                      className="flex items-center gap-2"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Acessar Site
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  {accommodation.hotel_link && (
+                    <div className="flex items-center gap-2">
+                      <strong>Link do Hotel:</strong>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(accommodation.hotel_link, '_blank')}
+                        className="flex items-center gap-2"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Acessar Site
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
