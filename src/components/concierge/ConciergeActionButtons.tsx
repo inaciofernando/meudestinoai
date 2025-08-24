@@ -6,14 +6,51 @@ import { UtensilsCrossed, MapPinPlus, MoreVertical, ExternalLink, Map, Globe, Na
 
 interface QuickActionButtonsProps {
   message: string;
+  messageData?: { images?: Array<{ type: string; image: string }>; structuredData?: any };
   tripId: string;
 }
 
-const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProps) => {
+const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActionButtonsProps) => {
   const navigate = useNavigate();
 
   const extractedData = useMemo(() => {
-    // Simplified extraction logic - only check for basic patterns
+    // Primeiro, tentar usar dados estruturados se disponíveis
+    if (messageData?.structuredData) {
+      let restaurants: any[] = [];
+      let attractions: any[] = [];
+      
+      if (messageData.structuredData.restaurant) {
+        restaurants.push({
+          name: messageData.structuredData.restaurant.name || "",
+          description: messageData.structuredData.restaurant.description || "",
+          cuisine: messageData.structuredData.restaurant.cuisine || "",
+          address: messageData.structuredData.restaurant.address || "",
+          link: messageData.structuredData.restaurant.link || "",
+          tripadvisor: messageData.structuredData.restaurant.tripadvisor || "",
+          gmap: messageData.structuredData.restaurant.gmap || "",
+          waze: messageData.structuredData.restaurant.waze || "",
+          estimated_amount: messageData.structuredData.restaurant.estimated_amount || ""
+        });
+      }
+      
+      if (messageData.structuredData.itinerary_item) {
+        attractions.push({
+          name: messageData.structuredData.itinerary_item.title || "",
+          description: messageData.structuredData.itinerary_item.description || "",
+          category: messageData.structuredData.itinerary_item.category || "attraction",
+          location: messageData.structuredData.itinerary_item.location || "",
+          address: messageData.structuredData.itinerary_item.address || "",
+          website: messageData.structuredData.itinerary_item.link || messageData.structuredData.itinerary_item.website_link || "",
+          tripadvisor: messageData.structuredData.itinerary_item.tripadvisor_link || messageData.structuredData.itinerary_item.tripadvisor || "",
+          gmap: messageData.structuredData.itinerary_item.google_maps_link || messageData.structuredData.itinerary_item.gmap || "",
+          waze: messageData.structuredData.itinerary_item.waze_link || messageData.structuredData.itinerary_item.waze || ""
+        });
+      }
+      
+      return { restaurants, attractions };
+    }
+
+    // Fallback: lógica original de extração da string
     const containsRestaurant = /restaurante|comida|culinária|gastronomia|prato|comer|jantar|almoçar|café da manhã|food|restaurant/i.test(message);
     const containsAttraction = /vinícola|atração|ponto turístico|visitar|museu|parque|monumento|igreja|teatro|shopping|mercado|praia|trilha|passeio|winery|attraction/i.test(message);
 
@@ -84,7 +121,7 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
     }
 
     return { restaurants, attractions };
-  }, [message]);
+  }, [message, messageData]);
 
   const handleAddRestaurant = (restaurant: any) => {
     const params = new URLSearchParams();
@@ -93,6 +130,14 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
     });
     params.set('fromConcierge', 'true');
     params.set('source', message.slice(0, 1000));
+    
+    // Salvar imagens relevantes no sessionStorage para o formulário
+    const restaurantImages = messageData?.images?.filter(img => img.type === 'restaurant') || [];
+    if (restaurantImages.length > 0) {
+      const imageKey = `concierge_restaurant_images_${tripId}_${Date.now()}`;
+      sessionStorage.setItem(imageKey, JSON.stringify(restaurantImages));
+      params.set('imageKey', imageKey);
+    }
     
     navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
   };
@@ -110,6 +155,14 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
       waze: attraction.waze || '',
       fromConcierge: 'true'
     });
+    
+    // Salvar imagens relevantes no sessionStorage para o formulário
+    const attractionImages = messageData?.images?.filter(img => img.type === 'attraction') || [];
+    if (attractionImages.length > 0) {
+      const imageKey = `concierge_attraction_images_${tripId}_${Date.now()}`;
+      sessionStorage.setItem(imageKey, JSON.stringify(attractionImages));
+      params.set('imageKey', imageKey);
+    }
     
     navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
   };

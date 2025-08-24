@@ -6,6 +6,8 @@ import { Bot } from "lucide-react";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  images?: Array<{ type: string; image: string }>;
+  structuredData?: any;
 }
 
 interface ConciergeChatMessageProps {
@@ -49,31 +51,56 @@ const ConciergeChatMessage = memo(({ message, index }: ConciergeChatMessageProps
         {isTyping ? (
           <TypingIndicator />
         ) : message.role === "assistant" ? (
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              a: ({ node, ...props }) => (
-                <a
-                  {...props}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline text-primary hover:text-primary/80"
-                />
-              ),
-              ul: (props) => <ul className="list-disc pl-6 my-3 space-y-1" {...props} />,
-              ol: (props) => <ol className="list-decimal pl-6 my-3 space-y-1" {...props} />,
-              li: (props) => <li className="my-1 leading-relaxed" {...props} />,
-              h1: (props) => <h1 className="text-lg font-bold mb-3 mt-2" {...props} />,
-              h2: (props) => <h2 className="text-base font-semibold mb-3 mt-2" {...props} />,
-              h3: (props) => <h3 className="text-sm font-semibold mb-2 mt-2" {...props} />,
-              p: (props) => <p className="leading-relaxed mb-3 last:mb-0" {...props} />,
-              strong: (props) => <strong className="font-semibold" {...props} />,
-              code: (props) => <code className="bg-background/50 px-1.5 py-0.5 rounded text-sm" {...props} />,
-              blockquote: (props) => <blockquote className="border-l-4 border-muted-foreground/20 pl-4 my-3 italic" {...props} />,
-            }}
-          >
-            {message.content}
-          </ReactMarkdown>
+          <div>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                a: ({ node, ...props }) => (
+                  <a
+                    {...props}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-primary hover:text-primary/80"
+                  />
+                ),
+                ul: (props) => <ul className="list-disc pl-6 my-3 space-y-1" {...props} />,
+                ol: (props) => <ol className="list-decimal pl-6 my-3 space-y-1" {...props} />,
+                li: (props) => <li className="my-1 leading-relaxed" {...props} />,
+                h1: (props) => <h1 className="text-lg font-bold mb-3 mt-2" {...props} />,
+                h2: (props) => <h2 className="text-base font-semibold mb-3 mt-2" {...props} />,
+                h3: (props) => <h3 className="text-sm font-semibold mb-2 mt-2" {...props} />,
+                p: (props) => <p className="leading-relaxed mb-3 last:mb-0" {...props} />,
+                strong: (props) => <strong className="font-semibold" {...props} />,
+                code: (props) => <code className="bg-background/50 px-1.5 py-0.5 rounded text-sm" {...props} />,
+                blockquote: (props) => <blockquote className="border-l-4 border-muted-foreground/20 pl-4 my-3 italic" {...props} />,
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+            
+            {/* Imagens geradas pela AI */}
+            {message.images && message.images.length > 0 && (
+              <div className="mt-4 space-y-3">
+                <div className="text-xs text-muted-foreground font-medium">Imagens sugeridas:</div>
+                <div className="grid grid-cols-1 gap-3">
+                  {message.images.map((imageData, idx) => (
+                    <div key={idx} className="relative group">
+                      <img
+                        src={imageData.image}
+                        alt={`Sugestão ${imageData.type === 'restaurant' ? 'do restaurante' : 'da atração'}`}
+                        className="w-full h-32 object-cover rounded-lg shadow-sm"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg" />
+                      <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                        {imageData.type === 'restaurant' ? 'Restaurante' : 'Atração'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
           <p className="text-sm leading-relaxed">{message.content}</p>
         )}

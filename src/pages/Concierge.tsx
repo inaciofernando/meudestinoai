@@ -21,9 +21,11 @@ interface TripCtx {
   end_date: string | null;
 }
 
-interface Message { 
-  role: "user" | "assistant"; 
+interface Message {
+  role: "user" | "assistant";
   content: string;
+  images?: Array<{ type: string; image: string }>;
+  structuredData?: any;
 }
 
 interface ConversationHistory {
@@ -209,8 +211,17 @@ export default function Concierge() {
       const payload: any = data || {};
       const reply: string = payload.generatedText || payload.text || payload.result || "Sem resposta.";
       const fullResponse: string = payload.fullResponse || reply; // Para os botões de ação
+      const generatedImages: Array<{ type: string; image: string }> = payload.generatedImages || [];
+      const structuredData = payload.structuredData || null;
       
-      const finalMessages: Message[] = [...newMessages, { role: "assistant" as const, content: reply }];
+      const assistantMessage: Message = { 
+        role: "assistant" as const, 
+        content: reply,
+        images: generatedImages.length > 0 ? generatedImages : undefined,
+        structuredData: structuredData
+      };
+      
+      const finalMessages: Message[] = [...newMessages, assistantMessage];
       setMessages(finalMessages);
       
       // Armazenar resposta completa para os botões de ação
@@ -353,7 +364,14 @@ export default function Concierge() {
                 <div key={index}>
                   <ConciergeChatMessage key={index} message={message} index={index} />
                   {message.role === "assistant" && message.content !== "..." && (
-                    <ConciergeActionButtons message={fullResponses.get(index) || message.content} tripId={id!} />
+                    <ConciergeActionButtons 
+                      message={fullResponses.get(index) || message.content} 
+                      messageData={{
+                        images: message.images,
+                        structuredData: message.structuredData
+                      }}
+                      tripId={id!} 
+                    />
                   )}
                 </div>
               ))

@@ -2,11 +2,53 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Função para gerar imagem usando OpenAI
+async function generateImage(prompt: string): Promise<string | null> {
+  if (!OPENAI_API_KEY) {
+    console.log('OpenAI API key not available, skipping image generation');
+    return null;
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-image-1',
+        prompt: prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+        response_format: 'b64_json'
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('OpenAI image generation failed:', response.status, await response.text());
+      return null;
+    }
+
+    const data = await response.json();
+    if (data.data && data.data[0] && data.data[0].b64_json) {
+      return `data:image/png;base64,${data.data[0].b64_json}`;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error generating image:', error);
+    return null;
+  }
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -114,6 +156,7 @@ Regras adicionais importantes:
     const jsonMatch = fullText.match(/```json\s*([\s\S]*?)\s*```/);
     let cleanText = fullText;
     let structuredData = null;
+    let generatedImages = [];
 
     if (jsonMatch) {
       // Remove o bloco JSON da resposta do usuário
@@ -123,18 +166,42 @@ Regras adicionais importantes:
       try {
         structuredData = JSON.parse(jsonMatch[1]);
         console.log('Extracted structured data:', structuredData);
+        
+        // Gerar imagens se houver dados estruturados
+        const imagePromises = [];
+        
+        if (structuredData.restaurant && structuredData.restaurant.name) {
+          const restaurantPrompt = `Professional food photography of ${structuredData.restaurant.name} restaurant, ${structuredData.restaurant.cuisine || 'cuisine'} food, elegant dining atmosphere, warm lighting, high quality commercial photography`;
+          imagePromises.push(
+            generateImage(restaurantPrompt).then(img => ({ type: 'restaurant', image: img }))
+          );
+        }
+        
+        if (structuredData.itinerary_item && structuredData.itinerary_item.title) {
+          const attractionPrompt = `Professional travel photography of ${structuredData.itinerary_item.title}, ${structuredData.itinerary_item.location || 'tourist destination'}, beautiful landscape, architectural details, tourism photography, high quality`;
+          imagePromises.push(
+            generateImage(attractionPrompt).then(img => ({ type: 'attraction', image: img }))
+          );
+        }
+        
+        if (imagePromises.length > 0) {
+          console.log('Generating images for structured data...');
+          const imageResults = await Promise.all(imagePromises);
+          generatedImages = imageResults.filter(result => result.image !== null);
+          console.log(`Generated ${generatedImages.length} images`);
+        }
+        
       } catch (parseError) {
         console.log('Failed to parse JSON, continuing with text only:', parseError);
       }
     }
 
-    // Retornar o texto limpo + JSON oculto para uso dos botões de ação
-    // O frontend receberá o texto limpo, mas os botões poderão acessar o fullText
+    // Retornar o texto limpo + JSON oculto para uso dos botões de ação + imagens geradas
     return new Response(JSON.stringify({ 
       generatedText: cleanText,
       fullResponse: fullText, // Inclui o JSON para os botões de ação
-      // structuredData pode ser usado futuramente para salvar dados automaticamente
-      // structuredData: structuredData 
+      generatedImages: generatedImages, // Imagens AI geradas
+      structuredData: structuredData // Dados estruturados para os botões
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
