@@ -377,67 +377,55 @@ export default function PontoDetalhes() {
             <div className="space-y-6">
               {/* Galeria de imagens */}
               {ponto.images && ponto.images.length > 0 && (
-                <Card>
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2">
-                      📸 Galeria de Imagens
-                      <Badge variant="secondary" className="text-xs">
-                        {ponto.images.length} foto{ponto.images.length !== 1 ? 's' : ''}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="relative">
-                      <img
-                        src={ponto.images[currentImageIndex]}
-                        alt={ponto.title}
-                        className="w-full h-64 md:h-96 object-cover rounded-lg"
+                <div className="relative rounded-xl overflow-hidden">
+                  <img
+                    src={ponto.images[currentImageIndex]}
+                    alt={ponto.title}
+                    className="w-full h-64 md:h-96 object-cover"
+                  />
+                  
+                  {/* Badge com contador de imagens */}
+                  <div className="absolute top-4 right-4 bg-black/70 text-white text-sm px-3 py-1 rounded-full flex items-center gap-1">
+                    📸 {currentImageIndex + 1} / {ponto.images.length}
+                  </div>
+                  
+                  {/* Navegação das imagens */}
+                  {ponto.images.length > 1 && (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                        onClick={prevImage}
+                        disabled={currentImageIndex === 0}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                        onClick={nextImage}
+                        disabled={currentImageIndex === ponto.images.length - 1}
                       />
                       
-                      {/* Navegação das imagens */}
-                      {ponto.images.length > 1 && (
-                        <>
-                          <Button
-                            variant="secondary"
-                            size="icon"
-                            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white"
-                            onClick={prevImage}
-                            disabled={currentImageIndex === 0}
-                          >
-                            <ChevronLeft className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="icon"
-                            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white"
-                            onClick={nextImage}
-                            disabled={currentImageIndex === ponto.images.length - 1}
+                      {/* Indicadores */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        {ponto.images.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`w-2 h-2 rounded-full transition-all ${
+                              index === currentImageIndex 
+                                ? 'bg-white scale-125' 
+                                : 'bg-white/50'
+                            }`}
                           />
-                          
-                          {/* Contador de imagens */}
-                          <div className="absolute top-4 right-4 bg-black/70 text-white text-sm px-3 py-1 rounded-full">
-                            {currentImageIndex + 1} / {ponto.images.length}
-                          </div>
-                          
-                          {/* Indicadores */}
-                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                            {ponto.images.map((_, index) => (
-                              <button
-                                key={index}
-                                onClick={() => setCurrentImageIndex(index)}
-                                className={`w-2 h-2 rounded-full transition-all ${
-                                  index === currentImageIndex 
-                                    ? 'bg-white scale-125' 
-                                    : 'bg-white/50'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
 
               {/* Detalhes do Ponto */}
