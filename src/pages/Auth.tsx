@@ -41,12 +41,12 @@ export default function Auth() {
     }
   }, []);
 
-  // Redirect authenticated users to dashboard (with delay to prevent loops)
+  // Redirect authenticated users to viagens page (with delay to prevent loops)
   useEffect(() => {
     if (!authLoading && user && !isRecoveryFlow && !showResetPassword) {
       // Add a small delay to prevent immediate redirect loops
       const timer = setTimeout(() => {
-        navigate("/", { replace: true });
+        navigate("/viagens", { replace: true });
       }, 100);
       return () => clearTimeout(timer);
     }
