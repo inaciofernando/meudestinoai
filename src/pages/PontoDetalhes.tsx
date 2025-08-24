@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import TripSectionHeader from "@/components/TripSectionHeader";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -310,29 +311,13 @@ export default function PontoDetalhes() {
   return (
     <ProtectedRoute>
       <PWALayout showFooter={false}>
-        <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
-          {/* Header fixo com botões */}
-          <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate(`/roteiro/${tripId}`)}
-                  className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
-                  aria-label="Voltar"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <div>
-                  <p className="c6-text-secondary text-xs uppercase tracking-wide">Detalhes do ponto</p>
-                  <h1 className="text-xl md:text-2xl font-semibold text-foreground leading-tight break-words">{ponto.title}</h1>
-                  {ponto.location && (
-                    <p className="c6-text-secondary text-sm">{ponto.location}</p>
-                  )}
-                </div>
-              </div>
-
+        <div className="space-y-6">
+          {/* Header integrado seguindo padrão do catálogo */}
+          <TripSectionHeader
+            title={ponto.title}
+            subtitle={ponto.location}
+            onBack={() => navigate(`/roteiro/${tripId}`)}
+            right={
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -374,12 +359,12 @@ export default function PontoDetalhes() {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            </div>
-          </div>
+            }
+          />
 
           {/* Conteúdo principal */}
-          <div className="flex-1 overflow-auto p-4">
-            <div className="max-w-4xl mx-auto space-y-6">
+          <div className="px-4">
+            <div className="space-y-6">
               {/* Galeria de imagens */}
               {ponto.images && ponto.images.length > 0 && (
                 <Card>
@@ -439,10 +424,8 @@ export default function PontoDetalhes() {
 
               {/* Detalhes do Ponto */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Detalhes do Ponto</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <strong>Local:</strong>
@@ -491,6 +474,7 @@ export default function PontoDetalhes() {
                       <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{ponto.description}</p>
                     </div>
                   )}
+                  </div>
                 </CardContent>
               </Card>
 
