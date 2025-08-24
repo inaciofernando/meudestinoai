@@ -706,7 +706,7 @@ export default function GastosViagem() {
 
           {/* Budget Cards with Edit Functionality */}
           <div className="px-4 -mt-4">
-            <div className="grid grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 gap-4 mb-6">
               {/* Card Orçamento */}
               <div className="c6-card p-4">
                 <div className="flex items-center justify-between mb-3">
@@ -720,7 +720,7 @@ export default function GastosViagem() {
                     <Edit2 className="w-3 h-3" />
                   </Button>
                 </div>
-                <p className="text-lg sm:text-2xl font-bold text-foreground mb-2">
+                <p className="text-xl font-bold text-foreground mb-2">
                   {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
                 </p>
                 <p className="c6-text-secondary text-xs mb-3">
@@ -747,7 +747,7 @@ export default function GastosViagem() {
               {/* Card Saldo Disponível */}
               <div className="c6-card p-4">
                 <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">SALDO DISPONÍVEL</p>
-                <p className={`text-lg sm:text-2xl font-bold mb-2 ${
+                <p className={`text-xl font-bold mb-2 ${
                   calculations.budgetStatus.status === "over-budget" ? "text-destructive" :
                   calculations.budgetStatus.status === "warning" ? "text-orange-600" : "text-green-600"
                 }`}>
@@ -784,7 +784,7 @@ export default function GastosViagem() {
               {/* Card Gasto Realizado */}
               <div className="c6-card p-4">
                 <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO REALIZADO</p>
-                <p className="text-lg sm:text-2xl font-bold text-destructive mb-1">
+                <p className="text-xl font-bold text-destructive mb-1">
                   {formatCurrency(calculations.realizedExpenses, selectedCurrency.symbol)}
                 </p>
                 <p className="c6-text-secondary text-xs">Despesas realizadas</p>
@@ -793,12 +793,11 @@ export default function GastosViagem() {
               {/* Card Gasto Planejado */}
               <div className="c6-card p-4">
                 <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO PLANEJADO</p>
-                <p className="text-lg sm:text-2xl font-bold text-blue-600 mb-1">
+                <p className="text-xl font-bold text-blue-600 mb-1">
                   {formatCurrency(calculations.plannedExpenses, selectedCurrency.symbol)}
                 </p>
                 <p className="c6-text-secondary text-xs">Despesas planejadas</p>
               </div>
-
             </div>
           </div>
 
