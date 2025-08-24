@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Plane, Mail, Lock, User, MapPin, Compass, Camera, Heart, Eye, EyeOff } from "lucide-react";
 
 export default function Auth() {
@@ -27,6 +28,7 @@ export default function Auth() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     // Only detect recovery mode from URL (hash or query)
@@ -37,8 +39,14 @@ export default function Auth() {
     if (isRecoveryInUrl) {
       setIsRecoveryFlow(true);
     }
-    // Remove automatic redirect to prevent conflict with Index component auth check
   }, []);
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!authLoading && user && !isRecoveryFlow && !showResetPassword) {
+      navigate("/");
+    }
+  }, [user, authLoading, isRecoveryFlow, showResetPassword, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
