@@ -915,29 +915,39 @@ export default function GastosViagem() {
           />
         </div>
 
-        {/* Add Expense Dialog - Curadoria UX otimizada */}
+        {/* Add Expense Dialog - Design Profissional */}
         <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
-          <DialogContent className="max-w-sm w-[95vw] h-[90vh] p-0 gap-0 flex flex-col">
-            {/* Header fixo */}
-            <DialogHeader className="flex-shrink-0 px-6 py-4 border-b">
-              <DialogTitle className="text-lg">Adicionar Gasto</DialogTitle>
+          <DialogContent className="max-w-lg w-[95vw] max-h-[95vh] p-0 gap-0 flex flex-col">
+            {/* Header Profissional */}
+            <DialogHeader className="flex-shrink-0 px-6 py-5 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+              <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+                <Plus className="w-5 h-5" />
+                Novo Gasto
+              </DialogTitle>
             </DialogHeader>
             
-            {/* Conteúdo com scroll */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              <div className="space-y-4">
-                {/* Upload de Recibo - Seção compacta */}
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg">📸</span>
-                    <Label className="font-medium">Recibo (IA preencherá automaticamente)</Label>
+            {/* Conteúdo com scroll otimizado */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-6 space-y-6">
+                {/* Upload Section - Destaque */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-5 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-lg">📸</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-blue-900 dark:text-blue-100">Comprovante</h3>
+                      <p className="text-sm text-blue-600 dark:text-blue-300">A IA preencherá automaticamente os campos</p>
+                    </div>
                   </div>
+                  
                   {isProcessingReceipt && (
-                    <div className="flex items-center gap-2 mb-2 text-sm text-blue-600">
-                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                      Processando recibo com IA...
+                    <div className="flex items-center gap-2 mb-3 p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                      <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-sm font-medium text-blue-700 dark:text-blue-200">Processando recibo com IA...</span>
                     </div>
                   )}
+                  
                   <ImageUpload
                     images={newExpense.receiptImages}
                     onImagesChange={handleReceiptImagesChange}
@@ -945,145 +955,167 @@ export default function GastosViagem() {
                   />
                 </div>
 
-                {/* Campos obrigatórios em destaque */}
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-sm font-medium">Categoria *</Label>
-                    <Select 
-                      value={newExpense.category} 
-                      onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}
-                      disabled={isProcessingReceipt}
-                    >
-                      <SelectTrigger className="h-11">
-                        <SelectValue placeholder="Selecione uma categoria" />
-                      </SelectTrigger>
-                      <SelectContent className="z-50">
-                        {EXPENSE_CATEGORIES.map(category => (
-                          <SelectItem key={category.id} value={category.id}>
-                            <div className="flex items-center gap-2">
-                              <category.icon className="w-4 h-4" />
-                              {category.name}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium">Descrição *</Label>
-                    <Textarea
-                      value={newExpense.description}
-                      onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
-                      placeholder="Ex: Almoço, táxi, hotel..."
-                      rows={2}
-                      disabled={isProcessingReceipt}
-                      className="resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium">Valor *</Label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={newExpense.amount}
-                        onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
-                        placeholder="0,00"
-                        className="pl-10 h-11"
+                {/* Formulário Principal */}
+                <div className="space-y-5">
+                  {/* Campos Obrigatórios */}
+                  <div className="grid gap-5">
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Categoria <span className="text-red-500">*</span>
+                      </Label>
+                      <Select 
+                        value={newExpense.category} 
+                        onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}
                         disabled={isProcessingReceipt}
+                      >
+                        <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                          <SelectValue placeholder="Selecione uma categoria" />
+                        </SelectTrigger>
+                        <SelectContent className="z-50">
+                          {EXPENSE_CATEGORIES.map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              <div className="flex items-center gap-3">
+                                <category.icon className="w-5 h-5" />
+                                <span className="font-medium">{category.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Descrição <span className="text-red-500">*</span>
+                      </Label>
+                      <Textarea
+                        value={newExpense.description}
+                        onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
+                        placeholder="Ex: Almoço no restaurante, táxi para o aeroporto..."
+                        rows={3}
+                        disabled={isProcessingReceipt}
+                        className="resize-none bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                       />
                     </div>
-                  </div>
-                </div>
 
-                {/* Campos secundários compactos */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-sm">Data</Label>
-                    <Input
-                      type="date"
-                      value={newExpense.date}
-                      onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
-                      disabled={isProcessingReceipt}
-                      className="h-11"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm">Tipo *</Label>
-                    <Select 
-                      value={newExpense.expense_type} 
-                      onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
-                      disabled={isProcessingReceipt}
-                    >
-                      <SelectTrigger className="h-11">
-                        <SelectValue placeholder="Tipo" />
-                      </SelectTrigger>
-                      <SelectContent className="z-50">
-                        {EXPENSE_TYPES.map(type => (
-                          <SelectItem key={type.id} value={type.id}>
-                            {type.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <Label className="text-sm">Método de Pagamento</Label>
-                    <Select 
-                      value={newExpense.payment_method_type} 
-                      onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
-                      disabled={isProcessingReceipt}
-                    >
-                      <SelectTrigger className="h-11">
-                        <SelectValue placeholder="Selecione o método" />
-                      </SelectTrigger>
-                      <SelectContent className="z-50">
-                        {PAYMENT_METHODS.map(method => (
-                          <SelectItem key={method.id} value={method.name}>
-                            {method.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div>
+                      <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Valor <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={newExpense.amount}
+                          onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
+                          placeholder="0,00"
+                          className="pl-12 h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-lg font-semibold"
+                          disabled={isProcessingReceipt}
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <Label className="text-sm">Estabelecimento</Label>
-                    <Input
-                      value={newExpense.establishment}
-                      onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
-                      placeholder="Nome do local"
-                      disabled={isProcessingReceipt}
-                      className="h-11"
-                    />
+                  {/* Campos em Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Data</Label>
+                      <Input
+                        type="date"
+                        value={newExpense.date}
+                        onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
+                        disabled={isProcessingReceipt}
+                        className="h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Tipo <span className="text-red-500">*</span>
+                      </Label>
+                      <Select 
+                        value={newExpense.expense_type} 
+                        onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
+                        disabled={isProcessingReceipt}
+                      >
+                        <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                          <SelectValue placeholder="Tipo de gasto" />
+                        </SelectTrigger>
+                        <SelectContent className="z-50">
+                          {EXPENSE_TYPES.map(type => (
+                            <SelectItem key={type.id} value={type.id}>
+                              {type.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Campos Opcionais */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Método de Pagamento</Label>
+                      <Select 
+                        value={newExpense.payment_method_type} 
+                        onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
+                        disabled={isProcessingReceipt}
+                      >
+                        <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
+                          <SelectValue placeholder="Como foi pago" />
+                        </SelectTrigger>
+                        <SelectContent className="z-50">
+                          {PAYMENT_METHODS.map(method => (
+                            <SelectItem key={method.id} value={method.name}>
+                              {method.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Estabelecimento</Label>
+                      <Input
+                        value={newExpense.establishment}
+                        onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
+                        placeholder="Nome do restaurante, hotel, loja..."
+                        disabled={isProcessingReceipt}
+                        className="h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Botões fixos na parte inferior */}
-            <div className="flex-shrink-0 border-t bg-background p-4">
-              <div className="flex gap-3">
+            {/* Footer com Botões - Sempre Visível */}
+            <div className="flex-shrink-0 border-t bg-gray-50 dark:bg-gray-900 px-6 py-4">
+              <div className="flex gap-3 justify-end">
                 <Button 
                   onClick={() => setIsAddingExpense(false)}
                   variant="outline"
-                  className="flex-1"
+                  size="lg"
                   disabled={isProcessingReceipt}
+                  className="px-6"
                 >
                   Cancelar
                 </Button>
                 <Button 
                   onClick={handleAddExpense}
                   disabled={isProcessingReceipt || !newExpense.category || !newExpense.description || !newExpense.amount}
-                  className="flex-1"
+                  size="lg"
+                  className="px-8 bg-primary hover:bg-primary/90"
                 >
-                  {isProcessingReceipt ? "Processando..." : "Salvar"}
+                  {isProcessingReceipt ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Processando...
+                    </div>
+                  ) : (
+                    "Salvar Gasto"
+                  )}
                 </Button>
               </div>
             </div>
