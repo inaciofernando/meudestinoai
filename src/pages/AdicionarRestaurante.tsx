@@ -228,11 +228,21 @@ export default function AdicionarRestaurante() {
   };
 
   const save = async () => {
-    if (!user || !tripId) return;
+    console.log('🟦 SAVE CLICKED - Iniciando função save');
+    console.log('🟦 Estado atual:', { user: !!user, tripId, form });
+    
+    if (!user || !tripId) {
+      console.log('🔴 ERRO: Usuário ou tripId não disponíveis');
+      return;
+    }
+    
     if (!form.restaurant_name) {
+      console.log('🔴 ERRO: Nome do restaurante é obrigatório');
       toast.error('Nome do restaurante é obrigatório');
       return;
     }
+
+    console.log('🟢 Validações OK, continuando com o salvamento...');
 
     try {
       const restaurantData = {
@@ -471,7 +481,13 @@ export default function AdicionarRestaurante() {
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={save} className="flex items-center gap-2">
+              <Button 
+                onClick={() => {
+                  console.log('🔵 BOTÃO CLICADO - Salvando restaurante');
+                  save();
+                }} 
+                className="flex items-center gap-2"
+              >
                 <Save className="w-4 h-4" />
                 Salvar
               </Button>

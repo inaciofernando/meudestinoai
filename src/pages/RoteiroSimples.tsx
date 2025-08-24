@@ -421,7 +421,22 @@ export default function RoteiroSimples() {
 
 
   const handleAddPonto = async () => {
+    console.log('🟦 ADD PONTO CLICKED - Iniciando função handleAddPonto');
+    console.log('🟦 Estado atual:', { 
+      roteiro: !!roteiro, 
+      user: !!user, 
+      formDataTitle: formData.title, 
+      formDataLocation: formData.location,
+      formData 
+    });
+    
     if (!roteiro || !user || !formData.title || !formData.location) {
+      console.log('🔴 ERRO: Validação falhou', {
+        hasRoteiro: !!roteiro,
+        hasUser: !!user,
+        hasTitle: !!formData.title,
+        hasLocation: !!formData.location
+      });
       toast({
         title: "Erro",
         description: "Preencha pelo menos o título e local do ponto.",
@@ -429,6 +444,8 @@ export default function RoteiroSimples() {
       });
       return;
     }
+
+    console.log('🟢 Validações OK, continuando...');
 
     // Verificar se o usuário ainda está autenticado
     const { data: { session } } = await supabase.auth.getSession();
@@ -924,7 +941,13 @@ export default function RoteiroSimples() {
                 <Button variant="outline" onClick={() => setIsAddingPonto(false)} className="flex-1">
                   Cancelar
                 </Button>
-                <Button onClick={handleAddPonto} className="flex-1">
+                <Button 
+                  onClick={() => {
+                    console.log('🔵 BOTÃO SALVAR ROTEIRO CLICADO');
+                    handleAddPonto();
+                  }} 
+                  className="flex-1"
+                >
                   <Save className="w-4 h-4 mr-2" />
                   Salvar
                 </Button>
