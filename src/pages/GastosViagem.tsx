@@ -880,7 +880,7 @@ export default function GastosViagem() {
             </Button>
           </div>
 
-          {/* Expense Stats */}
+          {/* Cards de Resumo Financeiro - Movido para o topo */}
           <ExpenseStats
             totalExpenses={calculations.totalExpenses}
             realizedExpenses={calculations.realizedExpenses}
@@ -1399,105 +1399,6 @@ export default function GastosViagem() {
                   </div>
                 </DialogContent>
               </Dialog>
-
-          {/* KPIs essenciais - Layout simplificado */}
-          <div className="px-4">
-            {/* Grade 2x2 responsiva - sempre 2 colunas mesmo no mobile */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* Card Orçamento */}
-              <div className="c6-card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium">ORÇAMENTO</p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingBudget(true)}
-                    className="h-7 w-7 p-0 hover:bg-muted/50 rounded-full shrink-0"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                  </Button>
-                </div>
-                <p className="text-lg sm:text-2xl font-bold text-foreground mb-2">
-                  {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
-                </p>
-                <p className="c6-text-secondary text-xs mb-3">
-                  Gasto: {formatCurrency(calculations.totalExpenses, selectedCurrency.symbol)}
-                </p>
-                
-                {/* Barra de progresso compacta */}
-                <div className="space-y-2">
-                  <div className="w-full bg-muted/40 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-500 ${
-                        budgetStatus.status === "over-budget" ? "bg-destructive" :
-                        budgetStatus.status === "warning" ? "bg-orange-500" : "bg-primary"
-                      }`}
-                      style={{ width: `${Math.min(100, budgetStatus.percentage)}%` }}
-                    />
-                  </div>
-                  <p className="c6-text-secondary text-xs">
-                    {budgetStatus.percentage.toFixed(1)}% utilizado
-                  </p>
-                </div>
-              </div>
-
-              {/* Card Saldo Disponível */}
-              <div className="c6-card p-4">
-                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">SALDO DISPONÍVEL</p>
-                <p className={`text-lg sm:text-2xl font-bold mb-2 ${
-                  budgetStatus.status === "over-budget" ? "text-destructive" :
-                  budgetStatus.status === "warning" ? "text-orange-600" : "text-green-600"
-                }`}>
-                  {formatCurrency(Math.max(0, (trip.total_budget || 0) - calculations.totalExpenses), selectedCurrency.symbol)}
-                </p>
-                <div className="flex items-center justify-between">
-                  <Badge 
-                    variant="outline"
-                    className={`text-xs font-medium px-2 py-1 ${
-                      budgetStatus.status === "over-budget" ? "border-destructive/30 text-destructive bg-destructive/5" :
-                      budgetStatus.status === "warning" ? "border-orange-500/30 text-orange-600 bg-orange-50 dark:bg-orange-900/20" : 
-                      "border-green-500/30 text-green-600 bg-green-50 dark:bg-green-900/20"
-                    }`}
-                  >
-                    {budgetStatus.status === "over-budget" ? "Excedido" :
-                     budgetStatus.status === "warning" ? "Atenção" : "No controle"}
-                  </Badge>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    budgetStatus.status === "over-budget" ? "bg-destructive/10" :
-                    budgetStatus.status === "warning" ? "bg-orange-100 dark:bg-orange-900/30" :
-                    "bg-green-100 dark:bg-green-900/30"
-                  }`}>
-                    {budgetStatus.status === "over-budget" ? (
-                      <AlertCircle className="w-4 h-4 text-destructive" />
-                    ) : budgetStatus.status === "warning" ? (
-                      <AlertCircle className="w-4 h-4 text-orange-600" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Card Gasto Realizado */}
-              <div className="c6-card p-4">
-                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO REALIZADO</p>
-                <p className="text-lg sm:text-2xl font-bold text-destructive mb-1">
-                  {formatCurrency(calculations.realizedExpenses, selectedCurrency.symbol)}
-                </p>
-                <p className="c6-text-secondary text-xs">Despesas realizadas</p>
-              </div>
-
-              {/* Card Gasto Planejado */}
-              <div className="c6-card p-4">
-                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO PLANEJADO</p>
-                <p className="text-lg sm:text-2xl font-bold text-blue-600 mb-1">
-                  {formatCurrency(calculations.plannedExpenses, selectedCurrency.symbol)}
-                </p>
-                <p className="c6-text-secondary text-xs">Despesas planejadas</p>
-              </div>
-
-            </div>
-          </div>
 
           {/* Botão para Tabela */}
           <div className="px-4 mt-6">
