@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [stats, setStats] = useState({
     totalTrips: 0,
     activeTrips: 0,
@@ -24,12 +24,15 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Don't redirect while authentication is still loading
+    if (authLoading) return;
+    
     if (!user) {
       navigate("/auth");
       return;
     }
     loadDashboardData();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const loadDashboardData = async () => {
     try {
@@ -74,6 +77,15 @@ const Index = () => {
       setLoading(false);
     }
   };
+
+  // Show loading state while auth is loading
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!user) {
     return null;
