@@ -289,17 +289,10 @@ export default function NovaViagem() {
                   />
                 </div>
 
-                {/* Seção de Locais da Viagem */}
-                <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    <h3 className="text-lg font-semibold">Locais da Viagem</h3>
-                  </div>
-                  <TripLocations
-                    locations={locations}
-                    onChange={setLocations}
-                  />
-                </div>
+                <TripLocations
+                  locations={locations}
+                  onChange={setLocations}
+                />
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Imagens da Viagem</label>
