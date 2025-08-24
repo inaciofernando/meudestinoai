@@ -76,7 +76,16 @@ const CATEGORY_CONFIG = {
   transport: { name: "Transporte", icon: Car, color: "bg-blue-500" },
   accommodation: { name: "Hospedagem", icon: Hotel, color: "bg-purple-500" },
   attraction: { name: "Atração", icon: MapPin, color: "bg-red-500" },
-  activity: { name: "Atividade", icon: Route, color: "bg-orange-500" }
+  activity: { name: "Atividade", icon: Route, color: "bg-orange-500" },
+  shopping: { name: "Compras", icon: ShoppingBag, color: "bg-pink-500" },
+  park: { name: "Parques", icon: TreePine, color: "bg-green-600" },
+  museum: { name: "Museus", icon: Building2, color: "bg-gray-500" },
+  entertainment: { name: "Entretenimento", icon: Music, color: "bg-indigo-500" },
+  beach: { name: "Praia", icon: Waves, color: "bg-cyan-500" },
+  nature: { name: "Natureza", icon: Leaf, color: "bg-emerald-500" },
+  culture: { name: "Cultura", icon: Paintbrush, color: "bg-violet-500" },
+  sports: { name: "Esportes", icon: Dumbbell, color: "bg-amber-500" },
+  nightlife: { name: "Vida Noturna", icon: Moon, color: "bg-slate-600" }
 };
 
 const TIME_PERIODS = {

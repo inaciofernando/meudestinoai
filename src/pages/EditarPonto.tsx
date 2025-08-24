@@ -44,7 +44,16 @@ const CATEGORIES = [
   { value: "transport", label: "Transporte" },
   { value: "accommodation", label: "Hospedagem" },
   { value: "attraction", label: "Atração" },
-  { value: "activity", label: "Atividade" }
+  { value: "activity", label: "Atividade" },
+  { value: "shopping", label: "Compras" },
+  { value: "park", label: "Parques" },
+  { value: "museum", label: "Museus" },
+  { value: "entertainment", label: "Entretenimento" },
+  { value: "beach", label: "Praia" },
+  { value: "nature", label: "Natureza" },
+  { value: "culture", label: "Cultura" },
+  { value: "sports", label: "Esportes" },
+  { value: "nightlife", label: "Vida Noturna" }
 ];
 
 export default function EditarPonto() {
