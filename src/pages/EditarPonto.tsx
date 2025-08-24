@@ -15,6 +15,7 @@ import { ArrowLeft, Save, Clock } from "lucide-react";
 import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 import { VoucherUpload } from "@/components/VoucherUpload";
 import { cn } from "@/lib/utils";
+import { format, addDays } from "date-fns";
 
 interface RoteiroPonto {
   id: string;
@@ -51,6 +52,7 @@ export default function EditarPonto() {
   const { toast } = useToast();
   
   const [ponto, setPonto] = useState<RoteiroPonto | null>(null);
+  const [trip, setTrip] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -125,63 +127,102 @@ export default function EditarPonto() {
     }));
   };
 
-  useEffect(() => {
-    if (!user?.id || !pontoId) return;
+  // Função para gerar os dias da viagem com datas reais
+  const getTripDays = () => {
+    if (!trip?.start_date || !trip?.end_date) return [];
     
-    const fetchPonto = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("roteiro_pontos")
-          .select("*")
-          .eq("id", pontoId)
-          .eq("user_id", user.id)
-          .single();
+    const startDate = new Date(trip.start_date);
+    const endDate = new Date(trip.end_date);
+    const days = [];
+    
+    for (let d = new Date(startDate); d <= endDate; d = addDays(d, 1)) {
+      const dayNumber = Math.ceil((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const formattedDate = format(d, "dd/MM/yyyy");
+      const weekday = format(d, "EEEE").substring(0, 3).toUpperCase();
+      
+      days.push({
+        value: dayNumber,
+        label: `${formattedDate} - ${weekday}`,
+        date: formattedDate
+      });
+    }
+    
+    return days;
+  };
 
-        if (error) {
-          console.error("Erro ao buscar ponto:", error);
+  useEffect(() => {
+    if (!user?.id || !pontoId || !tripId) return;
+    
+    const fetchData = async () => {
+      try {
+        // Buscar ponto e viagem em paralelo
+        const [pontoResponse, tripResponse] = await Promise.all([
+          supabase
+            .from("roteiro_pontos")
+            .select("*")
+            .eq("id", pontoId)
+            .eq("user_id", user.id)
+            .single(),
+          supabase
+            .from("trips")
+            .select("start_date, end_date, title")
+            .eq("id", tripId)
+            .eq("user_id", user.id)
+            .single()
+        ]);
+
+        if (pontoResponse.error) {
+          console.error("Erro ao buscar ponto:", pontoResponse.error);
+          navigate(`/roteiro/${tripId}`);
+          return;
+        }
+
+        if (tripResponse.error) {
+          console.error("Erro ao buscar viagem:", tripResponse.error);
           navigate(`/roteiro/${tripId}`);
           return;
         }
 
         // Parse voucher_files se existir e converter para o tipo correto
-        const voucherFiles = data.voucher_files;
+        const voucherFiles = pontoResponse.data.voucher_files;
         const parsedVoucherFiles = Array.isArray(voucherFiles) 
           ? voucherFiles as Array<{ url: string; name: string; type: string; description?: string; }>
           : [];
 
         const pontoData: RoteiroPonto = {
-          id: data.id,
-          roteiro_id: data.roteiro_id,
-          day_number: data.day_number,
-          time_start: data.time_start,
-          time_end: data.time_end || undefined,
-          title: data.title,
-          description: data.description || undefined,
-          location: data.location,
-          category: data.category,
-          order_index: data.order_index,
-          images: data.images || [],
+          id: pontoResponse.data.id,
+          roteiro_id: pontoResponse.data.roteiro_id,
+          day_number: pontoResponse.data.day_number,
+          time_start: pontoResponse.data.time_start,
+          time_end: pontoResponse.data.time_end || undefined,
+          title: pontoResponse.data.title,
+          description: pontoResponse.data.description || undefined,
+          location: pontoResponse.data.location,
+          category: pontoResponse.data.category,
+          order_index: pontoResponse.data.order_index,
+          images: pontoResponse.data.images || [],
           voucher_files: parsedVoucherFiles
         };
 
         setPonto(pontoData);
+        setTrip(tripResponse.data);
         setFormData({
-          day_number: data.day_number,
-          time_start: data.time_start,
-          time_end: data.time_end || "",
-          title: data.title,
-          description: data.description || "",
-          location: data.location,
-          category: data.category,
-          images: data.images || [],
+          day_number: pontoResponse.data.day_number,
+          time_start: pontoResponse.data.time_start,
+          time_end: pontoResponse.data.time_end || "",
+          title: pontoResponse.data.title,
+          description: pontoResponse.data.description || "",
+          location: pontoResponse.data.location,
+          category: pontoResponse.data.category,
+          images: pontoResponse.data.images || [],
           vouchers: parsedVoucherFiles,
           is_all_day: false
         });
       } catch (error) {
-        console.error("Erro ao carregar ponto:", error);
+        console.error("Erro ao carregar dados:", error);
         toast({
           title: "Erro",
-          description: "Não foi possível carregar os dados do ponto.",
+          description: "Não foi possível carregar os dados.",
           variant: "destructive"
         });
       } finally {
@@ -189,7 +230,7 @@ export default function EditarPonto() {
       }
     };
 
-    fetchPonto();
+    fetchData();
   }, [user?.id, pontoId, tripId, navigate, toast]);
 
   const handleSave = async () => {
@@ -346,16 +387,23 @@ export default function EditarPonto() {
               {/* Dia e Horários */}
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-20 space-y-2">
-                    <Label htmlFor="day-number">Dia</Label>
-                    <Input
-                      id="day-number"
-                      type="number"
-                      min="1"
-                      value={formData.day_number}
-                      onChange={(e) => setFormData(prev => ({ ...prev, day_number: parseInt(e.target.value) || 1 }))}
-                      className="text-center"
-                    />
+                  <div className="flex-1 space-y-2">
+                    <Label htmlFor="day-select">Dia</Label>
+                    <Select
+                      value={formData.day_number.toString()}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, day_number: parseInt(value) }))}
+                    >
+                      <SelectTrigger id="day-select">
+                        <SelectValue placeholder="Selecione o dia" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getTripDays().map((day) => (
+                          <SelectItem key={day.value} value={day.value.toString()}>
+                            {day.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="flex items-center space-x-2 pt-6">
                     <input

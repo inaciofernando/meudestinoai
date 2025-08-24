@@ -154,6 +154,29 @@ export default function RoteiroSimples() {
     });
   };
 
+  // Função para gerar os dias da viagem com datas reais
+  const getTripDays = () => {
+    if (!trip?.start_date || !trip?.end_date) return [];
+    
+    const startDate = new Date(trip.start_date);
+    const endDate = new Date(trip.end_date);
+    const days = [];
+    
+    for (let d = new Date(startDate); d <= endDate; d = addDays(d, 1)) {
+      const dayNumber = Math.ceil((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const formattedDate = format(d, "dd/MM/yyyy");
+      const weekday = format(d, "EEEE").substring(0, 3).toUpperCase();
+      
+      days.push({
+        value: dayNumber,
+        label: `${formattedDate} - ${weekday}`,
+        date: formattedDate
+      });
+    }
+    
+    return days;
+  };
+
   const getTotalDays = (startDate: string | null, endDate: string | null): number => {
     if (!startDate || !endDate) return 7;
     const start = new Date(startDate);
@@ -586,16 +609,16 @@ export default function RoteiroSimples() {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-20">
+                  <div className="flex-1">
                     <Label>Dia</Label>
                     <Select value={formData.day_number.toString()} onValueChange={(value) => setFormData({...formData, day_number: parseInt(value)})}>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Selecione o dia" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from({length: 30}, (_, i) => (
-                          <SelectItem key={i+1} value={(i+1).toString()}>
-                            {i+1}
+                        {getTripDays().map((day) => (
+                          <SelectItem key={day.value} value={day.value.toString()}>
+                            {day.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
