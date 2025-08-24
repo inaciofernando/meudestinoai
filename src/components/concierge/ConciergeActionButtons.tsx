@@ -134,9 +134,7 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
     // Salvar imagens relevantes no sessionStorage para o formulário
     const restaurantImages = messageData?.images?.filter(img => img.type === 'restaurant') || [];
     if (restaurantImages.length > 0) {
-      const imageKey = `concierge_restaurant_images_${tripId}_${Date.now()}`;
-      sessionStorage.setItem(imageKey, JSON.stringify(restaurantImages));
-      params.set('imageKey', imageKey);
+      sessionStorage.setItem('conciergeImages', JSON.stringify(restaurantImages));
     }
     
     navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
@@ -159,9 +157,7 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
     // Salvar imagens relevantes no sessionStorage para o formulário
     const attractionImages = messageData?.images?.filter(img => img.type === 'attraction') || [];
     if (attractionImages.length > 0) {
-      const imageKey = `concierge_attraction_images_${tripId}_${Date.now()}`;
-      sessionStorage.setItem(imageKey, JSON.stringify(attractionImages));
-      params.set('imageKey', imageKey);
+      sessionStorage.setItem('conciergeImages', JSON.stringify(attractionImages));
     }
     
     navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);

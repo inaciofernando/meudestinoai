@@ -16,6 +16,8 @@ async function generateImage(prompt: string): Promise<string | null> {
     return null;
   }
 
+  console.log('Generating image with prompt:', prompt);
+
   try {
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -24,7 +26,7 @@ async function generateImage(prompt: string): Promise<string | null> {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
+        model: 'dall-e-3',
         prompt: prompt,
         n: 1,
         size: '1024x1024',
@@ -33,16 +35,27 @@ async function generateImage(prompt: string): Promise<string | null> {
       }),
     });
 
+    console.log('OpenAI response status:', response.status);
+
     if (!response.ok) {
-      console.error('OpenAI image generation failed:', response.status, await response.text());
+      const errorText = await response.text();
+      console.error('OpenAI image generation failed:', response.status, errorText);
       return null;
     }
 
     const data = await response.json();
+    console.log('OpenAI response data structure:', {
+      hasData: !!data.data,
+      dataLength: data.data?.length,
+      hasB64: !!data.data?.[0]?.b64_json
+    });
+
     if (data.data && data.data[0] && data.data[0].b64_json) {
+      console.log('Image generated successfully');
       return `data:image/png;base64,${data.data[0].b64_json}`;
     }
     
+    console.log('No image data in response');
     return null;
   } catch (error) {
     console.error('Error generating image:', error);
@@ -171,16 +184,24 @@ Regras adicionais importantes:
         const imagePromises = [];
         
         if (structuredData.restaurant && structuredData.restaurant.name) {
+          console.log('Generating restaurant image for:', structuredData.restaurant.name);
           const restaurantPrompt = `Professional food photography of ${structuredData.restaurant.name} restaurant, ${structuredData.restaurant.cuisine || 'cuisine'} food, elegant dining atmosphere, warm lighting, high quality commercial photography`;
           imagePromises.push(
-            generateImage(restaurantPrompt).then(img => ({ type: 'restaurant', image: img }))
+            generateImage(restaurantPrompt).then(img => {
+              console.log('Restaurant image result:', img ? 'SUCCESS' : 'FAILED');
+              return { type: 'restaurant', image: img };
+            })
           );
         }
         
         if (structuredData.itinerary_item && structuredData.itinerary_item.title) {
+          console.log('Generating attraction image for:', structuredData.itinerary_item.title);
           const attractionPrompt = `Professional travel photography of ${structuredData.itinerary_item.title}, ${structuredData.itinerary_item.location || 'tourist destination'}, beautiful landscape, architectural details, tourism photography, high quality`;
           imagePromises.push(
-            generateImage(attractionPrompt).then(img => ({ type: 'attraction', image: img }))
+            generateImage(attractionPrompt).then(img => {
+              console.log('Attraction image result:', img ? 'SUCCESS' : 'FAILED');
+              return { type: 'attraction', image: img };
+            })
           );
         }
         
@@ -188,7 +209,14 @@ Regras adicionais importantes:
           console.log('Generating images for structured data...');
           const imageResults = await Promise.all(imagePromises);
           generatedImages = imageResults.filter(result => result.image !== null);
-          console.log(`Generated ${generatedImages.length} images`);
+          console.log(`Generated ${generatedImages.length} images out of ${imagePromises.length} attempts`);
+          console.log('Final image results:', generatedImages.map(img => ({ 
+            type: img.type, 
+            hasImage: !!img.image,
+            imageSize: img.image?.length || 0
+          })));
+        } else {
+          console.log('No image generation needed - no structured data with names found');
         }
         
       } catch (parseError) {
