@@ -14,7 +14,7 @@ import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { format, addDays } from "date-fns";
+import { format, parseISO, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import {
@@ -154,27 +154,48 @@ export default function RoteiroSimples() {
     });
   };
 
-  // Função para gerar os dias da viagem com datas reais
+  // Função para calcular a data de cada dia do roteiro com timezone fix
+  const getDayDate = (dayNumber: number): string => {
+    if (!trip?.start_date) return "";
+    
+    try {
+      // Usar parseISO para evitar problemas de timezone
+      const startDate = parseISO(trip.start_date);
+      const dayDate = addDays(startDate, dayNumber - 1);
+      return format(dayDate, "dd/MM - EEEE", { locale: ptBR });
+    } catch (error) {
+      console.error("Erro ao calcular data do dia:", error);
+      return "";
+    }
+  };
+
+  // Função para gerar os dias da viagem com datas reais e timezone fix
   const getTripDays = () => {
     if (!trip?.start_date || !trip?.end_date) return [];
     
-    const startDate = new Date(trip.start_date);
-    const endDate = new Date(trip.end_date);
-    const days = [];
-    
-    for (let d = new Date(startDate); d <= endDate; d = addDays(d, 1)) {
-      const dayNumber = Math.ceil((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      const formattedDate = format(d, "dd/MM/yyyy");
-      const weekday = format(d, "EEEE").substring(0, 3).toUpperCase();
+    try {
+      // Usar parseISO para evitar problemas de timezone
+      const startDate = parseISO(trip.start_date);
+      const endDate = parseISO(trip.end_date);
+      const days = [];
       
-      days.push({
-        value: dayNumber,
-        label: `${formattedDate} - ${weekday}`,
-        date: formattedDate
-      });
+      for (let d = new Date(startDate); d <= endDate; d = addDays(d, 1)) {
+        const dayNumber = Math.ceil((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const formattedDate = format(d, "dd/MM/yyyy");
+        const weekday = format(d, "EEEE", { locale: ptBR }).substring(0, 3).toUpperCase();
+        
+        days.push({
+          value: dayNumber,
+          label: `${formattedDate} - ${weekday}`,
+          date: formattedDate
+        });
+      }
+      
+      return days;
+    } catch (error) {
+      console.error("Erro ao gerar dias da viagem:", error);
+      return [];
     }
-    
-    return days;
   };
 
   const getTotalDays = (startDate: string | null, endDate: string | null): number => {
@@ -316,19 +337,6 @@ export default function RoteiroSimples() {
     }
   };
 
-  // Função para calcular a data de cada dia do roteiro
-  const getDayDate = (dayNumber: number): string => {
-    if (!trip?.start_date) return "";
-    
-    try {
-      const startDate = new Date(trip.start_date + 'T00:00:00');
-      const dayDate = addDays(startDate, dayNumber - 1);
-      return format(dayDate, "dd/MM - EEEE", { locale: ptBR });
-    } catch (error) {
-      console.error("Erro ao calcular data do dia:", error);
-      return "";
-    }
-  };
 
   const handleAddPonto = async () => {
     if (!roteiro || !user || !formData.title || !formData.location) {
@@ -593,12 +601,16 @@ export default function RoteiroSimples() {
                 <div>
                   <Label>Categoria</Label>
                   <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-background">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-background border shadow-lg z-50">
                       {Object.entries(CATEGORY_CONFIG).map(([key, config]) => (
-                        <SelectItem key={key} value={key}>
+                        <SelectItem 
+                          key={key} 
+                          value={key}
+                          className="hover:bg-muted focus:bg-muted cursor-pointer"
+                        >
                           {config.name}
                         </SelectItem>
                       ))}
@@ -612,12 +624,16 @@ export default function RoteiroSimples() {
                   <div className="flex-1">
                     <Label>Dia</Label>
                     <Select value={formData.day_number.toString()} onValueChange={(value) => setFormData({...formData, day_number: parseInt(value)})}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-background">
                         <SelectValue placeholder="Selecione o dia" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background border shadow-lg z-50 max-h-60">
                         {getTripDays().map((day) => (
-                          <SelectItem key={day.value} value={day.value.toString()}>
+                          <SelectItem 
+                            key={day.value} 
+                            value={day.value.toString()}
+                            className="hover:bg-muted focus:bg-muted cursor-pointer"
+                          >
                             {day.label}
                           </SelectItem>
                         ))}

@@ -15,7 +15,7 @@ import { ArrowLeft, Save, Clock } from "lucide-react";
 import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 import { VoucherUpload } from "@/components/VoucherUpload";
 import { cn } from "@/lib/utils";
-import { format, addDays } from "date-fns";
+import { format, addDays, parseISO } from "date-fns";
 
 interface RoteiroPonto {
   id: string;
@@ -127,27 +127,33 @@ export default function EditarPonto() {
     }));
   };
 
-  // Função para gerar os dias da viagem com datas reais
+  // Função para gerar os dias da viagem com datas reais e timezone fix
   const getTripDays = () => {
     if (!trip?.start_date || !trip?.end_date) return [];
     
-    const startDate = new Date(trip.start_date);
-    const endDate = new Date(trip.end_date);
-    const days = [];
-    
-    for (let d = new Date(startDate); d <= endDate; d = addDays(d, 1)) {
-      const dayNumber = Math.ceil((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      const formattedDate = format(d, "dd/MM/yyyy");
-      const weekday = format(d, "EEEE").substring(0, 3).toUpperCase();
+    try {
+      // Usar parseISO para evitar problemas de timezone
+      const startDate = parseISO(trip.start_date);
+      const endDate = parseISO(trip.end_date);
+      const days = [];
       
-      days.push({
-        value: dayNumber,
-        label: `${formattedDate} - ${weekday}`,
-        date: formattedDate
-      });
+      for (let d = new Date(startDate); d <= endDate; d = addDays(d, 1)) {
+        const dayNumber = Math.ceil((d.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const formattedDate = format(d, "dd/MM/yyyy");
+        const weekday = format(d, "EEEE").substring(0, 3).toUpperCase();
+        
+        days.push({
+          value: dayNumber,
+          label: `${formattedDate} - ${weekday}`,
+          date: formattedDate
+        });
+      }
+      
+      return days;
+    } catch (error) {
+      console.error("Erro ao gerar dias da viagem:", error);
+      return [];
     }
-    
-    return days;
   };
 
   useEffect(() => {
@@ -371,12 +377,16 @@ export default function EditarPonto() {
                   value={formData.category}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background border shadow-lg z-50">
                     {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
+                      <SelectItem 
+                        key={cat.value} 
+                        value={cat.value}
+                        className="hover:bg-muted focus:bg-muted cursor-pointer"
+                      >
                         {cat.label}
                       </SelectItem>
                     ))}
@@ -393,12 +403,16 @@ export default function EditarPonto() {
                       value={formData.day_number.toString()}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, day_number: parseInt(value) }))}
                     >
-                      <SelectTrigger id="day-select">
+                      <SelectTrigger id="day-select" className="bg-background">
                         <SelectValue placeholder="Selecione o dia" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-background border shadow-lg z-50 max-h-60">
                         {getTripDays().map((day) => (
-                          <SelectItem key={day.value} value={day.value.toString()}>
+                          <SelectItem 
+                            key={day.value} 
+                            value={day.value.toString()}
+                            className="hover:bg-muted focus:bg-muted cursor-pointer"
+                          >
                             {day.label}
                           </SelectItem>
                         ))}
