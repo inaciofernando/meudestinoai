@@ -834,11 +834,14 @@ export default function GastosViagem() {
                 
                 {/* Monthly Summary */}
                 <div className="flex items-center justify-center gap-6 text-sm">
-                  <div className="text-center">
-                    <p className="text-green-600 font-semibold">
-                      {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
-                    </p>
-                    <p className="text-muted-foreground text-xs">Orçamento</p>
+                  <div className="text-center cursor-pointer" onClick={() => setIsEditingBudget(true)}>
+                    <div className="flex items-center justify-center gap-2">
+                      <p className="text-green-600 font-semibold">
+                        {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
+                      </p>
+                      <Edit2 className="w-3 h-3 text-green-600/70 hover:text-green-600" />
+                    </div>
+                    <p className="text-muted-foreground text-xs">Orçamento (clique para editar)</p>
                   </div>
                   <div className="text-center">
                     <p className="text-red-600 font-semibold">
