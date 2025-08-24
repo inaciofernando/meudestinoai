@@ -20,10 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
-import { ExpenseStats } from "@/components/expense/ExpenseStats";
-import { ExpenseCharts } from "@/components/expense/ExpenseCharts";
 import { ExpenseDetailModal } from "@/components/expense/ExpenseDetailModal";
-import { ExpenseFilters } from "@/components/expense/ExpenseFilters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -915,23 +912,49 @@ export default function GastosViagem() {
             </div>
           </div>
 
-          {/* Filters */}
-          <ExpenseFilters
-            activeFilter={activeFilter}
-            onFilterChange={handleFilterChange}
-            totalCount={expenses.length}
-            plannedCount={expenses.filter(e => e.expense_type === 'planejado').length}
-            realizedCount={expenses.filter(e => e.expense_type === 'realizado').length}
-            showChart={showChart}
-            onToggleChart={() => setShowChart(!showChart)}
-          />
-
-          {/* Charts */}
-          <ExpenseCharts
-            expenses={filteredExpenses}
-            showChart={showChart}
-            onToggleChart={() => setShowChart(!showChart)}
-          />
+          {/* Simple Filter Bar - Like Banking App */}
+          <div className="px-4 mb-6">
+            <div className="flex items-center justify-center">
+              <div className="bg-primary/10 rounded-full p-1 border border-primary/20">
+                <div className="flex">
+                  <button
+                    onClick={() => handleFilterChange('todos')}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      activeFilter === 'todos'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Transações
+                  </button>
+                  {calculations.realizedExpenses > 0 && (
+                    <button
+                      onClick={() => handleFilterChange('realizado')}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        activeFilter === 'realizado'
+                          ? 'bg-primary text-white shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Realizados
+                    </button>
+                  )}
+                  {calculations.plannedExpenses > 0 && (
+                    <button
+                      onClick={() => handleFilterChange('planejado')}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        activeFilter === 'planejado'
+                          ? 'bg-primary text-white shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Planejados
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Professional Transaction List */}
           <div className="px-4 space-y-4">
