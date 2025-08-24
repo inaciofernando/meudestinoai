@@ -198,7 +198,7 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
               type="file"
               id="voucher-upload"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              accept=".pdf,.doc,.docx,.txt"
               onChange={handleFileUpload}
               disabled={uploading || vouchers.length >= maxFiles}
               className="hidden"
@@ -215,7 +215,7 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
                   {uploading ? 'Fazendo upload...' : 'Clique para anexar vouchers/documentos'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  PDF, JPG, PNG, DOC (máx. {maxFiles} arquivos)
+                  PDF, DOC, TXT (máx. {maxFiles} arquivos)
                 </p>
               </div>
             </label>
@@ -223,12 +223,12 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
         </div>
       )}
 
-      {/* Lista de arquivos */}
-      {vouchers.length > 0 && (
+      {/* Lista de documentos (excluindo imagens) */}
+      {vouchers.filter(v => !v.type.startsWith('image/')).length > 0 && (
         <div className="space-y-2">
           <Label>Vouchers Anexados</Label>
           <div className="space-y-2">
-            {vouchers.map((voucher, index) => (
+            {vouchers.filter(v => !v.type.startsWith('image/')).map((voucher, index) => (
               <Card key={index} className="p-0">
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between gap-3">
@@ -250,16 +250,16 @@ export const VoucherUpload: React.FC<VoucherUploadProps> = ({
                       >
                         <Download className="w-4 h-4" />
                       </Button>
-                      {!disabled && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeVoucher(index)}
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
+                       {!disabled && (
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => removeVoucher(vouchers.indexOf(voucher))}
+                           className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                         >
+                           <Trash2 className="w-4 h-4" />
+                         </Button>
+                       )}
                     </div>
                   </div>
                 </CardContent>
