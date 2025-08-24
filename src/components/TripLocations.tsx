@@ -80,16 +80,23 @@ export function TripLocations({ locations, onChange, disabled = false }: TripLoc
 
   return (
     <div className="space-y-4">
-      <div>
-        <Label>Locais da Viagem</Label>
-        <p className="text-sm text-muted-foreground">
-          Adicione os locais que você pretende visitar durante a viagem
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <Label className="text-base font-semibold">Locais da Viagem</Label>
+          <p className="text-sm text-muted-foreground">
+            Adicione os locais que você pretende visitar durante a viagem
+          </p>
+        </div>
+        {!disabled && (
+          <Button variant="outline" size="sm" onClick={() => setNewLocation("")} className="ml-2">
+            <Plus className="w-4 h-4" />
+          </Button>
+        )}
       </div>
 
       {/* Add new location */}
       {!disabled && (
-        <Card>
+        <Card className="border-dashed border-2 hover:border-primary/30 transition-colors">
           <CardContent className="p-4">
             <div className="flex gap-2">
               <div className="flex-1">
@@ -111,7 +118,7 @@ export function TripLocations({ locations, onChange, disabled = false }: TripLoc
                   <SelectItem value="airport">Aeroporto</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={addLocation} size="icon">
+              <Button onClick={addLocation} size="icon" disabled={!newLocation.trim()}>
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
@@ -178,10 +185,18 @@ export function TripLocations({ locations, onChange, disabled = false }: TripLoc
         </div>
       )}
 
-      {locations.length === 0 && (
+      {locations.length === 0 && !disabled && (
+        <div className="text-center py-8 text-muted-foreground border-2 border-dashed border-muted/30 rounded-lg">
+          <MapPin className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p className="text-lg font-medium mb-1">Nenhum local adicionado ainda</p>
+          <p className="text-sm">Comece adicionando os locais que você pretende visitar</p>
+        </div>
+      )}
+      
+      {locations.length === 0 && disabled && (
         <div className="text-center py-6 text-muted-foreground">
           <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p>Nenhum local adicionado ainda</p>
+          <p>Nenhum local definido para esta viagem</p>
         </div>
       )}
     </div>

@@ -291,16 +291,18 @@ export default function NovaViagem() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Imagens da Viagem</label>
-              <ImageUpload 
-                images={images} 
-                onImagesChange={setImages} 
-                maxImages={5}
-              />
+                  <ImageUpload 
+                    images={images} 
+                    onImagesChange={setImages} 
+                    maxImages={5}
+                  />
+                </div>
 
-              <TripLocations
-                locations={locations}
-                onChange={setLocations}
-              />
+                <div className="space-y-2">
+                  <TripLocations
+                    locations={locations}
+                    onChange={setLocations}
+                  />
                 </div>
 
                 <div className="flex gap-4 pt-4">

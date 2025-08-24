@@ -1220,6 +1220,7 @@ export default function DetalhesViagem() {
               </Button>
             </div>
           )}
+          </div>
         </div>
       </PWALayout>
     </ProtectedRoute>
