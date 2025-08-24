@@ -348,7 +348,25 @@ export default function RoteiroSimples() {
       return;
     }
 
+    // Verificar se o usuário ainda está autenticado
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Erro de Autenticação",
+        description: "Sessão expirada. Por favor, faça login novamente.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
+      console.log('Tentando adicionar ponto:', {
+        roteiro_id: roteiro.id,
+        user_id: user.id,
+        title: formData.title,
+        location: formData.location
+      });
+
       const { error } = await supabase
         .from("roteiro_pontos")
         .insert({
@@ -365,8 +383,12 @@ export default function RoteiroSimples() {
           images: formData.images
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Ponto adicionado com sucesso!');
       toast({
         title: "Ponto adicionado!",
         description: "Novo ponto foi adicionado ao roteiro.",
@@ -386,11 +408,23 @@ export default function RoteiroSimples() {
       });
       setIsAddingPonto(false);
       fetchPontos();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding ponto:', error);
+      
+      let errorMessage = "Não foi possível adicionar o ponto. Tente novamente.";
+      
+      // Mensagens de erro mais específicas
+      if (error?.message?.includes('JWT')) {
+        errorMessage = "Sessão expirada. Por favor, atualize a página e tente novamente.";
+      } else if (error?.message?.includes('network')) {
+        errorMessage = "Problema de conexão. Verifique sua internet e tente novamente.";
+      } else if (error?.code === 'PGRST301') {
+        errorMessage = "Erro de permissão. Verifique se você tem acesso a este roteiro.";
+      }
+
       toast({
-        title: "Erro",
-        description: "Não foi possível adicionar o ponto. Tente novamente.",
+        title: "Erro ao Salvar",
+        description: errorMessage,
         variant: "destructive"
       });
     }
