@@ -8,18 +8,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, ArrowLeft } from "lucide-react";
+import { CalendarIcon, ArrowLeft, MapPin, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
-import { TripLocations, TripLocation } from "@/components/TripLocations";
+import { TripLocation } from "@/components/TripLocations";
 
 const formSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
@@ -126,6 +127,24 @@ export default function NovaViagem() {
     }
   };
 
+  const addLocationFromDestination = () => {
+    const destinationValue = form.getValues("destination");
+    if (destinationValue && destinationValue.trim()) {
+      const newLocation: TripLocation = {
+        location_name: destinationValue.trim(),
+        location_type: 'city',
+        order_index: locations.length
+      };
+      setLocations([...locations, newLocation]);
+    }
+  };
+
+  const removeLocation = (index: number) => {
+    const updatedLocations = locations.filter((_, i) => i !== index)
+      .map((loc, i) => ({ ...loc, order_index: i }));
+    setLocations(updatedLocations);
+  };
+
   return (
     <ProtectedRoute>
       <PWALayout>
@@ -172,10 +191,50 @@ export default function NovaViagem() {
                     <FormItem>
                       <FormLabel>Destino</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Ex: Paris, França" 
-                          {...field} 
-                        />
+                        <div className="space-y-3">
+                          <div className="flex gap-2">
+                            <Input 
+                              placeholder="Ex: Paris, França" 
+                              {...field} 
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="icon"
+                              className="shrink-0"
+                              onClick={addLocationFromDestination}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          
+                          {/* Lista de destinos adicionais */}
+                          {locations.length > 0 && (
+                            <div className="mt-3 space-y-2">
+                              <p className="text-sm text-muted-foreground">Destinos adicionais:</p>
+                              {locations.map((location, index) => (
+                                <div key={index} className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                                  <MapPin className="h-4 w-4 text-primary" />
+                                  <span className="flex-1 text-sm">{location.location_name}</span>
+                                  <Badge variant="secondary" className="text-xs">
+                                    {location.location_type === 'city' ? 'Cidade' : 
+                                     location.location_type === 'region' ? 'Região' : 
+                                     location.location_type === 'attraction' ? 'Atração' : 'Aeroporto'}
+                                  </Badge>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeLocation(index)}
+                                    className="h-6 w-6 p-0"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -286,21 +345,6 @@ export default function NovaViagem() {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
-                </div>
-
-                {/* Seção de Locais da Viagem */}
-                <div className="space-y-4 p-6 bg-card rounded-lg border shadow-sm">
-                  <div className="flex items-center gap-2 border-b border-border pb-3">
-                    <div className="w-3 h-3 bg-primary rounded-full"></div>
-                    <h3 className="text-lg font-semibold text-foreground">Locais da Viagem</h3>
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      Para recomendações personalizadas
-                    </span>
-                  </div>
-                  <TripLocations
-                    locations={locations}
-                    onChange={setLocations}
                   />
                 </div>
 
