@@ -99,7 +99,7 @@ export default function AdicionarRestaurante() {
     load();
   }, [tripId, user]);
 
-  // Preenchimento via Concierge (query params)
+  // Preenchimento via Concierge (query params e sessionStorage)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const nameFromConcierge = urlParams.get('name');
@@ -114,6 +114,24 @@ export default function AdicionarRestaurante() {
     const sourceText = urlParams.get('source') || '';
     const fromConcierge = urlParams.get('fromConcierge');
 
+    // Verificar se há imagens do concierge no sessionStorage
+    const conciergeImages = sessionStorage.getItem('conciergeImages');
+    let imagesToLoad = '';
+
+    if (conciergeImages) {
+      try {
+        const images = JSON.parse(conciergeImages);
+        const restaurantImage = images.find((img: any) => img.type === 'restaurant');
+        if (restaurantImage && restaurantImage.image) {
+          imagesToLoad = restaurantImage.image;
+        }
+        // Limpar sessionStorage após usar
+        sessionStorage.removeItem('conciergeImages');
+      } catch (error) {
+        console.error('Erro ao processar imagens do concierge:', error);
+      }
+    }
+
     console.log("🔍 Checking Concierge params for restaurant:", { 
       nameFromConcierge, 
       descriptionFromConcierge, 
@@ -122,6 +140,7 @@ export default function AdicionarRestaurante() {
       linkFromConcierge, 
       estimatedFromConcierge,
       fromConcierge,
+      imagesToLoad,
       fullUrl: window.location.href 
     });
 
@@ -142,7 +161,8 @@ export default function AdicionarRestaurante() {
         gmapFromConcierge,
         wazeFromConcierge,
         estimatedFromConcierge,
-        linkFromSource
+        linkFromSource,
+        imagesToLoad
       });
       setForm(prev => ({
         ...prev,
@@ -155,6 +175,7 @@ export default function AdicionarRestaurante() {
         google_maps_link: gmapFromConcierge || prev.google_maps_link,
         waze_link: wazeFromConcierge || prev.waze_link,
         estimated_amount: estimatedFromConcierge || prev.estimated_amount,
+        restaurant_image_url: imagesToLoad || prev.restaurant_image_url,
       }));
 
       // Limpar os params da URL

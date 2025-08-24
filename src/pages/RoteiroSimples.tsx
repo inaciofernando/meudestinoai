@@ -254,12 +254,31 @@ export default function RoteiroSimples() {
     const locationFromConcierge = urlParams.get('location');
     const fromConcierge = urlParams.get('fromConcierge');
     
+    // Verificar se há imagens do concierge no sessionStorage
+    const conciergeImages = sessionStorage.getItem('conciergeImages');
+    let imagesToLoad: string[] = [];
+
+    if (conciergeImages) {
+      try {
+        const images = JSON.parse(conciergeImages);
+        const attractionImage = images.find((img: any) => img.type === 'attraction');
+        if (attractionImage && attractionImage.image) {
+          imagesToLoad = [attractionImage.image];
+        }
+        // Limpar sessionStorage após usar
+        sessionStorage.removeItem('conciergeImages');
+      } catch (error) {
+        console.error('Erro ao processar imagens do concierge:', error);
+      }
+    }
+    
     console.log("🔍 Checking Concierge params for roteiro:", { 
       titleFromConcierge, 
       descriptionFromConcierge, 
       categoryFromConcierge, 
       locationFromConcierge,
       fromConcierge,
+      imagesToLoad,
       fullUrl: window.location.href 
     });
     
@@ -283,7 +302,8 @@ export default function RoteiroSimples() {
         website_link: websiteFromConcierge || '',
         tripadvisor_link: tripadvisorFromConcierge ? tripadvisorFromConcierge.trim() : '',
         google_maps_link: gmapFromConcierge || '',
-        waze_link: wazeFromConcierge || ''
+        waze_link: wazeFromConcierge || '',
+        images: imagesToLoad
       }));
       setIsAddingPonto(true);
       
