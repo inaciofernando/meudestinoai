@@ -364,27 +364,41 @@ export default function RoteiroSimples() {
         roteiro_id: roteiro.id,
         user_id: user.id,
         title: formData.title,
-        location: formData.location
+        location: formData.location,
+        is_all_day: formData.is_all_day,
+        time_start_original: formData.time_start,
+        time_end_original: formData.time_end
       });
 
-      const { error } = await supabase
+      const pontoData = {
+        roteiro_id: roteiro.id,
+        day_number: formData.day_number,
+        time_start: formData.is_all_day ? "00:00" : formData.time_start,
+        time_end: formData.is_all_day ? "23:59" : (formData.time_end || null),
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        category: formData.category,
+        order_index: pontos.filter(p => p.day_number === formData.day_number).length,
+        user_id: user.id,
+        images: formData.images
+      };
+
+      console.log('Dados que serão enviados para o Supabase:', pontoData);
+
+      const { data, error } = await supabase
         .from("roteiro_pontos")
-        .insert({
-          roteiro_id: roteiro.id,
-          day_number: formData.day_number,
-          time_start: formData.is_all_day ? null : formData.time_start,
-          time_end: formData.is_all_day ? null : (formData.time_end || null),
-          title: formData.title,
-          description: formData.description,
-          location: formData.location,
-          category: formData.category,
-          order_index: pontos.filter(p => p.day_number === formData.day_number).length,
-          user_id: user.id,
-          images: formData.images
-        });
+        .insert(pontoData);
+
+      console.log('Resposta do Supabase:', { data, error });
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Erro detalhado do Supabase:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
       }
 
