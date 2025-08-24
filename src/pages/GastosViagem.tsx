@@ -789,125 +789,81 @@ export default function GastosViagem() {
     <ProtectedRoute>
       <PWALayout showHeader={true}>
         <div className="pb-20">
-          {/* Header */}
-          <div className="px-4 py-6 bg-gradient-travel text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+          {/* Professional Header with Balance Focus */}
+          <div className="bg-background border-b">
+            <div className="px-4 py-6">
+              <div className="flex items-center justify-between mb-6">
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={() => navigate("/viagens")}
-                  className="text-white hover:bg-white/20 p-2 h-auto"
+                  className="p-2 h-auto"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
-                <div>
-                  <h1 className="text-xl font-bold">{trip.title}</h1>
-                  <p className="text-white/80 text-sm">{trip.destination}</p>
-                </div>
-              </div>
-              <Button 
-                className="w-10 h-10 p-0 rounded-full bg-white/20 hover:bg-white/30 transition-all" 
-                onClick={() => setIsAddingExpense(true)}
-              >
-                <Plus className="w-5 h-5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Budget Cards with Edit Functionality */}
-          <div className="px-4 -mt-4">
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {/* Card Orçamento */}
-              <div className="c6-card p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium">ORÇAMENTO</p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingBudget(true)}
-                    className="h-7 w-7 p-0 hover:bg-muted/50 rounded-full shrink-0"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                  </Button>
-                </div>
-                <p className="text-xl font-bold text-foreground mb-2">
-                  {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
-                </p>
-                <p className="c6-text-secondary text-xs mb-3">
-                  Gasto: {formatCurrency(calculations.totalExpenses, selectedCurrency.symbol)}
-                </p>
                 
-                {/* Barra de progresso compacta */}
-                <div className="space-y-2">
-                  <div className="w-full bg-muted/40 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-500 ${
-                        calculations.budgetStatus.status === "over-budget" ? "bg-destructive" :
-                        calculations.budgetStatus.status === "warning" ? "bg-orange-500" : "bg-primary"
-                      }`}
-                      style={{ width: `${Math.min(100, calculations.budgetStatus.percentage)}%` }}
-                    />
+                <div className="text-center">
+                  <div className="bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20 mb-2">
+                    <span className="text-sm font-medium">Transações</span>
                   </div>
-                  <p className="c6-text-secondary text-xs">
-                    {calculations.budgetStatus.percentage.toFixed(1)}% utilizado
+                  <p className="text-sm text-muted-foreground">{trip.destination}</p>
+                </div>
+
+                <Button 
+                  onClick={() => setIsAddingExpense(true)}
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 h-9 w-9 p-0 rounded-full"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Current Balance - Hero Section */}
+              <div className="text-center space-y-3">
+                <div>
+                  <p className="text-sm text-muted-foreground uppercase tracking-wide">Saldo Atual</p>
+                  <p className={`text-4xl font-bold ${
+                    (trip.total_budget || 0) - calculations.totalExpenses > 0 
+                      ? 'text-green-600' 
+                      : 'text-red-600'
+                  }`}>
+                    {formatCurrency(Math.max(0, (trip.total_budget || 0) - calculations.totalExpenses), selectedCurrency.symbol)}
                   </p>
                 </div>
-              </div>
-
-              {/* Card Saldo Disponível */}
-              <div className="c6-card p-4">
-                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">SALDO DISPONÍVEL</p>
-                <p className={`text-xl font-bold mb-2 ${
-                  calculations.budgetStatus.status === "over-budget" ? "text-destructive" :
-                  calculations.budgetStatus.status === "warning" ? "text-orange-600" : "text-green-600"
-                }`}>
-                  {formatCurrency(Math.max(0, (trip.total_budget || 0) - calculations.totalExpenses), selectedCurrency.symbol)}
-                </p>
-                <div className="flex items-center justify-between">
-                  <Badge 
-                    variant="outline"
-                    className={`text-xs font-medium px-2 py-1 ${
-                      calculations.budgetStatus.status === "over-budget" ? "border-destructive/30 text-destructive bg-destructive/5" :
-                      calculations.budgetStatus.status === "warning" ? "border-orange-500/30 text-orange-600 bg-orange-50 dark:bg-orange-900/20" : 
-                      "border-green-500/30 text-green-600 bg-green-50 dark:bg-green-900/20"
-                    }`}
-                  >
-                    {calculations.budgetStatus.status === "over-budget" ? "Excedido" :
-                     calculations.budgetStatus.status === "warning" ? "Atenção" : "No controle"}
-                  </Badge>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    calculations.budgetStatus.status === "over-budget" ? "bg-destructive/10" :
-                    calculations.budgetStatus.status === "warning" ? "bg-orange-100 dark:bg-orange-900/30" :
-                    "bg-green-100 dark:bg-green-900/30"
-                  }`}>
-                    {calculations.budgetStatus.status === "over-budget" ? (
-                      <AlertCircle className="w-4 h-4 text-destructive" />
-                    ) : calculations.budgetStatus.status === "warning" ? (
-                      <AlertCircle className="w-4 h-4 text-orange-600" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                    )}
+                
+                {/* Monthly Summary */}
+                <div className="flex items-center justify-center gap-6 text-sm">
+                  <div className="text-center">
+                    <p className="text-green-600 font-semibold">
+                      {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
+                    </p>
+                    <p className="text-muted-foreground text-xs">Orçamento</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-red-600 font-semibold">
+                      -{formatCurrency(calculations.realizedExpenses, selectedCurrency.symbol)}
+                    </p>
+                    <p className="text-muted-foreground text-xs">Gastos</p>
                   </div>
                 </div>
-              </div>
 
-              {/* Card Gasto Realizado */}
-              <div className="c6-card p-4">
-                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO REALIZADO</p>
-                <p className="text-xl font-bold text-destructive mb-1">
-                  {formatCurrency(calculations.realizedExpenses, selectedCurrency.symbol)}
-                </p>
-                <p className="c6-text-secondary text-xs">Despesas realizadas</p>
-              </div>
-
-              {/* Card Gasto Planejado */}
-              <div className="c6-card p-4">
-                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO PLANEJADO</p>
-                <p className="text-xl font-bold text-blue-600 mb-1">
-                  {formatCurrency(calculations.plannedExpenses, selectedCurrency.symbol)}
-                </p>
-                <p className="c6-text-secondary text-xs">Despesas planejadas</p>
+                {/* Progress Bar */}
+                {trip.total_budget && trip.total_budget > 0 && (
+                  <div className="max-w-xs mx-auto">
+                    <div className="w-full bg-muted/40 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-500 ${
+                          calculations.budgetStatus.status === "over-budget" ? "bg-red-500" :
+                          calculations.budgetStatus.status === "warning" ? "bg-orange-500" : "bg-green-500"
+                        }`}
+                        style={{ width: `${Math.min(100, calculations.budgetStatus.percentage)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {calculations.budgetStatus.percentage.toFixed(0)}% do orçamento utilizado
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -956,20 +912,22 @@ export default function GastosViagem() {
             </div>
           </div>
 
-          {/* Professional Transaction List */}
-          <div className="px-4 space-y-4">
+          {/* Clean Transaction List */}
+          <div className="px-4 space-y-3">
             {expensesByDay.map((dayData) => (
-              <div key={dayData.date} className="space-y-3">
-                {/* Date Header */}
-                <div className="flex items-center gap-3 px-1">
-                  <div className="text-sm font-semibold text-foreground">
+              <div key={dayData.date} className="space-y-2">
+                {/* Minimalist Date Header */}
+                <div className="flex items-center justify-between py-2">
+                  <h3 className="text-sm font-medium text-foreground">
                     {formatDateForBrazilian(dayData.date)}
-                  </div>
-                  <div className="flex-1 h-px bg-border"></div>
+                  </h3>
+                  <span className="text-xs text-muted-foreground">
+                    {dayData.expenses.length} {dayData.expenses.length === 1 ? 'transação' : 'transações'}
+                  </span>
                 </div>
                 
-                {/* Transactions for this day */}
-                <div className="space-y-2">
+                {/* Clean Transaction Cards */}
+                <div className="space-y-1">
                   {dayData.expenses.map((expense) => {
                     const category = EXPENSE_CATEGORIES.find(cat => cat.id === expense.category) || 
                                     EXPENSE_CATEGORIES.find(cat => cat.id === "miscellaneous")!;
@@ -979,54 +937,51 @@ export default function GastosViagem() {
                     return (
                       <div 
                         key={expense.id} 
-                        className="bg-card/50 hover:bg-card/80 transition-all duration-200 cursor-pointer group rounded-xl p-4 border border-border/50"
+                        className="flex items-center gap-3 p-3 bg-card hover:bg-card/80 transition-colors cursor-pointer rounded-lg border border-border/30"
                         onClick={() => handleViewExpense(expense)}
                       >
-                        <div className="flex items-center gap-4">
-                          {/* Category Icon */}
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isRealized ? category.color : 'bg-muted'
-                          }`}>
-                            <CategoryIcon className={`w-6 h-6 ${isRealized ? 'text-white' : 'text-muted-foreground'}`} />
-                          </div>
+                        {/* Simple Icon */}
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          isRealized ? category.color : 'bg-muted'
+                        }`}>
+                          <CategoryIcon className={`w-5 h-5 ${isRealized ? 'text-white' : 'text-muted-foreground'}`} />
+                        </div>
 
-                          {/* Transaction Info */}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-foreground text-base mb-1 truncate">
-                              {expense.description}
-                            </h4>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <span>{category.name}</span>
-                              {expense.establishment && (
-                                <>
-                                  <span>|</span>
-                                  <span className="truncate">{expense.establishment}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
+                        {/* Transaction Info - Cleaner */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-foreground truncate">
+                            {expense.description}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {category.name}
+                            {expense.establishment && (
+                              <span className="ml-1">• {expense.establishment}</span>
+                            )}
+                          </p>
+                        </div>
 
-                          {/* Amount and Actions */}
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <div className={`text-lg font-bold ${
-                                isRealized ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'
-                              }`}>
-                                {formatCurrency(expense.amount, selectedCurrency.symbol)}
+                        {/* Amount - Prominent */}
+                        <div className="text-right flex items-center gap-2">
+                          <div>
+                            <p className={`font-semibold ${
+                              isRealized ? 'text-red-600' : 'text-muted-foreground'
+                            }`}>
+                              {formatCurrency(expense.amount, selectedCurrency.symbol)}
+                            </p>
+                          </div>
+                          
+                          {/* Minimal Indicators */}
+                          <div className="flex flex-col gap-1">
+                            {expense.receipt_image_url && (
+                              <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
+                                <Receipt className="w-2 h-2 text-primary" />
                               </div>
-                            </div>
-                            
-                            {/* Action Icons */}
-                            <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                              {expense.receipt_image_url && (
-                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                                  <Receipt className="w-3 h-3 text-primary" />
-                                </div>
-                              )}
-                              <div className="w-6 h-6 rounded-full bg-orange-500/10 flex items-center justify-center">
-                                <Edit2 className="w-3 h-3 text-orange-600" />
+                            )}
+                            {!isRealized && (
+                              <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
+                                <Calendar className="w-2 h-2 text-blue-600" />
                               </div>
-                            </div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1036,15 +991,20 @@ export default function GastosViagem() {
               </div>
             ))}
             
+            {/* Improved Empty State */}
             {expensesByDay.length === 0 && (
-              <div className="text-center py-16 px-4">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-                  <Briefcase className="w-8 h-8 text-muted-foreground" />
+              <div className="text-center py-20 px-4">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Plus className="w-10 h-10 text-primary" />
                 </div>
-                <h3 className="text-lg font-medium mb-2">Nenhuma transação registrada</h3>
-                <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-                  Suas transações aparecerão aqui quando você começar a registrar seus gastos
+                <h3 className="text-lg font-semibold mb-2">Comece a registrar seus gastos</h3>
+                <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
+                  Toque no botão + para adicionar sua primeira despesa e manter o controle do orçamento da viagem
                 </p>
+                <Button onClick={() => setIsAddingExpense(true)} className="bg-primary hover:bg-primary/90">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Primeiro Gasto
+                </Button>
               </div>
             )}
           </div>
