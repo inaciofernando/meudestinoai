@@ -402,6 +402,7 @@ export default function GastosViagem() {
   }, []);
 
   const handleViewReceipt = useCallback((imageUrl: string) => {
+    console.log("Tentando abrir recibo:", imageUrl);
     setReceiptImageUrl(imageUrl);
     setIsViewingReceipt(true);
   }, []);
@@ -1548,7 +1549,7 @@ export default function GastosViagem() {
 
         {/* Receipt Viewer Dialog */}
         <Dialog open={isViewingReceipt} onOpenChange={setIsViewingReceipt}>
-          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto z-[60]">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Receipt className="w-5 h-5 text-primary" />
