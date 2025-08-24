@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUpload } from "@/components/ImageUpload";
 import { ExpenseStats } from "@/components/expense/ExpenseStats";
 import { ExpenseCharts } from "@/components/expense/ExpenseCharts";
 import { ExpenseList } from "@/components/expense/ExpenseList";
@@ -190,7 +191,7 @@ export default function GastosViagem() {
     establishment: "",
     expense_type: "realizado",
     payment_method_type: "",
-    receiptFile: null as File | null
+    receiptImages: [] as string[]
   });
 
   // Form states for new expense
@@ -204,7 +205,7 @@ export default function GastosViagem() {
     expense_type: "realizado",
     payment_method_type: "",
     date: getTodayString(),
-    receiptFile: null as File | null,
+    receiptImages: [] as string[],
     isRecurring: false,
     recurrenceCount: 1,
     recurrencePeriod: "diario" as "diario" | "semanal" | "mensal"
@@ -392,7 +393,7 @@ export default function GastosViagem() {
       establishment: expense.establishment || "",
       expense_type: expense.expense_type,
       payment_method_type: expense.payment_method_type || "",
-      receiptFile: null
+      receiptImages: expense.receipt_image_url ? [expense.receipt_image_url] : []
     });
     setIsEditingExpense(true);
   }, []);
@@ -461,7 +462,8 @@ export default function GastosViagem() {
           payment_method_type: newExpense.payment_method_type,
           establishment: newExpense.establishment,
           expense_date: newExpense.date,
-          planned_amount: parseFloat(newExpense.amount)
+          planned_amount: parseFloat(newExpense.amount),
+          receipt_image_url: newExpense.receiptImages.length > 0 ? newExpense.receiptImages[0] : null
         });
 
       if (error) throw error;
@@ -482,7 +484,7 @@ export default function GastosViagem() {
         expense_type: "realizado",
         payment_method_type: "",
         date: getTodayString(),
-        receiptFile: null,
+        receiptImages: [],
         isRecurring: false,
         recurrenceCount: 1,
         recurrencePeriod: "diario"
@@ -539,7 +541,8 @@ export default function GastosViagem() {
           payment_method_type: editForm.payment_method_type,
           establishment: editForm.establishment,
           expense_date: editForm.date,
-          planned_amount: parseFloat(editForm.amount)
+          planned_amount: parseFloat(editForm.amount),
+          receipt_image_url: editForm.receiptImages.length > 0 ? editForm.receiptImages[0] : null
         })
         .eq('id', editingExpense.id)
         .eq('user_id', user.id);
@@ -702,8 +705,8 @@ export default function GastosViagem() {
           </div>
 
           {/* Budget Cards with Edit Functionality */}
-          <div className="px-4">
-            <div className="grid grid-cols-2 gap-3">
+          <div className="px-4 -mt-4">
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
               {/* Card Orçamento */}
               <div className="c6-card p-4">
                 <div className="flex items-center justify-between mb-3">
@@ -943,6 +946,15 @@ export default function GastosViagem() {
                 />
               </div>
 
+              <div>
+                <Label>Comprovante/Recibo</Label>
+                <ImageUpload
+                  images={newExpense.receiptImages}
+                  onImagesChange={(images) => setNewExpense({...newExpense, receiptImages: images})}
+                  maxImages={1}
+                />
+              </div>
+
               <div className="flex gap-2">
                 <Button 
                   onClick={() => setIsAddingExpense(false)}
@@ -1119,6 +1131,15 @@ export default function GastosViagem() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div>
+                  <Label>Comprovante/Recibo</Label>
+                  <ImageUpload
+                    images={editForm.receiptImages}
+                    onImagesChange={(images) => setEditForm({...editForm, receiptImages: images})}
+                    maxImages={1}
+                  />
                 </div>
 
                 <div className="flex gap-2">
