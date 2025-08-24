@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
 import { ExpenseStats } from "@/components/expense/ExpenseStats";
 import { ExpenseCharts } from "@/components/expense/ExpenseCharts";
-import { ExpenseList } from "@/components/expense/ExpenseList";
+import { ExpenseDetailModal } from "@/components/expense/ExpenseDetailModal";
 import { ExpenseFilters } from "@/components/expense/ExpenseFilters";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -933,17 +933,98 @@ export default function GastosViagem() {
             onToggleChart={() => setShowChart(!showChart)}
           />
 
-          {/* Modern Expense List */}
-          <ExpenseList
-            expensesByDay={expensesByDay}
-            expandedDays={expandedDays}
-            onToggleDay={handleToggleDay}
-            onEditExpense={handleEditExpense}
-            onDeleteExpense={handleDeleteExpenseDialog}
-            onViewExpense={handleViewExpense}
-            onViewReceipt={handleViewReceipt}
-            currencySymbol={selectedCurrency.symbol}
-          />
+          {/* Professional Transaction List */}
+          <div className="px-4 space-y-4">
+            {expensesByDay.map((dayData) => (
+              <div key={dayData.date} className="space-y-3">
+                {/* Date Header */}
+                <div className="flex items-center gap-3 px-1">
+                  <div className="text-sm font-semibold text-foreground">
+                    {formatDateForBrazilian(dayData.date)}
+                  </div>
+                  <div className="flex-1 h-px bg-border"></div>
+                </div>
+                
+                {/* Transactions for this day */}
+                <div className="space-y-2">
+                  {dayData.expenses.map((expense) => {
+                    const category = EXPENSE_CATEGORIES.find(cat => cat.id === expense.category) || 
+                                    EXPENSE_CATEGORIES.find(cat => cat.id === "miscellaneous")!;
+                    const CategoryIcon = category.icon;
+                    const isRealized = expense.expense_type === 'realizado';
+
+                    return (
+                      <div 
+                        key={expense.id} 
+                        className="bg-card/50 hover:bg-card/80 transition-all duration-200 cursor-pointer group rounded-xl p-4 border border-border/50"
+                        onClick={() => handleViewExpense(expense)}
+                      >
+                        <div className="flex items-center gap-4">
+                          {/* Category Icon */}
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            isRealized ? category.color : 'bg-muted'
+                          }`}>
+                            <CategoryIcon className={`w-6 h-6 ${isRealized ? 'text-white' : 'text-muted-foreground'}`} />
+                          </div>
+
+                          {/* Transaction Info */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-foreground text-base mb-1 truncate">
+                              {expense.description}
+                            </h4>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span>{category.name}</span>
+                              {expense.establishment && (
+                                <>
+                                  <span>|</span>
+                                  <span className="truncate">{expense.establishment}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Amount and Actions */}
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <div className={`text-lg font-bold ${
+                                isRealized ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'
+                              }`}>
+                                {formatCurrency(expense.amount, selectedCurrency.symbol)}
+                              </div>
+                            </div>
+                            
+                            {/* Action Icons */}
+                            <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                              {expense.receipt_image_url && (
+                                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <Receipt className="w-3 h-3 text-primary" />
+                                </div>
+                              )}
+                              <div className="w-6 h-6 rounded-full bg-orange-500/10 flex items-center justify-center">
+                                <Edit2 className="w-3 h-3 text-orange-600" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+            
+            {expensesByDay.length === 0 && (
+              <div className="text-center py-16 px-4">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+                  <Briefcase className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">Nenhuma transação registrada</h3>
+                <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+                  Suas transações aparecerão aqui quando você começar a registrar seus gastos
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Add Expense Dialog - Botões sempre visíveis */}
@@ -1554,7 +1635,26 @@ export default function GastosViagem() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Receipt Viewer Dialog */}
+        {/* Expense Detail Modal */}
+        <ExpenseDetailModal
+          expense={selectedExpense}
+          isOpen={isViewingExpense}
+          onClose={() => {
+            setIsViewingExpense(false);
+            setSelectedExpense(null);
+          }}
+          onEdit={(expense) => {
+            setIsViewingExpense(false);
+            handleEditExpense(expense);
+          }}
+          onDelete={(expense) => {
+            setIsViewingExpense(false);
+            setSelectedExpense(expense);
+            setIsDeleteDialogOpen(true);
+          }}
+          onViewReceipt={handleViewReceipt}
+          currencySymbol={selectedCurrency.symbol}
+        />
         <Dialog open={isViewingReceipt} onOpenChange={setIsViewingReceipt}>
           <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
