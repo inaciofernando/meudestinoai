@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Clock } from "lucide-react";
 import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
 import { VoucherUpload } from "@/components/VoucherUpload";
+import { cn } from "@/lib/utils";
 
 interface RoteiroPonto {
   id: string;
@@ -66,7 +67,8 @@ export default function EditarPonto() {
       name: string;
       type: string;
       description?: string;
-    }>
+    }>,
+    is_all_day: false
   });
 
   // Função para adicionar uma hora a um horário
@@ -110,6 +112,16 @@ export default function EditarPonto() {
     setFormData(prev => ({
       ...prev, 
       time_end: newEndTime
+    }));
+  };
+
+  // Função para lidar com mudança da opção "Dia todo"
+  const handleAllDayChange = (isAllDay: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      is_all_day: isAllDay,
+      time_start: isAllDay ? "" : "08:00",
+      time_end: isAllDay ? "" : "09:00"
     }));
   };
 
@@ -162,7 +174,8 @@ export default function EditarPonto() {
           location: data.location,
           category: data.category,
           images: data.images || [],
-          vouchers: parsedVoucherFiles
+          vouchers: parsedVoucherFiles,
+          is_all_day: false
         });
       } catch (error) {
         console.error("Erro ao carregar ponto:", error);
@@ -342,28 +355,49 @@ export default function EditarPonto() {
                     onChange={(e) => setFormData(prev => ({ ...prev, day_number: parseInt(e.target.value) || 1 }))}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="start-time">Horário Início</Label>
-                  <Input
-                    id="start-time"
-                    type="time"
-                    value={formData.time_start}
-                    onChange={(e) => handleStartTimeChange(e.target.value)}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="all-day"
+                    checked={formData.is_all_day}
+                    onChange={(e) => handleAllDayChange(e.target.checked)}
+                    className="rounded border-gray-300"
                   />
+                  <Label htmlFor="all-day">Dia todo</Label>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end-time">Horário Fim (opcional)</Label>
-                  <Input
-                    id="end-time"
-                    type="time"
-                    value={formData.time_end}
-                    onChange={(e) => handleEndTimeChange(e.target.value)}
-                    className={!isEndTimeValid(formData.time_start, formData.time_end) ? "border-red-500" : ""}
-                  />
-                  {!isEndTimeValid(formData.time_start, formData.time_end) && (
-                    <p className="text-red-500 text-sm mt-1">A hora fim deve ser maior que a hora início</p>
-                  )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="start-time">Início</Label>
+                    <Input
+                      id="start-time"
+                      type="time"
+                      value={formData.time_start}
+                      onChange={(e) => handleStartTimeChange(e.target.value)}
+                      disabled={formData.is_all_day}
+                      className={formData.is_all_day ? "bg-muted" : ""}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="end-time">Fim</Label>
+                    <Input
+                      id="end-time"
+                      type="time"
+                      value={formData.time_end}
+                      onChange={(e) => handleEndTimeChange(e.target.value)}
+                      disabled={formData.is_all_day}
+                      className={cn(
+                        formData.is_all_day ? "bg-muted" : "",
+                        !formData.is_all_day && !isEndTimeValid(formData.time_start, formData.time_end) ? "border-red-500" : ""
+                      )}
+                    />
+                    {!formData.is_all_day && !isEndTimeValid(formData.time_start, formData.time_end) && (
+                      <p className="text-red-500 text-sm mt-1">A hora fim deve ser maior que a hora início</p>
+                    )}
+                  </div>
                 </div>
+              </div>
               </div>
 
               {/* Descrição */}
