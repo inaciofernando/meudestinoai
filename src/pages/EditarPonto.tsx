@@ -344,19 +344,29 @@ export default function EditarPonto() {
               </div>
 
               {/* Dia e Horários */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="day">Dia</Label>
-                  <Input
-                    id="day"
-                    type="number"
-                    min="1"
-                    value={formData.day_number}
-                    onChange={(e) => setFormData(prev => ({ ...prev, day_number: parseInt(e.target.value) || 1 }))}
-                  />
-                </div>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
+                  <div className="w-20 space-y-2">
+                    <Label htmlFor="day-number">Dia</Label>
+                    <Input
+                      id="day-number"
+                      type="number"
+                      min="1"
+                      value={formData.day_number}
+                      onChange={(e) => setFormData(prev => ({ ...prev, day_number: parseInt(e.target.value) || 1 }))}
+                      className="text-center"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2 pt-6">
+                    <input
+                      type="checkbox"
+                      id="all-day"
+                      checked={formData.is_all_day}
+                      onChange={(e) => handleAllDayChange(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="all-day">Dia todo</Label>
+                  </div>
                   <div className="flex-1 space-y-2">
                     <Label htmlFor="start-time">Início</Label>
                     <Input
@@ -379,18 +389,7 @@ export default function EditarPonto() {
                       className={formData.is_all_day ? "bg-muted" : ""}
                     />
                   </div>
-                  <div className="flex items-center space-x-2 pt-6">
-                    <input
-                      type="checkbox"
-                      id="all-day"
-                      checked={formData.is_all_day}
-                      onChange={(e) => handleAllDayChange(e.target.checked)}
-                      className="rounded border-gray-300"
-                    />
-                    <Label htmlFor="all-day">Dia todo</Label>
-                  </div>
                 </div>
-              </div>
               </div>
 
               {/* Descrição */}

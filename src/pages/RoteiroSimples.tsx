@@ -568,21 +568,6 @@ export default function RoteiroSimples() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Dia</Label>
-                  <Select value={formData.day_number.toString()} onValueChange={(value) => setFormData({...formData, day_number: parseInt(value)})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({length: roteiro?.total_days || 7}, (_, i) => (
-                        <SelectItem key={i + 1} value={(i + 1).toString()}>
-                          Dia {i + 1}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
                   <Label>Categoria</Label>
                   <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})}>
                     <SelectTrigger>
@@ -601,6 +586,31 @@ export default function RoteiroSimples() {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
+                  <div className="w-20">
+                    <Label>Dia</Label>
+                    <Select value={formData.day_number.toString()} onValueChange={(value) => setFormData({...formData, day_number: parseInt(value)})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({length: 30}, (_, i) => (
+                          <SelectItem key={i+1} value={(i+1).toString()}>
+                            {i+1}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center space-x-2 pt-6">
+                    <input
+                      type="checkbox"
+                      id="all-day"
+                      checked={formData.is_all_day}
+                      onChange={(e) => handleAllDayChange(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="all-day">Dia todo</Label>
+                  </div>
                   <div className="flex-1">
                     <Label>Início</Label>
                     <Input
@@ -620,16 +630,6 @@ export default function RoteiroSimples() {
                       disabled={formData.is_all_day}
                       className={formData.is_all_day ? "bg-muted" : ""}
                     />
-                  </div>
-                  <div className="flex items-center space-x-2 pt-6">
-                    <input
-                      type="checkbox"
-                      id="all-day"
-                      checked={formData.is_all_day}
-                      onChange={(e) => handleAllDayChange(e.target.checked)}
-                      className="rounded border-gray-300"
-                    />
-                    <Label htmlFor="all-day">Dia todo</Label>
                   </div>
                 </div>
               </div>
