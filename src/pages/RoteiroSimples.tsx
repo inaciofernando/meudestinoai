@@ -102,6 +102,11 @@ export default function RoteiroSimples() {
     title: "",
     description: "",
     location: "",
+    address: "",
+    website_link: "",
+    tripadvisor_link: "",
+    google_maps_link: "",
+    waze_link: "",
     category: "activity",
     images: [] as string[],
     is_all_day: false
@@ -230,12 +235,25 @@ export default function RoteiroSimples() {
     
     if (fromConcierge && titleFromConcierge) {
       console.log("✅ Pre-filling roteiro form with concierge data");
+      
+      // Buscar parâmetros adicionais
+      const addressFromConcierge = urlParams.get('address');
+      const websiteFromConcierge = urlParams.get('website');
+      const tripadvisorFromConcierge = urlParams.get('tripadvisor'); 
+      const gmapFromConcierge = urlParams.get('gmap');
+      const wazeFromConcierge = urlParams.get('waze');
+      
       setFormData(prev => ({
         ...prev,
         title: titleFromConcierge,
         description: descriptionFromConcierge || '',
         category: categoryFromConcierge || 'attraction',
-        location: locationFromConcierge || ''
+        location: locationFromConcierge || '',
+        address: addressFromConcierge || '',
+        website_link: websiteFromConcierge || '',
+        tripadvisor_link: tripadvisorFromConcierge || '',
+        google_maps_link: gmapFromConcierge || '',
+        waze_link: wazeFromConcierge || ''
       }));
       setIsAddingPonto(true);
       
@@ -378,6 +396,11 @@ export default function RoteiroSimples() {
         title: formData.title,
         description: formData.description,
         location: formData.location,
+        address: formData.address || null,
+        website_link: formData.website_link || null,
+        tripadvisor_link: formData.tripadvisor_link || null,
+        google_maps_link: formData.google_maps_link || null,
+        waze_link: formData.waze_link || null,
         category: formData.category,
         order_index: pontos.filter(p => p.day_number === formData.day_number).length,
         user_id: user.id,
@@ -417,6 +440,11 @@ export default function RoteiroSimples() {
         title: "",
         description: "",
         location: "",
+        address: "",
+        website_link: "",
+        tripadvisor_link: "",
+        google_maps_link: "",
+        waze_link: "",
         category: "activity",
         images: []
       });
@@ -748,6 +776,51 @@ export default function RoteiroSimples() {
                    rows={6}
                    className="min-h-[140px]"
                  />
+               </div>
+
+               <div>
+                 <Label>Endereço</Label>
+                 <Input
+                   value={formData.address}
+                   onChange={(e) => setFormData({...formData, address: e.target.value})}
+                   placeholder="Endereço completo do local"
+                 />
+               </div>
+
+               <div>
+                 <Label>Site Oficial</Label>
+                 <Input
+                   value={formData.website_link}
+                   onChange={(e) => setFormData({...formData, website_link: e.target.value})}
+                   placeholder="https://www.site.com"
+                 />
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <div>
+                   <Label>TripAdvisor</Label>
+                   <Input
+                     value={formData.tripadvisor_link}
+                     onChange={(e) => setFormData({...formData, tripadvisor_link: e.target.value})}
+                     placeholder="https://www.tripadvisor.com/..."
+                   />
+                 </div>
+                 <div>
+                   <Label>Google Maps</Label>
+                   <Input
+                     value={formData.google_maps_link}
+                     onChange={(e) => setFormData({...formData, google_maps_link: e.target.value})}
+                     placeholder="https://maps.google.com/..."
+                   />
+                 </div>
+                 <div>
+                   <Label>Waze</Label>
+                   <Input
+                     value={formData.waze_link}
+                     onChange={(e) => setFormData({...formData, waze_link: e.target.value})}
+                     placeholder="https://waze.com/ul?..."
+                   />
+                 </div>
                </div>
 
                <div>

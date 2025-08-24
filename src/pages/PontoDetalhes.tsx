@@ -60,6 +60,11 @@ interface RoteiroPonto {
   title: string;
   description?: string;
   location: string;
+  address?: string;
+  website_link?: string;
+  tripadvisor_link?: string;
+  google_maps_link?: string;
+  waze_link?: string;
   category: string;
   order_index: number;
   images?: string[];
@@ -159,6 +164,11 @@ export default function PontoDetalhes() {
           title: pontoResult.data.title,
           description: pontoResult.data.description || undefined,
           location: pontoResult.data.location,
+          address: pontoResult.data.address || undefined,
+          website_link: pontoResult.data.website_link || undefined,
+          tripadvisor_link: pontoResult.data.tripadvisor_link || undefined,
+          google_maps_link: pontoResult.data.google_maps_link || undefined,
+          waze_link: pontoResult.data.waze_link || undefined,
           category: pontoResult.data.category,
           order_index: pontoResult.data.order_index,
           images: pontoResult.data.images || [],
@@ -468,17 +478,92 @@ export default function PontoDetalhes() {
                     </p>
                   </div>
 
-                  {ponto.description && (
-                    <div>
-                      <strong>Descrição:</strong>
-                      <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{ponto.description}</p>
-                    </div>
-                  )}
-                  </div>
-                </CardContent>
-              </Card>
+                   {ponto.description && (
+                     <div>
+                       <strong>Descrição:</strong>
+                       <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{ponto.description}</p>
+                     </div>
+                   )}
+                   </div>
+                 </CardContent>
+               </Card>
 
-              {/* Vouchers e Documentos */}
+               {/* Links Úteis */}
+               {(ponto.address || ponto.website_link || ponto.tripadvisor_link || ponto.google_maps_link || ponto.waze_link) && (
+                 <Card>
+                   <CardHeader>
+                     <CardTitle className="flex items-center gap-2">
+                       <MapPin className="w-5 h-5" />
+                       Informações e Links
+                     </CardTitle>
+                   </CardHeader>
+                   <CardContent className="space-y-4">
+                     {ponto.address && (
+                       <div>
+                         <strong>Endereço:</strong>
+                         <p className="text-muted-foreground mt-1">{ponto.address}</p>
+                       </div>
+                     )}
+                     
+                     {(ponto.website_link || ponto.tripadvisor_link || ponto.google_maps_link || ponto.waze_link) && (
+                       <div>
+                         <strong>Links Úteis:</strong>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                           {ponto.website_link && (
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               className="justify-start"
+                               onClick={() => window.open(ponto.website_link, '_blank')}
+                             >
+                               <Eye className="w-4 h-4 mr-2" />
+                               Site Oficial
+                             </Button>
+                           )}
+                           
+                           {ponto.tripadvisor_link && (
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               className="justify-start"
+                               onClick={() => window.open(ponto.tripadvisor_link, '_blank')}
+                             >
+                               <Star className="w-4 h-4 mr-2" />
+                               TripAdvisor
+                             </Button>
+                           )}
+                           
+                           {ponto.google_maps_link && (
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               className="justify-start"
+                               onClick={() => window.open(ponto.google_maps_link, '_blank')}
+                             >
+                               <MapPin className="w-4 h-4 mr-2" />
+                               Google Maps
+                             </Button>
+                           )}
+                           
+                           {ponto.waze_link && (
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               className="justify-start"
+                               onClick={() => window.open(ponto.waze_link, '_blank')}
+                             >
+                               <Route className="w-4 h-4 mr-2" />
+                               Waze
+                             </Button>
+                           )}
+                         </div>
+                       </div>
+                     )}
+                   </CardContent>
+                 </Card>
+               )}
+
+               {/* Vouchers e Documentos */}
               {ponto.voucher_files && ponto.voucher_files.length > 0 && (
                 <Card>
                   <CardHeader>

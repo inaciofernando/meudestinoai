@@ -63,6 +63,11 @@ export default function EditarPonto() {
     title: "",
     description: "",
     location: "",
+    address: "",
+    website_link: "",
+    tripadvisor_link: "",
+    google_maps_link: "",
+    waze_link: "",
     category: "activity",
     images: [] as string[],
     vouchers: [] as Array<{
@@ -220,6 +225,11 @@ export default function EditarPonto() {
           title: pontoResponse.data.title,
           description: pontoResponse.data.description || "",
           location: pontoResponse.data.location,
+          address: pontoResponse.data.address || "",
+          website_link: pontoResponse.data.website_link || "",
+          tripadvisor_link: pontoResponse.data.tripadvisor_link || "",
+          google_maps_link: pontoResponse.data.google_maps_link || "",
+          waze_link: pontoResponse.data.waze_link || "",
           category: pontoResponse.data.category,
           images: pontoResponse.data.images || [],
           vouchers: parsedVoucherFiles,
@@ -262,6 +272,11 @@ export default function EditarPonto() {
           title: formData.title,
           description: formData.description,
           location: formData.location,
+          address: formData.address || null,
+          website_link: formData.website_link || null,
+          tripadvisor_link: formData.tripadvisor_link || null,
+          google_maps_link: formData.google_maps_link || null,
+          waze_link: formData.waze_link || null,
           category: formData.category,
           images: formData.images,
           voucher_files: formData.vouchers
@@ -456,26 +471,79 @@ export default function EditarPonto() {
               </div>
 
                {/* Descrição */}
-                <div className="space-y-2">
-                  <Label htmlFor="description">Descrição</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Descrição detalhada do local ou atividade"
-                    rows={6}
-                    className="min-h-[140px]"
-                  />
-                </div>
+               <div className="space-y-2">
+                 <Label htmlFor="description">Descrição</Label>
+                 <Textarea
+                   id="description"
+                   value={formData.description}
+                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                   placeholder="Descrição detalhada do local ou atividade"
+                   rows={6}
+                   className="min-h-[140px]"
+                 />
+               </div>
 
-              {/* Upload de imagens */}
-              <div className="space-y-2">
-                <Label>Imagens</Label>
-                <ItineraryImageUpload
-                  images={formData.images}
-                  onImagesChange={handleImagesChange}
-                />
-              </div>
+               {/* Endereço */}
+               <div className="space-y-2">
+                 <Label htmlFor="address">Endereço</Label>
+                 <Input
+                   id="address"
+                   value={formData.address}
+                   onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                   placeholder="Endereço completo do local"
+                 />
+               </div>
+
+               {/* Site Oficial */}
+               <div className="space-y-2">
+                 <Label htmlFor="website_link">Site Oficial</Label>
+                 <Input
+                   id="website_link"
+                   value={formData.website_link}
+                   onChange={(e) => setFormData(prev => ({ ...prev, website_link: e.target.value }))}
+                   placeholder="https://www.site.com"
+                 />
+               </div>
+
+               {/* Links em Grid */}
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <div className="space-y-2">
+                   <Label htmlFor="tripadvisor_link">TripAdvisor</Label>
+                   <Input
+                     id="tripadvisor_link"
+                     value={formData.tripadvisor_link}
+                     onChange={(e) => setFormData(prev => ({ ...prev, tripadvisor_link: e.target.value }))}
+                     placeholder="https://www.tripadvisor.com/..."
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="google_maps_link">Google Maps</Label>
+                   <Input
+                     id="google_maps_link"
+                     value={formData.google_maps_link}
+                     onChange={(e) => setFormData(prev => ({ ...prev, google_maps_link: e.target.value }))}
+                     placeholder="https://maps.google.com/..."
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="waze_link">Waze</Label>
+                   <Input
+                     id="waze_link"
+                     value={formData.waze_link}
+                     onChange={(e) => setFormData(prev => ({ ...prev, waze_link: e.target.value }))}
+                     placeholder="https://waze.com/ul?..."
+                   />
+                 </div>
+               </div>
+
+               {/* Upload de imagens */}
+               <div className="space-y-2">
+                 <Label>Imagens</Label>
+                 <ItineraryImageUpload
+                   images={formData.images}
+                   onImagesChange={handleImagesChange}
+                 />
+               </div>
 
               {/* Upload de vouchers */}
               <div className="space-y-2">
