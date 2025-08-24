@@ -77,8 +77,8 @@ export const PWAHeader = () => {
           </Sheet>
 
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-ocean rounded-full flex items-center justify-center">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/viagens")}>
+            <div className="w-8 h-8 bg-gradient-ocean rounded-full flex items-center justify-center transition-transform hover:scale-105">
               <Plane className="w-4 h-4 text-primary-foreground" />
             </div>
             <h1 className="text-xl font-bold text-primary hidden sm:block">Travel Manager</h1>
