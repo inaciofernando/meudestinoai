@@ -576,20 +576,20 @@ export default function PontoDetalhes() {
                  </Card>
                )}
 
-               {/* Vouchers e Documentos - só mostra se houver arquivos válidos */}
-               {ponto.voucher_files && ponto.voucher_files.length > 0 && ponto.voucher_files.some(v => v.url && v.name) && (
+               {/* Vouchers e Documentos - só mostra se houver documentos não-imagem válidos */}
+               {ponto.voucher_files && ponto.voucher_files.length > 0 && ponto.voucher_files.some(v => v.url && v.name && !v.type?.startsWith('image/')) && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      📄 Vouchers e Documentos
-                      <Badge variant="secondary" className="text-xs">
-                        {ponto.voucher_files.length} arquivo{ponto.voucher_files.length !== 1 ? 's' : ''}
-                      </Badge>
-                    </CardTitle>
+                     <CardTitle className="flex items-center gap-2">
+                       📄 Vouchers e Documentos
+                       <Badge variant="secondary" className="text-xs">
+                         {ponto.voucher_files.filter(v => !v.type?.startsWith('image/')).length} documento{ponto.voucher_files.filter(v => !v.type?.startsWith('image/')).length !== 1 ? 's' : ''}
+                       </Badge>
+                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="grid gap-3">
-                      {ponto.voucher_files.map((voucher, index) => (
+                   <CardContent className="space-y-3">
+                     <div className="grid gap-3">
+                       {ponto.voucher_files.filter(v => v.url && v.name && !v.type?.startsWith('image/')).map((voucher, index) => (
                         <Card key={index} className="border-muted/50">
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between gap-3">
