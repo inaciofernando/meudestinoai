@@ -576,8 +576,8 @@ export default function PontoDetalhes() {
                  </Card>
                )}
 
-              {/* Vouchers e Documentos */}
-              {ponto.voucher_files && ponto.voucher_files.length > 0 && (
+               {/* Vouchers e Documentos - só mostra se houver arquivos válidos */}
+               {ponto.voucher_files && ponto.voucher_files.length > 0 && ponto.voucher_files.some(v => v.url && v.name) && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
