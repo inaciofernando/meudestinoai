@@ -94,6 +94,8 @@ export default function Dashboard() {
         return 'default';
       case 'planned':
         return 'secondary';
+      case 'completed':
+        return 'default';
       default:
         return 'outline';
     }
@@ -105,6 +107,8 @@ export default function Dashboard() {
         return 'Confirmada';
       case 'planned':
         return 'Planejando';
+      case 'completed':
+        return 'Realizada';
       default:
         return 'Rascunho';
     }
