@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -537,17 +538,29 @@ export default function EditarPonto() {
                </div>
 
                {/* Upload de imagens */}
-               <div className="space-y-2">
-                 <Label>Imagens</Label>
-                 <ItineraryImageUpload
-                   images={formData.images}
-                   onImagesChange={handleImagesChange}
-                 />
-               </div>
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    📸 Imagens do Local
+                    <Badge variant="secondary" className="text-xs">Fotos para galeria</Badge>
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Adicione fotos do local que aparecerão na galeria de imagens
+                  </p>
+                  <ItineraryImageUpload
+                    images={formData.images}
+                    onImagesChange={handleImagesChange}
+                  />
+                </div>
 
               {/* Upload de vouchers */}
               <div className="space-y-2">
-                <Label>Vouchers e Documentos</Label>
+                <Label className="text-base font-semibold flex items-center gap-2">
+                  📄 Vouchers e Documentos
+                  <Badge variant="secondary" className="text-xs">PDF, tickets, etc</Badge>
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Anexe documentos, vouchers, tickets ou comprovantes
+                </p>
                 <VoucherUpload
                   vouchers={formData.vouchers}
                   onVouchersChange={handleVouchersChange}
