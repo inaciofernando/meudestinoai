@@ -66,7 +66,6 @@ interface Trip {
 
 const formSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
-  destination: z.string().min(1, "Destino é obrigatório"),
   description: z.string().optional(),
   start_date: z.date().optional(),
   end_date: z.date().optional(),
@@ -103,7 +102,6 @@ export default function DetalhesViagem() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      destination: "",
       description: "",
     },
   });
@@ -186,7 +184,6 @@ export default function DetalhesViagem() {
         // Update form with trip data when trip is loaded
         form.reset({
           title: data.title,
-          destination: data.destination,
           description: data.description || "",
           start_date: data.start_date ? parseISO(data.start_date) : undefined,
           end_date: data.end_date ? parseISO(data.end_date) : undefined,
@@ -205,15 +202,25 @@ export default function DetalhesViagem() {
   const handleUpdate = async (data: FormData) => {
     if (!trip || !user) return;
 
+    // Validation: must have at least one location
+    if (locations.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Adicione pelo menos um destino para sua viagem",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setUpdating(true);
 
     try {
-      // Update trip data
+      // Update trip data - use first location as main destination
       const { error: tripError } = await supabase
         .from("trips")
         .update({
           title: data.title,
-          destination: data.destination,
+          destination: locations[0]?.location_name || "Múltiplos destinos",
           description: data.description || null,
           start_date: data.start_date ? format(data.start_date, "yyyy-MM-dd") : null,
           end_date: data.end_date ? format(data.end_date, "yyyy-MM-dd") : null,
@@ -294,7 +301,6 @@ export default function DetalhesViagem() {
     // Reset form and locations to original trip data
     form.reset({
       title: trip.title,
-      destination: trip.destination,
       description: trip.description || "",
       start_date: trip.start_date ? parseISO(trip.start_date) : undefined,
       end_date: trip.end_date ? parseISO(trip.end_date) : undefined,
@@ -832,19 +838,6 @@ export default function DetalhesViagem() {
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="destination"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Destino</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
                     </CardContent>
                   </Card>
 
@@ -988,13 +981,18 @@ export default function DetalhesViagem() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Locais da Viagem</CardTitle>
+                    <CardTitle>Destinos da Viagem</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <TripLocations
                       locations={locations}
                       onChange={setLocations}
                     />
+                    {locations.length === 0 && (
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Adicione pelo menos um destino para sua viagem
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -1052,10 +1050,6 @@ export default function DetalhesViagem() {
                 <CardContent className="space-y-4">
                   <div>
                     <h3 className="text-xl font-bold text-foreground">{trip.title}</h3>
-                    <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                      <MapPin className="w-4 h-4" />
-                      <span>{trip.destination}</span>
-                    </div>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant={getStatusColor(trip.status)}>
                         {getStatusText(trip.status)}
@@ -1065,12 +1059,24 @@ export default function DetalhesViagem() {
                   
                   {locations.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-foreground mb-2">Locais a Visitar</h4>
+                      <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-primary" />
+                        Destinos da Viagem
+                      </h4>
                       <div className="space-y-2">
-                        {locations.map((location) => (
+                        {locations.map((location, index) => (
                           <div key={location.id || location.order_index} className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-primary rounded-full"></div>
-                            <span className="text-sm text-foreground">{location.location_name}</span>
+                            <div className={cn(
+                              "w-2 h-2 rounded-full",
+                              index === 0 ? "bg-primary" : "bg-muted-foreground"
+                            )}></div>
+                            <span className={cn(
+                              "text-sm",
+                              index === 0 ? "font-medium text-foreground" : "text-foreground"
+                            )}>
+                              {location.location_name}
+                              {index === 0 && " (Principal)"}
+                            </span>
                             <Badge variant="outline" className="text-xs">
                               {location.location_type === 'city' && 'Cidade'}
                               {location.location_type === 'region' && 'Região'}
