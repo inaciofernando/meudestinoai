@@ -948,6 +948,7 @@ export default function GastosViagem() {
                 <Select 
                   value={newExpense.category} 
                   onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}
+                  disabled={isProcessingReceipt}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione uma categoria" />
@@ -972,6 +973,7 @@ export default function GastosViagem() {
                   onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
                   placeholder="Ex: Almoço no restaurante, táxi para o hotel..."
                   rows={3}
+                  disabled={isProcessingReceipt}
                 />
               </div>
 
@@ -987,6 +989,7 @@ export default function GastosViagem() {
                       onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
                       placeholder="0,00"
                       className="pl-10"
+                      disabled={isProcessingReceipt}
                     />
                   </div>
                 </div>
@@ -996,6 +999,7 @@ export default function GastosViagem() {
                     type="date"
                     value={newExpense.date}
                     onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
+                    disabled={isProcessingReceipt}
                   />
                 </div>
               </div>
@@ -1006,6 +1010,7 @@ export default function GastosViagem() {
                   <Select 
                     value={newExpense.expense_type} 
                     onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
+                    disabled={isProcessingReceipt}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o tipo" />
@@ -1025,6 +1030,7 @@ export default function GastosViagem() {
                   <Select 
                     value={newExpense.payment_method_type} 
                     onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
+                    disabled={isProcessingReceipt}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o método" />
@@ -1046,6 +1052,7 @@ export default function GastosViagem() {
                   value={newExpense.establishment}
                   onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
                   placeholder="Ex: Restaurante Villa Rosa, Hotel Copacabana..."
+                  disabled={isProcessingReceipt}
                 />
               </div>
 
@@ -1055,15 +1062,16 @@ export default function GastosViagem() {
                   onClick={() => setIsAddingExpense(false)}
                   variant="outline"
                   className="flex-1"
+                  disabled={isProcessingReceipt}
                 >
                   Cancelar
                 </Button>
                 <Button 
                   onClick={handleAddExpense}
-                  disabled={!newExpense.category || !newExpense.description || !newExpense.amount}
+                  disabled={isProcessingReceipt || !newExpense.category || !newExpense.description || !newExpense.amount}
                   className="flex-1"
                 >
-                  Adicionar Gasto
+                  {isProcessingReceipt ? "Processando..." : "Adicionar Gasto"}
                 </Button>
               </div>
             </div>
