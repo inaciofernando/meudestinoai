@@ -1473,101 +1473,27 @@ export default function GastosViagem() {
           </DialogContent>
         </Dialog>
 
-        {/* View Expense Dialog */}
-        <Dialog open={isViewingExpense} onOpenChange={setIsViewingExpense}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Detalhes do Gasto</DialogTitle>
-            </DialogHeader>
-            {selectedExpense && (
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Valor:</span>
-                    <span className="font-semibold text-lg">
-                      {formatCurrency(Number(selectedExpense.amount) || 0, selectedCurrency.symbol)}
-                    </span>
-                  </div>
 
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Data:</span>
-                    <span className="font-medium">{formatDateForBrazilian(selectedExpense.date)}</span>
-                  </div>
-
-                  {selectedExpense.establishment && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Estabelecimento:</span>
-                      <span className="font-medium">{selectedExpense.establishment}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tipo de Gasto:</span>
-                    <span className="font-medium">
-                      <Badge variant="secondary" className={
-                        EXPENSE_TYPES.find(type => type.id === selectedExpense.expense_type)?.color || "bg-gray-100 text-gray-800"
-                      }>
-                        {EXPENSE_TYPES.find(type => type.id === selectedExpense.expense_type)?.name || 'Realizado'}
-                      </Badge>
-                    </span>
-                  </div>
-
-                  {selectedExpense.payment_method_type && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Método de Pagamento:</span>
-                      <span className="font-medium">
-                        {PAYMENT_METHODS.find(method => method.id === selectedExpense.payment_method_type)?.name || selectedExpense.payment_method_type}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Categoria:</span>
-                    <span className="font-medium">
-                      {EXPENSE_CATEGORIES.find(cat => cat.id === selectedExpense.category)?.name || 'Outros'}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Descrição:</span>
-                    <span className="font-medium">{selectedExpense.description}</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={() => {
-                      handleEditExpense(selectedExpense);
-                      setIsViewingExpense(false);
-                    }}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    <Edit2 className="w-4 h-4 mr-2" />
-                    Editar
-                  </Button>
-                  
-                  <Button 
-                    onClick={() => setIsDeleteDialogOpen(true)}
-                    variant="destructive"
-                    className="flex-1"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Excluir
-                  </Button>
-                  
-                  <Button 
-                    onClick={() => setIsViewingExpense(false)}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Fechar
-                  </Button>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        {/* Expense Detail Modal */}
+        <ExpenseDetailModal
+          expense={selectedExpense}
+          isOpen={isViewingExpense}
+          onClose={() => {
+            setIsViewingExpense(false);
+            setSelectedExpense(null);
+          }}
+          onEdit={(expense) => {
+            setIsViewingExpense(false);
+            handleEditExpense(expense);
+          }}
+          onDelete={(expense) => {
+            setIsViewingExpense(false);
+            setSelectedExpense(expense);
+            setIsDeleteDialogOpen(true);
+          }}
+          onViewReceipt={handleViewReceipt}
+          currencySymbol={selectedCurrency.symbol}
+        />
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
