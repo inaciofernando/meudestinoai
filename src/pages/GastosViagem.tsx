@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
@@ -491,7 +492,7 @@ export default function GastosViagem() {
           category: aiData.category || prev.category,
           amount: aiData.amount?.toString() || prev.amount,
           description: aiData.description || prev.description,
-          establishment: aiData.establishment || prev.establishment,
+          establishment: aiData.location || aiData.establishment || prev.establishment,
           date: aiData.date || prev.date,
           payment_method_type: aiData.payment_method || prev.payment_method_type,
         }));
@@ -921,8 +922,29 @@ export default function GastosViagem() {
               <DialogTitle>Adicionar Gasto</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              {/* Upload de Recibo - Primeira ação */}
               <div>
-                <Label>Categoria *</Label>
+                <Label className="text-base font-semibold">📸 Adicionar Comprovante/Recibo</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Comece fazendo upload do recibo - a IA preencherá os campos automaticamente
+                </p>
+                {isProcessingReceipt && (
+                  <div className="flex items-center gap-2 mb-2 text-sm text-blue-600">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    Processando recibo com IA...
+                  </div>
+                )}
+                <ImageUpload
+                  images={newExpense.receiptImages}
+                  onImagesChange={handleReceiptImagesChange}
+                  maxImages={1}
+                />
+              </div>
+
+              <Separator />
+
+              <div>
+                <Label htmlFor="category">Categoria *</Label>
                 <Select 
                   value={newExpense.category} 
                   onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}
@@ -1027,23 +1049,6 @@ export default function GastosViagem() {
                 />
               </div>
 
-              <div>
-                <Label>Comprovante/Recibo</Label>
-                {isProcessingReceipt && (
-                  <div className="flex items-center gap-2 mb-2 text-sm text-blue-600">
-                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    Processando recibo com IA...
-                  </div>
-                )}
-                <ImageUpload
-                  images={newExpense.receiptImages}
-                  onImagesChange={handleReceiptImagesChange}
-                  maxImages={1}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  A IA irá extrair automaticamente os dados do recibo
-                </p>
-              </div>
 
               <div className="flex gap-2">
                 <Button 

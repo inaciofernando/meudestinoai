@@ -92,14 +92,15 @@ EXEMPLOS OBRIGATÓRIOS:
 - Supermercado → "category": "food", "subcategory": "Supermercado"
 - Táxi/Uber → "category": "transport", "subcategory": "Táxi" ou "Uber"
 
-FORMATO DE RESPOSTA OBRIGATÓRIO:
+FORMATO DE RESPOSTA OBRIGATÓRIO (PREENCHA TODOS OS CAMPOS):
 {
-  "amount": [número],
+  "amount": [número sem símbolos, apenas dígitos e ponto decimal],
   "date": "YYYY-MM-DD",
-  "location": "[nome do estabelecimento]",
-  "category": "[um dos 8 IDs obrigatórios]",
+  "location": "[OBRIGATÓRIO: nome completo do estabelecimento/loja/restaurante]",
+  "category": "[um dos 8 IDs obrigatórios]", 
   "subcategory": "[uma subcategoria da lista]",
-  "description": "[descrição concisa]"
+  "description": "[descrição detalhada do que foi comprado]",
+  "payment_method": "[se possível identificar: cartão, dinheiro, pix, débito, crédito]"
 }
 
 ⚠️ CRÍTICO: NÃO retorne o JSON sem preencher category E subcategory. São campos OBRIGATÓRIOS.`
@@ -109,7 +110,7 @@ FORMATO DE RESPOSTA OBRIGATÓRIO:
           content: [
             {
               type: 'text',
-              text: 'Analise este cupom fiscal brasileiro e extraia as informações solicitadas. Se a imagem estiver difícil de ler, tente o seu melhor para extrair pelo menos algumas informações:'
+              text: 'Analise este cupom fiscal brasileiro e extraia TODAS as informações solicitadas. ATENÇÃO ESPECIAL: sempre preencha o campo "location" com o nome do estabelecimento que aparece no recibo. Procure por CNPJ, razão social, nome fantasia ou qualquer identificação do estabelecimento. Se não conseguir identificar o estabelecimento, use "Estabelecimento não identificado":'
             },
             {
               type: 'image_url',
@@ -167,10 +168,24 @@ FORMATO DE RESPOSTA OBRIGATÓRIO:
       // Validate required fields
       if (!extractedData.category || !extractedData.subcategory) {
         console.error('IA falhou ao preencher campos obrigatórios:', extractedData);
-        throw new Error('IA não preencheu categoria ou subcategoria. Dados incompletos.');
+        
+        // Se não preencheu os campos obrigatórios, usar valores padrão
+        if (!extractedData.category) {
+          extractedData.category = 'miscellaneous';
+        }
+        if (!extractedData.subcategory) {
+          extractedData.subcategory = 'Emergência';
+        }
+        console.log('✅ Campos obrigatórios corrigidos com valores padrão');
+      } else {
+        console.log('✅ Validação passou: category e subcategory preenchidos corretamente');
       }
       
-      console.log('✅ Validação passou: category e subcategory preenchidos corretamente');
+      // Garantir que o establishment/location está preenchido
+      if (!extractedData.location && !extractedData.establishment) {
+        extractedData.location = "Estabelecimento não identificado";
+        console.log('⚠️ Campo establishment/location estava vazio, preenchido com valor padrão');
+      }
       
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', aiResponse);
