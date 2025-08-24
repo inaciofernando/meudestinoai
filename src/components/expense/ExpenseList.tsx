@@ -234,11 +234,10 @@ export const ExpenseList = memo(({
                                         e.stopPropagation();
                                         onViewReceipt(expense.receipt_image_url!);
                                       }}
-                                      className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors cursor-pointer"
+                                      className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors cursor-pointer p-1 rounded hover:bg-muted/50"
                                       title="Visualizar comprovante ampliado"
                                     >
-                                      <Receipt className="w-3 h-3" />
-                                      <span>Ver Comprovante</span>
+                                      <Eye className="w-3 h-3" />
                                     </button>
                                   </>
                                 )}
