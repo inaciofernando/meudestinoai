@@ -421,6 +421,42 @@ export type Database = {
         }
         Relationships: []
       }
+      trip_locations: {
+        Row: {
+          created_at: string
+          id: string
+          location_name: string
+          location_type: string | null
+          notes: string | null
+          order_index: number | null
+          trip_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location_name: string
+          location_type?: string | null
+          notes?: string | null
+          order_index?: number | null
+          trip_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location_name?: string
+          location_type?: string | null
+          notes?: string | null
+          order_index?: number | null
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       trips: {
         Row: {
           budget_currency: string | null

@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
+import { TripLocations, TripLocation } from "@/components/TripLocations";
 
 
 interface Trip {
@@ -92,6 +93,7 @@ export default function DetalhesViagem() {
   const [isEditing, setIsEditing] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [locations, setLocations] = useState<TripLocation[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -111,12 +113,38 @@ export default function DetalhesViagem() {
       if (!user || !id) return;
 
       try {
+        // Fetch trip data
         const { data, error } = await supabase
           .from("trips")
           .select("*")
           .eq("id", id)
           .eq("user_id", user.id)
           .single();
+
+        if (error) {
+          console.error("Erro ao buscar viagem:", error);
+          toast({
+            title: "Erro",
+            description: "Viagem não encontrada",
+            variant: "destructive",
+          });
+          navigate("/viagens");
+          return;
+        }
+
+        // Fetch trip locations
+        const { data: locationsData, error: locationsError } = await supabase
+          .from("trip_locations")
+          .select("*")
+          .eq("trip_id", id)
+          .eq("user_id", user.id)
+          .order("order_index", { ascending: true });
+
+        if (locationsError) {
+          console.error("Erro ao buscar locais:", locationsError);
+        }
+
+        setLocations(locationsData || []);
 
         if (error) {
           console.error("Erro ao buscar viagem:", error);
@@ -180,7 +208,8 @@ export default function DetalhesViagem() {
     setUpdating(true);
 
     try {
-      const { error } = await supabase
+      // Update trip data
+      const { error: tripError } = await supabase
         .from("trips")
         .update({
           title: data.title,
@@ -193,8 +222,39 @@ export default function DetalhesViagem() {
         .eq("id", trip.id)
         .eq("user_id", user.id);
 
-      if (error) {
-        throw error;
+      if (tripError) {
+        throw tripError;
+      }
+
+      // Update locations - delete existing and create new ones
+      const { error: deleteError } = await supabase
+        .from("trip_locations")
+        .delete()
+        .eq("trip_id", trip.id)
+        .eq("user_id", user.id);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      // Insert new locations if any
+      if (locations.length > 0) {
+        const { error: insertError } = await supabase
+          .from("trip_locations")
+          .insert(
+            locations.map((location) => ({
+              trip_id: trip.id,
+              user_id: user.id,
+              location_name: location.location_name,
+              location_type: location.location_type,
+              order_index: location.order_index,
+              notes: location.notes,
+            }))
+          );
+
+        if (insertError) {
+          throw insertError;
+        }
       }
 
       // Refresh trip data
@@ -231,14 +291,27 @@ export default function DetalhesViagem() {
   const handleCancelEdit = () => {
     if (!trip) return;
     
-    // Reset form to original trip data
+    // Reset form and locations to original trip data
     form.reset({
       title: trip.title,
       destination: trip.destination,
-          description: trip.description || "",
-          start_date: trip.start_date ? parseISO(trip.start_date) : undefined,
-          end_date: trip.end_date ? parseISO(trip.end_date) : undefined,
+      description: trip.description || "",
+      start_date: trip.start_date ? parseISO(trip.start_date) : undefined,
+      end_date: trip.end_date ? parseISO(trip.end_date) : undefined,
     });
+    setImages(trip.images || []);
+    // Reload locations from database
+    if (id && user) {
+      supabase
+        .from("trip_locations")
+        .select("*")
+        .eq("trip_id", id)
+        .eq("user_id", user.id)
+        .order("order_index", { ascending: true })
+        .then(({ data }) => {
+          setLocations(data || []);
+        });
+    }
     setIsEditing(false);
   };
 
@@ -915,6 +988,18 @@ export default function DetalhesViagem() {
 
                 <Card>
                   <CardHeader>
+                    <CardTitle>Locais da Viagem</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <TripLocations
+                      locations={locations}
+                      onChange={setLocations}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Settings className="w-5 h-5 text-primary" />
                       Status da Viagem
@@ -960,6 +1045,48 @@ export default function DetalhesViagem() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    Informações da Viagem
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground">{trip.title}</h3>
+                    <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                      <MapPin className="w-4 h-4" />
+                      <span>{trip.destination}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant={getStatusColor(trip.status)}>
+                        {getStatusText(trip.status)}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  {locations.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold text-foreground mb-2">Locais a Visitar</h4>
+                      <div className="space-y-2">
+                        {locations.map((location) => (
+                          <div key={location.id || location.order_index} className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-primary rounded-full"></div>
+                            <span className="text-sm text-foreground">{location.location_name}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {location.location_type === 'city' && 'Cidade'}
+                              {location.location_type === 'region' && 'Região'}
+                              {location.location_type === 'attraction' && 'Atração'}
+                              {location.location_type === 'airport' && 'Aeroporto'}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     <CalendarIcon className="w-5 h-5 text-destructive" />
                     Datas da Viagem
                   </CardTitle>
@@ -990,7 +1117,6 @@ export default function DetalhesViagem() {
                   )}
                 </CardContent>
               </Card>
-
             </div>
           )}
 
@@ -1094,7 +1220,6 @@ export default function DetalhesViagem() {
               </Button>
             </div>
           )}
-          </div>
         </div>
       </PWALayout>
     </ProtectedRoute>

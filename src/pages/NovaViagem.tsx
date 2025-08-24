@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
+import { TripLocations, TripLocation } from "@/components/TripLocations";
 
 const formSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
@@ -44,6 +45,7 @@ export default function NovaViagem() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<string[]>([]);
+  const [locations, setLocations] = useState<TripLocation[]>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -67,9 +69,10 @@ export default function NovaViagem() {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      // Create the trip first
+      const { data: tripData, error: tripError } = await supabase
         .from("trips")
-        .insert({
+        .insert([{
           title: data.title,
           destination: data.destination,
           description: data.description || null,
@@ -78,10 +81,31 @@ export default function NovaViagem() {
           user_id: user.id,
           status: "planned",
           images: images,
-        });
+        }])
+        .select();
 
-      if (error) {
-        throw error;
+      if (tripError) {
+        throw tripError;
+      }
+
+      // Create trip locations if any
+      if (locations.length > 0) {
+        const { error: locationsError } = await supabase
+          .from("trip_locations")
+          .insert(
+            locations.map((location) => ({
+              trip_id: tripData[0].id,
+              user_id: user.id,
+              location_name: location.location_name,
+              location_type: location.location_type,
+              order_index: location.order_index,
+              notes: location.notes,
+            }))
+          );
+
+        if (locationsError) {
+          throw locationsError;
+        }
       }
 
       toast({
@@ -89,7 +113,7 @@ export default function NovaViagem() {
         description: "Viagem criada com sucesso",
       });
 
-      navigate("/minhas-viagens");
+      navigate(`/detalhes-viagem/${tripData[0].id}`);
     } catch (error) {
       console.error("Erro ao criar viagem:", error);
       toast({
@@ -267,11 +291,16 @@ export default function NovaViagem() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Imagens da Viagem</label>
-                  <ImageUpload 
-                    images={images} 
-                    onImagesChange={setImages}
-                    maxImages={5}
-                  />
+              <ImageUpload 
+                images={images} 
+                onImagesChange={setImages} 
+                maxImages={5}
+              />
+
+              <TripLocations
+                locations={locations}
+                onChange={setLocations}
+              />
                 </div>
 
                 <div className="flex gap-4 pt-4">
