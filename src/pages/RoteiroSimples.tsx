@@ -113,6 +113,7 @@ export default function RoteiroSimples() {
   const [roteiro, setRoteiro] = useState<Roteiro | null>(null);
   const [pontos, setPontos] = useState<RoteiroPonto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [isAddingPonto, setIsAddingPonto] = useState(false);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
@@ -427,8 +428,14 @@ export default function RoteiroSimples() {
       user: !!user, 
       formDataTitle: formData.title, 
       formDataLocation: formData.location,
-      formData 
+      formData,
+      isSaving: saving 
     });
+    
+    if (saving) {
+      console.log('🔴 ERRO: Já está salvando, ignorando clique duplicado');
+      return;
+    }
     
     if (!roteiro || !user || !formData.title || !formData.location) {
       console.log('🔴 ERRO: Validação falhou', {
@@ -445,7 +452,8 @@ export default function RoteiroSimples() {
       return;
     }
 
-    console.log('🟢 Validações OK, continuando...');
+    console.log('🟢 Validações OK, iniciando salvamento...');
+    setSaving(true);
 
     // Verificar se o usuário ainda está autenticado
     const { data: { session } } = await supabase.auth.getSession();
@@ -507,51 +515,44 @@ export default function RoteiroSimples() {
         throw error;
       }
 
-      console.log('Ponto adicionado com sucesso!');
+      console.log('🟢 Ponto adicionado com sucesso!');
       toast({
         title: "Ponto adicionado!",
         description: "Novo ponto foi adicionado ao roteiro.",
       });
 
       // Reset form and close dialog
-      setFormData({
-        day_number: 1,
-        time_start: "08:00",
-        time_end: "09:00",
-        is_all_day: false,
-        title: "",
-        description: "",
-        location: "",
-        address: "",
-        website_link: "",
-        tripadvisor_link: "",
-        google_maps_link: "",
-        waze_link: "",
-        category: "activity",
-        images: [],
-        vouchers: []
-      });
-      setIsAddingPonto(false);
-      fetchPontos();
+      setTimeout(() => {
+        setFormData({
+          day_number: 1,
+          time_start: "08:00",
+          time_end: "09:00",
+          is_all_day: false,
+          title: "",
+          description: "",
+          location: "",
+          address: "",
+          website_link: "",
+          tripadvisor_link: "",
+          google_maps_link: "",
+          waze_link: "",
+          category: "activity",
+          images: [],
+          vouchers: []
+        });
+        setIsAddingPonto(false);
+        fetchPontos();
+      }, 500);
+      
     } catch (error: any) {
-      console.error('Error adding ponto:', error);
-      
-      let errorMessage = "Não foi possível adicionar o ponto. Tente novamente.";
-      
-      // Mensagens de erro mais específicas
-      if (error?.message?.includes('JWT')) {
-        errorMessage = "Sessão expirada. Por favor, atualize a página e tente novamente.";
-      } else if (error?.message?.includes('network')) {
-        errorMessage = "Problema de conexão. Verifique sua internet e tente novamente.";
-      } else if (error?.code === 'PGRST301') {
-        errorMessage = "Erro de permissão. Verifique se você tem acesso a este roteiro.";
-      }
-
+      console.error('Erro detalhado ao adicionar ponto:', error);
       toast({
-        title: "Erro ao Salvar",
-        description: errorMessage,
+        title: "Erro ao salvar",
+        description: error?.message || "Falha ao adicionar ponto ao roteiro.",
         variant: "destructive"
       });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -947,9 +948,19 @@ export default function RoteiroSimples() {
                     handleAddPonto();
                   }} 
                   className="flex-1"
+                  disabled={saving}
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  Salvar
+                  {saving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Salvar
+                    </>
+                  )}
                 </Button>
               </div>
             </div>

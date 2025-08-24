@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarIcon, Save, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns";
@@ -38,9 +38,11 @@ export default function AdicionarRestaurante() {
   const { id: tripId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const [trip, setTrip] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<RestaurantForm>({
     restaurant_name: "",
     reservation_date: undefined,
@@ -91,7 +93,11 @@ export default function AdicionarRestaurante() {
         if (error) throw error;
         setTrip(data);
       } catch (e) {
-        toast.error('Erro ao carregar dados da viagem');
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar dados da viagem",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
@@ -221,15 +227,27 @@ export default function AdicionarRestaurante() {
         voucher_file_url: result.url,
         voucher_file_name: result.fileName,
       });
-      toast.success('Voucher enviado com sucesso!');
+      toast({
+        title: "Sucesso", 
+        description: "Voucher enviado com sucesso!"
+      });
     } else {
-      toast.error('Erro ao enviar voucher');
+      toast({
+        title: "Erro",
+        description: "Erro ao enviar voucher", 
+        variant: "destructive"
+      });
     }
   };
 
   const save = async () => {
     console.log('🟦 SAVE CLICKED - Iniciando função save');
-    console.log('🟦 Estado atual:', { user: !!user, tripId, form });
+    console.log('🟦 Estado atual:', { user: !!user, tripId, form, saving });
+    
+    if (saving) {
+      console.log('🔴 ERRO: Já está salvando, ignorando clique duplicado');
+      return;
+    }
     
     if (!user || !tripId) {
       console.log('🔴 ERRO: Usuário ou tripId não disponíveis');
@@ -238,11 +256,16 @@ export default function AdicionarRestaurante() {
     
     if (!form.restaurant_name) {
       console.log('🔴 ERRO: Nome do restaurante é obrigatório');
-      toast.error('Nome do restaurante é obrigatório');
+      toast({
+        title: "Erro",
+        description: "Nome do restaurante é obrigatório",
+        variant: "destructive"
+      });
       return;
     }
 
-    console.log('🟢 Validações OK, continuando com o salvamento...');
+    console.log('🟢 Validações OK, iniciando salvamento...');
+    setSaving(true);
 
     try {
       const restaurantData = {
@@ -270,11 +293,27 @@ export default function AdicionarRestaurante() {
         .insert([restaurantData]);
 
       if (error) throw error;
-      toast.success('Restaurante adicionado com sucesso!');
-      navigate(`/viagem/${tripId}/restaurantes`);
+      
+      console.log('🟢 Restaurante salvo com sucesso!');
+      toast({
+        title: "Sucesso",
+        description: "Restaurante adicionado com sucesso!",
+      });
+      
+      // Pequeno delay para mostrar o toast antes de navegar
+      setTimeout(() => {
+        navigate(`/viagem/${tripId}/restaurantes`);
+      }, 500);
+      
     } catch (error) {
       console.error('Erro ao salvar restaurante:', error);
-      toast.error('Erro ao salvar restaurante');
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar restaurante",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -487,9 +526,19 @@ export default function AdicionarRestaurante() {
                   save();
                 }} 
                 className="flex items-center gap-2"
+                disabled={saving}
               >
-                <Save className="w-4 h-4" />
-                Salvar
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Salvar
+                  </>
+                )}
               </Button>
               <Button variant="outline" onClick={() => navigate(`/viagem/${tripId}/restaurantes`)}>
                 Cancelar
