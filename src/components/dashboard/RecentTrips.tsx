@@ -24,13 +24,34 @@ export const RecentTrips = ({ trips }: RecentTripsProps) => {
   const navigate = useNavigate();
 
   const getStatusBadge = (status: Trip['status']) => {
+    console.log('getStatusBadge called with status:', status, typeof status);
+    
     const variants = {
       active: { variant: "default" as const, label: "Em Andamento", color: "bg-green-500" },
       upcoming: { variant: "secondary" as const, label: "Planejada", color: "bg-blue-500" },
       completed: { variant: "outline" as const, label: "Concluída", color: "bg-gray-500" }
     };
     
-    const config = variants[status] || variants.upcoming; // Fallback to upcoming if status is unknown
+    // More defensive programming - check if status exists and is a string
+    if (!status || typeof status !== 'string') {
+      console.warn('Invalid status received:', status, 'defaulting to upcoming');
+      const config = variants.upcoming;
+      return (
+        <Badge variant={config.variant} className="text-xs">
+          <div className={`w-2 h-2 rounded-full ${config.color} mr-1`} />
+          {config.label}
+        </Badge>
+      );
+    }
+    
+    const config = variants[status as keyof typeof variants] || variants.upcoming;
+    console.log('config selected:', config);
+    
+    if (!config) {
+      console.error('No config found for status:', status);
+      return <span className="text-xs text-muted-foreground">Status desconhecido</span>;
+    }
+    
     return (
       <Badge variant={config.variant} className="text-xs">
         <div className={`w-2 h-2 rounded-full ${config.color} mr-1`} />
