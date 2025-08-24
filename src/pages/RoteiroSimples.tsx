@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ItineraryImageUpload } from "@/components/ItineraryImageUpload";
+import { VoucherUpload } from "@/components/VoucherUpload";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -62,6 +63,12 @@ interface RoteiroPonto {
   category: string;
   order_index: number;
   images?: string[];
+  voucher_files?: Array<{
+    url: string;
+    name: string;
+    type: string;
+    description?: string;
+  }>;
 }
 
 const CATEGORY_CONFIG = {
@@ -109,6 +116,12 @@ export default function RoteiroSimples() {
     waze_link: "",
     category: "activity",
     images: [] as string[],
+    vouchers: [] as Array<{
+      url: string;
+      name: string;
+      type: string;
+      description?: string;
+    }>,
     is_all_day: false
   });
 
@@ -326,7 +339,14 @@ export default function RoteiroSimples() {
           console.error("Erro ao buscar pontos:", pontosError);
         } else {
           console.log("✅ Pontos encontrados:", pontosData?.length || 0);
-          setPontos(pontosData || []);
+          // Parse voucher_files for each ponto
+          const parsedPontos = pontosData?.map(ponto => ({
+            ...ponto,
+            voucher_files: Array.isArray(ponto.voucher_files) 
+              ? ponto.voucher_files as Array<{ url: string; name: string; type: string; description?: string; }>
+              : []
+          })) || [];
+          setPontos(parsedPontos);
         }
       } catch (error) {
         console.error("❌ Erro ao carregar roteiro:", error);
@@ -351,7 +371,14 @@ export default function RoteiroSimples() {
       .order("time_start", { ascending: true }); // Ordenação por horário
 
     if (!pontosError && pontosData) {
-      setPontos(pontosData);
+      // Parse voucher_files for each ponto
+      const parsedPontos = pontosData.map(ponto => ({
+        ...ponto,
+        voucher_files: Array.isArray(ponto.voucher_files) 
+          ? ponto.voucher_files as Array<{ url: string; name: string; type: string; description?: string; }>
+          : []
+      }));
+      setPontos(parsedPontos);
     }
   };
 
@@ -404,7 +431,8 @@ export default function RoteiroSimples() {
         category: formData.category,
         order_index: pontos.filter(p => p.day_number === formData.day_number).length,
         user_id: user.id,
-        images: formData.images
+        images: formData.images,
+        voucher_files: formData.vouchers
       };
 
       console.log('Dados que serão enviados para o Supabase:', pontoData);
@@ -446,7 +474,8 @@ export default function RoteiroSimples() {
         google_maps_link: "",
         waze_link: "",
         category: "activity",
-        images: []
+        images: [],
+        vouchers: []
       });
       setIsAddingPonto(false);
       fetchPontos();
@@ -823,14 +852,36 @@ export default function RoteiroSimples() {
                  </div>
                </div>
 
-               <div>
-                 <Label>Imagens</Label>
-                 <ItineraryImageUpload
-                   images={formData.images}
-                   onImagesChange={(images) => setFormData({...formData, images})}
-                   maxImages={5}
-                 />
-               </div>
+                {/* Upload de imagens */}
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    📸 Imagens do Local
+                    <Badge variant="secondary" className="text-xs">Fotos para galeria</Badge>
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Adicione fotos do local que aparecerão na galeria de imagens
+                  </p>
+                  <ItineraryImageUpload
+                    images={formData.images}
+                    onImagesChange={(images) => setFormData({...formData, images})}
+                    maxImages={5}
+                  />
+                </div>
+
+                {/* Upload de vouchers */}
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold flex items-center gap-2">
+                    📄 Vouchers e Documentos
+                    <Badge variant="secondary" className="text-xs">PDF, tickets, etc</Badge>
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Anexe documentos, vouchers, tickets ou comprovantes
+                  </p>
+                  <VoucherUpload
+                    vouchers={formData.vouchers}
+                    onVouchersChange={(vouchers) => setFormData({...formData, vouchers})}
+                  />
+                </div>
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" onClick={() => setIsAddingPonto(false)} className="flex-1">
