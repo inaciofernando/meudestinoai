@@ -71,17 +71,7 @@ export const ExpenseDetailModal = memo(({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-semibold">Detalhes da Transação</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="text-xl font-semibold">Detalhes da Transação</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">

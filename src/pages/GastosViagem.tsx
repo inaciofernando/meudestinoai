@@ -1051,7 +1051,7 @@ export default function GastosViagem() {
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
-                    <SelectContent className="z-50">
+                    <SelectContent className="z-[100] bg-background border border-border shadow-lg">
                       {EXPENSE_CATEGORIES.map(category => (
                         <SelectItem key={category.id} value={category.id}>
                           <div className="flex items-center gap-3">
@@ -1474,26 +1474,7 @@ export default function GastosViagem() {
         </Dialog>
 
 
-        {/* Expense Detail Modal */}
-        <ExpenseDetailModal
-          expense={selectedExpense}
-          isOpen={isViewingExpense}
-          onClose={() => {
-            setIsViewingExpense(false);
-            setSelectedExpense(null);
-          }}
-          onEdit={(expense) => {
-            setIsViewingExpense(false);
-            handleEditExpense(expense);
-          }}
-          onDelete={(expense) => {
-            setIsViewingExpense(false);
-            setSelectedExpense(expense);
-            setIsDeleteDialogOpen(true);
-          }}
-          onViewReceipt={handleViewReceipt}
-          currencySymbol={selectedCurrency.symbol}
-        />
+        {/* Receipt Viewer Dialog */}
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -1544,26 +1525,7 @@ export default function GastosViagem() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Expense Detail Modal */}
-        <ExpenseDetailModal
-          expense={selectedExpense}
-          isOpen={isViewingExpense}
-          onClose={() => {
-            setIsViewingExpense(false);
-            setSelectedExpense(null);
-          }}
-          onEdit={(expense) => {
-            setIsViewingExpense(false);
-            handleEditExpense(expense);
-          }}
-          onDelete={(expense) => {
-            setIsViewingExpense(false);
-            setSelectedExpense(expense);
-            setIsDeleteDialogOpen(true);
-          }}
-          onViewReceipt={handleViewReceipt}
-          currencySymbol={selectedCurrency.symbol}
-        />
+        {/* Receipt Viewer Dialog */}
         <Dialog open={isViewingReceipt} onOpenChange={setIsViewingReceipt}>
           <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
