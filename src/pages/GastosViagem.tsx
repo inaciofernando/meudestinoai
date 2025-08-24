@@ -815,16 +815,6 @@ export default function GastosViagem() {
     }
   };
 
-  const toggleDayExpansion = (date: string) => {
-    const newExpanded = new Set(expandedDays);
-    if (newExpanded.has(date)) {
-      newExpanded.delete(date);
-    } else {
-      newExpanded.add(date);
-    }
-    setExpandedDays(newExpanded);
-  };
-
   if (loading) {
     return (
       <ProtectedRoute>
@@ -1574,139 +1564,29 @@ export default function GastosViagem() {
             </div>
           )}
 
-          {/* Gastos por dia - Estilo C6 Bank */}
+          {/* Filtros por tipo de gasto */}
           <div className="px-4 mt-6">
-            <div className="c6-card">
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-foreground mb-1">Gastos por dia</h2>
-                <p className="c6-text-secondary text-sm">Histórico de transações da viagem</p>
-              </div>
+            <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as any)} className="mb-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="todos">Todos</TabsTrigger>
+                <TabsTrigger value="planejado">Planejados</TabsTrigger>
+                <TabsTrigger value="realizado">Realizados</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-              {/* Filtros por tipo de gasto */}
-              <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as any)} className="mb-6">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="todos">Todos</TabsTrigger>
-                  <TabsTrigger value="planejado">Planejados</TabsTrigger>
-                  <TabsTrigger value="realizado">Realizados</TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              {filteredExpenses.length === 0 ? (
-                <div className="text-center py-12">
-                  <Receipt className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-                  <p className="c6-text-secondary">
-                    {activeFilter === 'todos' ? 'Nenhum gasto registrado' : 
-                     activeFilter === 'planejado' ? 'Nenhum gasto planejado' : 
-                     'Nenhum gasto realizado'}
-                  </p>
-                  <p className="c6-text-secondary text-xs">
-                    {activeFilter === 'todos' ? 'Comece adicionando seus primeiros gastos' :
-                     activeFilter === 'planejado' ? 'Nenhum gasto planejado encontrado' :
-                     'Nenhum gasto realizado encontrado'}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-0">
-                  {expensesByDay.map((dayData, dayIndex) => {
-                    const isExpanded = expandedDays.has(dayData.date);
-                    
-                    return (
-                      <div key={dayData.date}>
-                        {/* Separador entre dias */}
-                        {dayIndex > 0 && <div className="h-px bg-border/50" />}
-                        
-                        {/* Header do dia */}
-                        <button
-                          onClick={() => toggleDayExpansion(dayData.date)}
-                          className="w-full flex items-center justify-between py-4 px-0 hover:bg-muted/30 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 bg-primary rounded-full"></div>
-                            <div className="text-left">
-                              <p className="c6-text-primary font-medium">
-                                {formatDateForBrazilian(dayData.date)}
-                              </p>
-                              <p className="c6-text-secondary text-xs">
-                                {dayData.expenses.length} transação{dayData.expenses.length > 1 ? 'ões' : ''}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <p className="c6-text-value">
-                              {formatCurrency(dayData.total, selectedCurrency.symbol)}
-                            </p>
-                            {isExpanded ? (
-                              <ChevronUp className="w-5 h-5 text-muted-foreground" />
-                            ) : (
-                              <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                            )}
-                          </div>
-                        </button>
-
-                        {/* Lista de gastos do dia */}
-                        {isExpanded && (
-                          <div className="pt-2">
-                            {dayData.expenses.map((expense, expenseIndex) => {
-                              const expenseCategory = EXPENSE_CATEGORIES.find(cat => cat.id === expense.category);
-                              
-                              return (
-                                <div key={expense.id}>
-                                  {/* Separador entre gastos */}
-                                  {expenseIndex > 0 && <div className="h-px bg-border/30 mx-0" />}
-                                  
-                                  <button 
-                                    onClick={() => {
-                                      setSelectedExpense(expense);
-                                      setIsViewingExpense(true);
-                                    }}
-                                    className="w-full flex items-center justify-between py-3 px-0 hover:bg-muted/20 transition-colors cursor-pointer text-left"
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
-                                        {expenseCategory ? (
-                                          <expenseCategory.icon className="w-4 h-4 text-muted-foreground" />
-                                        ) : (
-                                          <Receipt className="w-4 h-4 text-muted-foreground" />
-                                        )}
-                                      </div>
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                          <p className="c6-text-primary text-sm font-medium">
-                                            {expense.description}
-                                          </p>
-                                          {activeFilter === 'todos' && (
-                                            <Badge 
-                                              variant="secondary" 
-                                              className={`text-xs px-2 py-0.5 ${
-                                                expense.expense_type === 'planejado' 
-                                                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
-                                                  : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                              }`}
-                                            >
-                                              {expense.expense_type === 'planejado' ? 'Planejado' : 'Realizado'}
-                                            </Badge>
-                                          )}
-                                        </div>
-                                        <p className="c6-text-secondary text-xs">
-                                          {expenseCategory?.name || 'Outros'}
-                                        </p>
-                                      </div>
-                                    </div>
-                                     <p className="c6-text-value text-sm">
-                                       {formatCurrency(Number(expense.amount) || 0, selectedCurrency.symbol)}
-                                    </p>
-                                  </button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+          {/* Modern Expense List */}
+          <div className="px-4">
+            <ExpenseList
+              expensesByDay={expensesByDay}
+              expandedDays={expandedDays}
+              onToggleDay={handleToggleDay}
+              onEditExpense={handleEditExpense}
+              onDeleteExpense={handleDeleteExpenseDialog}
+              onViewExpense={handleViewExpense}
+              onViewReceipt={handleViewReceipt}
+              currencySymbol={selectedCurrency.symbol}
+            />
           </div>
 
           {/* Dialog para editar orçamento */}
