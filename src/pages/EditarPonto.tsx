@@ -356,19 +356,8 @@ export default function EditarPonto() {
                   />
                 </div>
               <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="all-day"
-                    checked={formData.is_all_day}
-                    onChange={(e) => handleAllDayChange(e.target.checked)}
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="all-day">Dia todo</Label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 space-y-2">
                     <Label htmlFor="start-time">Início</Label>
                     <Input
                       id="start-time"
@@ -379,7 +368,7 @@ export default function EditarPonto() {
                       className={formData.is_all_day ? "bg-muted" : ""}
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex-1 space-y-2">
                     <Label htmlFor="end-time">Fim</Label>
                     <Input
                       id="end-time"
@@ -387,30 +376,35 @@ export default function EditarPonto() {
                       value={formData.time_end}
                       onChange={(e) => handleEndTimeChange(e.target.value)}
                       disabled={formData.is_all_day}
-                      className={cn(
-                        formData.is_all_day ? "bg-muted" : "",
-                        !formData.is_all_day && !isEndTimeValid(formData.time_start, formData.time_end) ? "border-red-500" : ""
-                      )}
+                      className={formData.is_all_day ? "bg-muted" : ""}
                     />
-                    {!formData.is_all_day && !isEndTimeValid(formData.time_start, formData.time_end) && (
-                      <p className="text-red-500 text-sm mt-1">A hora fim deve ser maior que a hora início</p>
-                    )}
+                  </div>
+                  <div className="flex items-center space-x-2 pt-6">
+                    <input
+                      type="checkbox"
+                      id="all-day"
+                      checked={formData.is_all_day}
+                      onChange={(e) => handleAllDayChange(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="all-day">Dia todo</Label>
                   </div>
                 </div>
               </div>
               </div>
 
               {/* Descrição */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Descrição</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Descrição detalhada do local ou atividade"
-                  rows={3}
-                />
-              </div>
+               <div className="space-y-2">
+                 <Label htmlFor="description">Descrição</Label>
+                 <Textarea
+                   id="description"
+                   value={formData.description}
+                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                   placeholder="Descrição detalhada do local ou atividade"
+                   rows={4}
+                   className="min-h-[100px]"
+                 />
+               </div>
 
               {/* Upload de imagens */}
               <div className="space-y-2">

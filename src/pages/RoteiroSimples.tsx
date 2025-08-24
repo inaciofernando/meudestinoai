@@ -600,19 +600,8 @@ export default function RoteiroSimples() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="all-day"
-                    checked={formData.is_all_day}
-                    onChange={(e) => handleAllDayChange(e.target.checked)}
-                    className="rounded border-gray-300"
-                  />
-                  <Label htmlFor="all-day">Dia todo</Label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
                     <Label>Início</Label>
                     <Input
                       type="time"
@@ -622,21 +611,25 @@ export default function RoteiroSimples() {
                       className={formData.is_all_day ? "bg-muted" : ""}
                     />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <Label>Fim</Label>
                     <Input
                       type="time"
                       value={formData.time_end}
                       onChange={(e) => handleEndTimeChange(e.target.value)}
                       disabled={formData.is_all_day}
-                      className={cn(
-                        formData.is_all_day ? "bg-muted" : "",
-                        !formData.is_all_day && !isEndTimeValid(formData.time_start, formData.time_end) ? "border-red-500" : ""
-                      )}
+                      className={formData.is_all_day ? "bg-muted" : ""}
                     />
-                    {!formData.is_all_day && !isEndTimeValid(formData.time_start, formData.time_end) && (
-                      <p className="text-red-500 text-sm mt-1">A hora fim deve ser maior que a hora início</p>
-                    )}
+                  </div>
+                  <div className="flex items-center space-x-2 pt-6">
+                    <input
+                      type="checkbox"
+                      id="all-day"
+                      checked={formData.is_all_day}
+                      onChange={(e) => handleAllDayChange(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="all-day">Dia todo</Label>
                   </div>
                 </div>
               </div>
@@ -665,7 +658,8 @@ export default function RoteiroSimples() {
                    value={formData.description}
                    onChange={(e) => setFormData({...formData, description: e.target.value})}
                    placeholder="Detalhes sobre o local ou atividade"
-                   rows={3}
+                   rows={4}
+                   className="min-h-[100px]"
                  />
                </div>
 
