@@ -378,7 +378,15 @@ export default function PontoDetalhes() {
               {/* Galeria de imagens */}
               {ponto.images && ponto.images.length > 0 && (
                 <Card>
-                  <CardContent className="p-6">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2">
+                      📸 Galeria de Imagens
+                      <Badge variant="secondary" className="text-xs">
+                        {ponto.images.length} foto{ponto.images.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
                     <div className="relative">
                       <img
                         src={ponto.images[currentImageIndex]}
@@ -563,35 +571,51 @@ export default function PontoDetalhes() {
                  </Card>
                )}
 
-               {/* Vouchers e Documentos */}
+              {/* Vouchers e Documentos */}
               {ponto.voucher_files && ponto.voucher_files.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Vouchers e Documentos</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      📄 Vouchers e Documentos
+                      <Badge variant="secondary" className="text-xs">
+                        {ponto.voucher_files.length} arquivo{ponto.voucher_files.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {ponto.voucher_files.map((voucher, index) => (
-                      <div key={index} className="flex items-center justify-between gap-3 p-3 border rounded-lg">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <FileText className="w-5 h-5 text-primary flex-shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{voucher.name}</p>
-                            {voucher.description && (
-                              <p className="text-xs text-muted-foreground truncate">{voucher.description}</p>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => downloadVoucher(voucher.url, voucher.name)}
-                          className="flex items-center gap-2 flex-shrink-0"
-                        >
-                          <Download className="w-4 h-4" />
-                          Baixar
-                        </Button>
-                      </div>
-                    ))}
+                    <div className="grid gap-3">
+                      {ponto.voucher_files.map((voucher, index) => (
+                        <Card key={index} className="border-muted/50">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="p-2 rounded-lg bg-primary/10">
+                                  <FileText className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="text-sm font-semibold truncate">{voucher.name}</h4>
+                                  {voucher.description && (
+                                    <p className="text-xs text-muted-foreground mt-1">{voucher.description}</p>
+                                  )}
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {voucher.type || 'Documento'}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => downloadVoucher(voucher.url, voucher.name)}
+                                className="flex items-center gap-2 flex-shrink-0"
+                              >
+                                <Download className="w-4 h-4" />
+                                <span className="hidden sm:inline">Baixar</span>
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </CardContent>
                 </Card>
               )}
