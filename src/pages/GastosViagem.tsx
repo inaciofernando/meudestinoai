@@ -445,6 +445,88 @@ export default function GastosViagem() {
     }
   };
 
+  // AI Receipt Processing
+  const [isProcessingReceipt, setIsProcessingReceipt] = useState(false);
+
+  const processReceiptWithAI = async (imageUrl: string) => {
+    if (!imageUrl) return;
+
+    setIsProcessingReceipt(true);
+    
+    try {
+      // Convert image URL to base64
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          const base64Data = result.split(',')[1];
+          resolve(base64Data);
+        };
+        reader.readAsDataURL(blob);
+      });
+
+      // Call the analyze-receipt edge function
+      const { data: aiResult, error: aiError } = await supabase.functions.invoke('analyze-receipt', {
+        body: { imageBase64: base64 }
+      });
+
+      if (aiError) {
+        console.error('AI analysis error:', aiError);
+        toast({
+          title: "Aviso",
+          description: "Não foi possível processar o recibo automaticamente. Preencha os campos manualmente.",
+          variant: "default",
+        });
+        return;
+      }
+
+      if (aiResult?.success && aiResult?.data) {
+        const aiData = aiResult.data;
+        
+        // Fill the form with AI extracted data
+        setNewExpense(prev => ({
+          ...prev,
+          category: aiData.category || prev.category,
+          amount: aiData.amount?.toString() || prev.amount,
+          description: aiData.description || prev.description,
+          establishment: aiData.establishment || prev.establishment,
+          date: aiData.date || prev.date,
+          payment_method_type: aiData.payment_method || prev.payment_method_type,
+        }));
+
+        toast({
+          title: "Recibo processado!",
+          description: "Os dados foram extraídos automaticamente. Revise e ajuste se necessário.",
+        });
+      }
+    } catch (error) {
+      console.error('Error processing receipt:', error);
+      toast({
+        title: "Aviso",
+        description: "Não foi possível processar o recibo automaticamente. Preencha os campos manualmente.",
+        variant: "default",
+      });
+    } finally {
+      setIsProcessingReceipt(false);
+    }
+  };
+
+  const handleReceiptImagesChange = (images: string[]) => {
+    const previousImages = newExpense.receiptImages;
+    setNewExpense(prev => ({ ...prev, receiptImages: images }));
+    
+    // Process with AI when a new image is added
+    if (images.length > 0 && images[images.length - 1] !== previousImages[previousImages.length - 1]) {
+      processReceiptWithAI(images[images.length - 1]);
+    }
+  };
+
+  const handleEditReceiptImagesChange = (images: string[]) => {
+    setEditForm(prev => ({ ...prev, receiptImages: images }));
+  };
+
   const handleAddExpense = async () => {
     if (!user || !trip) return;
 
@@ -947,11 +1029,20 @@ export default function GastosViagem() {
 
               <div>
                 <Label>Comprovante/Recibo</Label>
+                {isProcessingReceipt && (
+                  <div className="flex items-center gap-2 mb-2 text-sm text-blue-600">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    Processando recibo com IA...
+                  </div>
+                )}
                 <ImageUpload
                   images={newExpense.receiptImages}
-                  onImagesChange={(images) => setNewExpense({...newExpense, receiptImages: images})}
+                  onImagesChange={handleReceiptImagesChange}
                   maxImages={1}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  A IA irá extrair automaticamente os dados do recibo
+                </p>
               </div>
 
               <div className="flex gap-2">
@@ -1136,7 +1227,7 @@ export default function GastosViagem() {
                   <Label>Comprovante/Recibo</Label>
                   <ImageUpload
                     images={editForm.receiptImages}
-                    onImagesChange={(images) => setEditForm({...editForm, receiptImages: images})}
+                    onImagesChange={handleEditReceiptImagesChange}
                     maxImages={1}
                   />
                 </div>
