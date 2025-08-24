@@ -33,7 +33,15 @@ import {
   Map,
   Save,
   Image as ImageIcon,
-  X
+  X,
+  ShoppingCart,
+  Trees,
+  Building2,
+  Music,
+  Waves,
+  Leaf,
+  Paintbrush,
+  Dumbbell
 } from "lucide-react";
 
 interface Trip {
@@ -77,8 +85,8 @@ const CATEGORY_CONFIG = {
   accommodation: { name: "Hospedagem", icon: Hotel, color: "bg-purple-500" },
   attraction: { name: "Atração", icon: MapPin, color: "bg-red-500" },
   activity: { name: "Atividade", icon: Route, color: "bg-orange-500" },
-  shopping: { name: "Compras", icon: ShoppingBag, color: "bg-pink-500" },
-  park: { name: "Parques", icon: TreePine, color: "bg-green-600" },
+  shopping: { name: "Compras", icon: ShoppingCart, color: "bg-pink-500" },
+  park: { name: "Parques", icon: Trees, color: "bg-green-600" },
   museum: { name: "Museus", icon: Building2, color: "bg-gray-500" },
   entertainment: { name: "Entretenimento", icon: Music, color: "bg-indigo-500" },
   beach: { name: "Praia", icon: Waves, color: "bg-cyan-500" },
