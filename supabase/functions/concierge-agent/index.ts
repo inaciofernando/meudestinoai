@@ -61,7 +61,12 @@ Exemplo de estrutura do JSON a ser SEMPRE incluído no final:
     "title": "",
     "description": "",
     "category": "attraction",
-    "location": ""
+    "location": "",
+    "address": "",
+    "link": "",
+    "tripadvisor_link": "",
+    "google_maps_link": "",
+    "waze_link": ""
   }
 }
 \`\`\`
@@ -71,6 +76,7 @@ Regras adicionais importantes:
 - Para Google Maps, use o formato https://www.google.com/maps/place/... ou https://www.google.com/maps/search/?api=1&query=... (evite links encurtados como maps.app.goo.gl ou goo.gl/maps)
 - price_band deve ser um dentre: $, $$, $$$, $$$$
 - Para restaurantes, preencha o máximo possível: endereço, tipo de culinária, site, TripAdvisor, Google Maps e Waze
+- Para itinerários, inclua: endereço completo, site oficial, links do TripAdvisor, Google Maps e Waze quando relevante
 - Não inclua nada além do bloco JSON após a parte textual (para facilitar a leitura automática)
 `;
 

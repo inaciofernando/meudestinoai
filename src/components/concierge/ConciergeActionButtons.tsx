@@ -43,7 +43,12 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
             name: parsed.itinerary_item.title || "",
             description: parsed.itinerary_item.description || "",
             category: parsed.itinerary_item.category || "attraction",
-            location: parsed.itinerary_item.location || ""
+            location: parsed.itinerary_item.location || "",
+            address: parsed.itinerary_item.address || "",
+            website: parsed.itinerary_item.link || parsed.itinerary_item.website_link || "",
+            tripadvisor: parsed.itinerary_item.tripadvisor_link || parsed.itinerary_item.tripadvisor || "",
+            gmap: parsed.itinerary_item.google_maps_link || parsed.itinerary_item.gmap || "",
+            waze: parsed.itinerary_item.waze_link || parsed.itinerary_item.waze || ""
           });
         }
       }
@@ -97,9 +102,15 @@ const ConciergeActionButtons = memo(({ message, tripId }: QuickActionButtonsProp
       title: attraction.name,
       description: attraction.description || '',
       category: attraction.category || 'attraction',
+      location: attraction.location || '',
+      address: attraction.address || '',
+      website: attraction.website || '',
+      tripadvisor: attraction.tripadvisor || '',
+      gmap: attraction.gmap || '',
+      waze: attraction.waze || '',
       fromConcierge: 'true'
     });
-    if (attraction.location) params.set('location', attraction.location);
+    
     navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
   };
 
