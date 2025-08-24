@@ -251,7 +251,7 @@ export default function RoteiroSimples() {
         location: locationFromConcierge || '',
         address: addressFromConcierge || '',
         website_link: websiteFromConcierge || '',
-        tripadvisor_link: tripadvisorFromConcierge || '',
+        tripadvisor_link: tripadvisorFromConcierge ? tripadvisorFromConcierge.trim() : '',
         google_maps_link: gmapFromConcierge || '',
         waze_link: wazeFromConcierge || ''
       }));
