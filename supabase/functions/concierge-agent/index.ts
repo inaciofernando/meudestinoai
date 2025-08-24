@@ -230,7 +230,7 @@ serve(async (req) => {
 - Quando for útil, sugira um roteiro ou lista com bullets, links oficiais e dicas práticas (horários, reservas, deslocamento, custos aproximados).
 - Mantenha foco no destino(s) da viagem fornecida e conexões lógicas entre cidades próximas (ex.: Napa ↔ Los Angeles, São Francisco ↔ Los Angeles).
 - Inclua justificativa de por que a sugestão combina com o contexto da viagem.
-- No texto amigável (PARTE 1), inclua SEMPRE o endereço completo de cada lugar sugerido em uma linha fácil de copiar.
+- No texto amigável (PARTE 1), SEMPRE termine com uma seção "**📍 Endereços:**" após uma linha em branco, listando cada endereço completo em linhas separadas.
 
 SAÍDA PADRONIZADA (OBRIGATÓRIA):
 - Sempre responda em DUAS PARTES:
