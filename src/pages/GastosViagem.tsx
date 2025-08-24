@@ -446,15 +446,23 @@ export default function GastosViagem() {
     }
   };
 
-  // AI Receipt Processing
+  // AI Receipt Processing - Estados melhorados
   const [isProcessingReceipt, setIsProcessingReceipt] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showAIProcessingModal, setShowAIProcessingModal] = useState(false);
+  const [aiProcessingStep, setAiProcessingStep] = useState('analyzing'); // analyzing, extracting, completing
 
   const processReceiptWithAI = async (imageUrl: string) => {
     if (!imageUrl) return;
 
-    setIsProcessingReceipt(true);
+    setShowAIProcessingModal(true);
+    setAiProcessingStep('analyzing');
     
     try {
+      // Step 1: Analyzing image
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setAiProcessingStep('extracting');
+      
       // Convert image URL to base64
       const response = await fetch(imageUrl);
       const blob = await response.blob();
@@ -468,6 +476,10 @@ export default function GastosViagem() {
         reader.readAsDataURL(blob);
       });
 
+      // Step 2: Extracting data
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setAiProcessingStep('completing');
+
       // Call the analyze-receipt edge function
       const { data: aiResult, error: aiError } = await supabase.functions.invoke('analyze-receipt', {
         body: { imageBase64: base64 }
@@ -475,16 +487,20 @@ export default function GastosViagem() {
 
       if (aiError) {
         console.error('AI analysis error:', aiError);
+        setShowAIProcessingModal(false);
         toast({
-          title: "Aviso",
+          title: "⚠️ Processamento Falhou",
           description: "Não foi possível processar o recibo automaticamente. Preencha os campos manualmente.",
-          variant: "default",
+          variant: "destructive",
         });
         return;
       }
 
       if (aiResult?.success && aiResult?.data) {
         const aiData = aiResult.data;
+        
+        // Step 3: Completing
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         // Fill the form with AI extracted data
         setNewExpense(prev => ({
@@ -497,20 +513,20 @@ export default function GastosViagem() {
           payment_method_type: aiData.payment_method || prev.payment_method_type,
         }));
 
+        setShowAIProcessingModal(false);
         toast({
-          title: "Recibo processado!",
+          title: "✨ Recibo Processado com Sucesso!",
           description: "Os dados foram extraídos automaticamente. Revise e ajuste se necessário.",
         });
       }
     } catch (error) {
       console.error('Error processing receipt:', error);
+      setShowAIProcessingModal(false);
       toast({
-        title: "Aviso",
+        title: "⚠️ Erro no Processamento",
         description: "Não foi possível processar o recibo automaticamente. Preencha os campos manualmente.",
-        variant: "default",
+        variant: "destructive",
       });
-    } finally {
-      setIsProcessingReceipt(false);
     }
   };
 
@@ -518,10 +534,25 @@ export default function GastosViagem() {
     const previousImages = newExpense.receiptImages;
     setNewExpense(prev => ({ ...prev, receiptImages: images }));
     
-    // Process with AI when a new image is added
+    // Show upload options modal when image is added
     if (images.length > 0 && images[images.length - 1] !== previousImages[previousImages.length - 1]) {
-      processReceiptWithAI(images[images.length - 1]);
+      setShowUploadModal(true);
     }
+  };
+
+  const handleProcessWithAI = () => {
+    setShowUploadModal(false);
+    if (newExpense.receiptImages.length > 0) {
+      processReceiptWithAI(newExpense.receiptImages[0]);
+    }
+  };
+
+  const handleJustAttach = () => {
+    setShowUploadModal(false);
+    toast({
+      title: "📎 Recibo Anexado",
+      description: "Recibo anexado com sucesso. Preencha os campos manualmente.",
+    });
   };
 
   const handleEditReceiptImagesChange = (images: string[]) => {
@@ -933,16 +964,9 @@ export default function GastosViagem() {
                   <span className="text-2xl">📸</span>
                   <div>
                     <h3 className="font-semibold">Comprovante</h3>
-                    <p className="text-sm text-muted-foreground">A IA preencherá automaticamente</p>
+                    <p className="text-sm text-muted-foreground">Anexe seu recibo ou cupom fiscal</p>
                   </div>
                 </div>
-                
-                {isProcessingReceipt && (
-                  <div className="flex items-center gap-2 mb-3 p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
-                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm font-medium">Processando recibo com IA...</span>
-                  </div>
-                )}
                 
                 <ImageUpload
                   images={newExpense.receiptImages}
@@ -958,7 +982,7 @@ export default function GastosViagem() {
                   <Select 
                     value={newExpense.category} 
                     onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}
-                    disabled={isProcessingReceipt}
+                    disabled={showAIProcessingModal}
                   >
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Selecione uma categoria" />
@@ -983,7 +1007,7 @@ export default function GastosViagem() {
                     onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
                     placeholder="Ex: Almoço no restaurante, táxi para o aeroporto..."
                     rows={3}
-                    disabled={isProcessingReceipt}
+                    disabled={showAIProcessingModal}
                     className="resize-none"
                   />
                 </div>
@@ -999,7 +1023,7 @@ export default function GastosViagem() {
                       onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
                       placeholder="0,00"
                       className="pl-12 h-12 text-lg font-semibold"
-                      disabled={isProcessingReceipt}
+                      disabled={showAIProcessingModal}
                     />
                   </div>
                 </div>
@@ -1011,7 +1035,7 @@ export default function GastosViagem() {
                       type="date"
                       value={newExpense.date}
                       onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
-                      disabled={isProcessingReceipt}
+                      disabled={showAIProcessingModal}
                       className="h-12"
                     />
                   </div>
@@ -1020,7 +1044,7 @@ export default function GastosViagem() {
                     <Select 
                       value={newExpense.expense_type} 
                       onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
-                      disabled={isProcessingReceipt}
+                      disabled={showAIProcessingModal}
                     >
                       <SelectTrigger className="h-12">
                         <SelectValue placeholder="Tipo" />
@@ -1041,7 +1065,7 @@ export default function GastosViagem() {
                   <Select 
                     value={newExpense.payment_method_type} 
                     onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
-                    disabled={isProcessingReceipt}
+                    disabled={showAIProcessingModal}
                   >
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Como foi pago" />
@@ -1062,7 +1086,7 @@ export default function GastosViagem() {
                     value={newExpense.establishment}
                     onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
                     placeholder="Nome do restaurante, hotel, loja..."
-                    disabled={isProcessingReceipt}
+                    disabled={showAIProcessingModal}
                     className="h-12"
                   />
                 </div>
@@ -1075,18 +1099,18 @@ export default function GastosViagem() {
                 onClick={() => setIsAddingExpense(false)}
                 variant="outline"
                 size="lg"
-                disabled={isProcessingReceipt}
+                disabled={showAIProcessingModal}
                 className="flex-1"
               >
                 Cancelar
               </Button>
               <Button 
                 onClick={handleAddExpense}
-                disabled={isProcessingReceipt || !newExpense.category || !newExpense.description || !newExpense.amount}
+                disabled={showAIProcessingModal || !newExpense.category || !newExpense.description || !newExpense.amount}
                 size="lg"
                 className="flex-1"
               >
-                {isProcessingReceipt ? (
+                {showAIProcessingModal ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     Processando...
@@ -1095,6 +1119,104 @@ export default function GastosViagem() {
                   "Salvar Gasto"
                 )}
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Upload Options Modal */}
+        <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
+          <DialogContent className="max-w-md w-[90vw]">
+            <DialogHeader>
+              <DialogTitle className="text-center text-xl font-bold flex items-center justify-center gap-2">
+                <span className="text-2xl">🤖</span>
+                Processamento Inteligente
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="py-6 space-y-6">
+              <div className="text-center">
+                <p className="text-muted-foreground">
+                  Como você deseja processar este recibo?
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                <Button 
+                  onClick={handleProcessWithAI}
+                  className="w-full h-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                      ✨
+                    </div>
+                    <div className="text-left">
+                      <div>Processar com IA</div>
+                      <div className="text-sm opacity-80">Preenchimento automático</div>
+                    </div>
+                  </div>
+                </Button>
+                
+                <Button 
+                  onClick={handleJustAttach}
+                  variant="outline"
+                  className="w-full h-16 border-2 font-semibold text-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                      📎
+                    </div>
+                    <div className="text-left">
+                      <div>Apenas Anexar</div>
+                      <div className="text-sm text-muted-foreground">Preencher manualmente</div>
+                    </div>
+                  </div>
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* AI Processing Modal */}
+        <Dialog open={showAIProcessingModal} onOpenChange={() => {}}>
+          <DialogContent className="max-w-md w-[90vw] p-8">
+            <div className="text-center space-y-6">
+              <div className="relative">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-pulse">
+                  🤖
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold">Processando Recibo</h3>
+                <p className="text-muted-foreground">
+                  {aiProcessingStep === 'analyzing' && "Analisando imagem com IA..."}
+                  {aiProcessingStep === 'extracting' && "Extraindo dados do recibo..."}
+                  {aiProcessingStep === 'completing' && "Finalizando preenchimento..."}
+                </p>
+              </div>
+              
+              {/* Progress Steps */}
+              <div className="flex justify-center space-x-2">
+                {['analyzing', 'extracting', 'completing'].map((step, index) => (
+                  <div key={step} className="flex items-center">
+                    <div className={`w-3 h-3 rounded-full transition-all duration-500 ${
+                      aiProcessingStep === step ? 'bg-blue-500 scale-125' :
+                      ['analyzing', 'extracting', 'completing'].indexOf(aiProcessingStep) > index ? 'bg-green-500' : 'bg-gray-300'
+                    }`}></div>
+                    {index < 2 && <div className="w-8 h-0.5 bg-gray-300 mx-2"></div>}
+                  </div>
+                ))}
+              </div>
+              
+              <div className="bg-muted/50 rounded-lg p-4">
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  IA trabalhando em segundo plano
+                </div>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
