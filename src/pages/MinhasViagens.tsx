@@ -227,48 +227,94 @@ export default function MinhasViagens() {
               {trips.map((trip) => (
                 <Card 
                   key={trip.id} 
-                  className="hover:shadow-card transition-smooth cursor-pointer"
+                  className="hover:shadow-card transition-smooth cursor-pointer overflow-hidden"
                   onClick={() => handleTripClick(trip.id)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex gap-3 flex-1">
-                        <div className="text-2xl">{getDestinationEmoji(trip.destination)}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-semibold text-foreground truncate">
-                              {trip.title}
-                            </h3>
-                            <Badge 
-                              className={`text-xs ${getStatusColor(trip.status)}`}
-                            >
-                              {getStatusLabel(trip.status)}
-                            </Badge>
-                          </div>
-                          
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <MapPin className="w-3 h-3" />
-                              {trip.destination}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Calendar className="w-3 h-3" />
-                              {formatDateRange(trip.start_date, trip.end_date)}
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Clock className="w-3 h-3" />
-                              {calculateDuration(trip.start_date, trip.end_date)}
+                  <CardContent className="p-0">
+                    {trip.images && trip.images.length > 0 ? (
+                      <div className="relative">
+                        <div 
+                          className="h-32 bg-cover bg-center"
+                          style={{ backgroundImage: `url(${trip.images[0]})` }}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                          <div className="absolute bottom-0 left-0 right-0 p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-semibold text-white truncate">
+                                    {trip.title}
+                                  </h3>
+                                  <Badge 
+                                    className={`text-xs ${getStatusColor(trip.status)}`}
+                                  >
+                                    {getStatusLabel(trip.status)}
+                                  </Badge>
+                                </div>
+                                
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2 text-sm text-white/90">
+                                    <MapPin className="w-3 h-3" />
+                                    {trip.destination}
+                                  </div>
+                                  <div className="flex items-center gap-2 text-sm text-white/80">
+                                    <Calendar className="w-3 h-3" />
+                                    {formatDateRange(trip.start_date, trip.end_date)}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="text-right">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20">
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="text-right">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Eye className="w-4 h-4" />
-                        </Button>
+                    ) : (
+                      <div className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex gap-3 flex-1">
+                            <div className="text-2xl">{getDestinationEmoji(trip.destination)}</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold text-foreground truncate">
+                                  {trip.title}
+                                </h3>
+                                <Badge 
+                                  className={`text-xs ${getStatusColor(trip.status)}`}
+                                >
+                                  {getStatusLabel(trip.status)}
+                                </Badge>
+                              </div>
+                              
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <MapPin className="w-3 h-3" />
+                                  {trip.destination}
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Calendar className="w-3 h-3" />
+                                  {formatDateRange(trip.start_date, trip.end_date)}
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Clock className="w-3 h-3" />
+                                  {calculateDuration(trip.start_date, trip.end_date)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="text-right">
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
