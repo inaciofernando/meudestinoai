@@ -24,7 +24,7 @@ import { TripLocation } from "@/components/TripLocations";
 
 const formSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
-  destination: z.string().min(1, "Destino é obrigatório"),
+  destination: z.string().optional(),
   description: z.string().optional(),
   start_date: z.date().optional(),
   end_date: z.date().optional(),
@@ -67,6 +67,16 @@ export default function NovaViagem() {
       return;
     }
 
+    // Check if we have at least one destination (either in the field or in locations)
+    if (!data.destination && locations.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Adicione pelo menos um destino para sua viagem",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -75,7 +85,7 @@ export default function NovaViagem() {
         .from("trips")
         .insert([{
           title: data.title,
-          destination: data.destination,
+          destination: data.destination || locations[0]?.location_name || "Múltiplos destinos",
           description: data.description || null,
           start_date: data.start_date ? format(data.start_date, "yyyy-MM-dd") : null,
           end_date: data.end_date ? format(data.end_date, "yyyy-MM-dd") : null,
@@ -340,11 +350,11 @@ export default function NovaViagem() {
                                   !field.value && "text-muted-foreground"
                                 )}
                               >
-                                {field.value ? (
-                                  format(field.value, "PPP", { locale: ptBR })
-                                ) : (
-                                  <span>Selecione uma data</span>
-                                )}
+                                 {field.value ? (
+                                   format(field.value, "PPP", { locale: ptBR })
+                                 ) : (
+                                   <span>Selecione uma data</span>
+                                 )}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
