@@ -159,14 +159,39 @@ export default function GastosViagem() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [isEditingExpense, setIsEditingExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [isAnalyzingReceipt, setIsAnalyzingReceipt] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState<string>("");
+  const [isViewingReceipt, setIsViewingReceipt] = useState(false);
+  const [receiptImageUrl, setReceiptImageUrl] = useState("");
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isViewingExpense, setIsViewingExpense] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'todos' | 'planejado' | 'realizado'>('todos');
   const [showChart, setShowChart] = useState(false);
+
+  // Form states for budget editing
+  const [budgetForm, setBudgetForm] = useState({
+    total_budget: "",
+    budget_currency: "BRL"
+  });
+
+  // Form states for editing expense
+  const [editForm, setEditForm] = useState({
+    category: "",
+    subcategory: "",
+    amount: "",
+    currency: "BRL",
+    description: "",
+    date: "",
+    establishment: "",
+    expense_type: "realizado",
+    payment_method_type: "",
+    receiptFile: null as File | null
+  });
 
   // Form states for new expense
   const [newExpense, setNewExpense] = useState({
@@ -205,6 +230,16 @@ export default function GastosViagem() {
         }
 
         setTrip(tripData);
+        setBudgetForm({
+          total_budget: (tripData.total_budget || 0).toString(),
+          budget_currency: tripData.budget_currency || "BRL"
+        });
+
+        // Set default currency for new expenses based on trip currency
+        setNewExpense(prev => ({
+          ...prev,
+          currency: tripData.budget_currency || "BRL"
+        }));
         
         // Fetch expenses for this trip
         const { data: expenseData, error: expenseError } = await supabase
@@ -347,6 +382,18 @@ export default function GastosViagem() {
 
   const handleEditExpense = useCallback((expense: Expense) => {
     setEditingExpense(expense);
+    setEditForm({
+      category: expense.category,
+      subcategory: expense.subcategory || "",
+      amount: expense.amount.toString(),
+      currency: expense.currency,
+      description: expense.description,
+      date: formatDateForDisplay(expense.date),
+      establishment: expense.establishment || "",
+      expense_type: expense.expense_type,
+      payment_method_type: expense.payment_method_type || "",
+      receiptFile: null
+    });
     setIsEditingExpense(true);
   }, []);
 
@@ -356,8 +403,249 @@ export default function GastosViagem() {
   }, []);
 
   const handleViewReceipt = useCallback((imageUrl: string) => {
-    // Handle receipt viewing
+    setReceiptImageUrl(imageUrl);
+    setIsViewingReceipt(true);
   }, []);
+
+  const handleUpdateBudget = async () => {
+    if (!user || !trip) return;
+
+    try {
+      const { error } = await supabase
+        .from("trips")
+        .update({
+          total_budget: parseFloat(budgetForm.total_budget) || 0,
+          budget_currency: budgetForm.budget_currency
+        })
+        .eq("id", trip.id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setTrip({
+        ...trip,
+        total_budget: parseFloat(budgetForm.total_budget) || 0,
+        budget_currency: budgetForm.budget_currency
+      });
+
+      toast({
+        title: "Orçamento atualizado!",
+        description: "Suas alterações foram salvas com sucesso.",
+      });
+
+      setIsEditingBudget(false);
+    } catch (error) {
+      console.error("Erro ao atualizar orçamento:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao atualizar o orçamento. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddExpense = async () => {
+    if (!user || !trip) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('budget_items')
+        .insert({
+          user_id: user.id,
+          trip_id: trip.id,
+          title: newExpense.description,
+          category: newExpense.category,
+          actual_amount: parseFloat(newExpense.amount),
+          currency: newExpense.currency,
+          expense_type: newExpense.expense_type,
+          payment_method_type: newExpense.payment_method_type,
+          establishment: newExpense.establishment,
+          expense_date: newExpense.date,
+          planned_amount: parseFloat(newExpense.amount)
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Gasto adicionado!",
+        description: "Seu gasto foi registrado com sucesso.",
+      });
+
+      setIsAddingExpense(false);
+      setNewExpense({
+        category: "",
+        subcategory: "",
+        amount: "",
+        currency: trip.budget_currency || "BRL",
+        description: "",
+        establishment: "",
+        expense_type: "realizado",
+        payment_method_type: "",
+        date: getTodayString(),
+        receiptFile: null,
+        isRecurring: false,
+        recurrenceCount: 1,
+        recurrencePeriod: "diario"
+      });
+
+      // Refresh expenses
+      const { data: expenseData } = await supabase
+        .from('budget_items')
+        .select('*')
+        .eq('trip_id', trip.id)
+        .eq('user_id', user.id)
+        .order('expense_date', { ascending: false });
+
+      if (expenseData) {
+        const formattedExpenses = expenseData.map(item => ({
+          id: item.id,
+          trip_id: item.trip_id,
+          category: item.category || 'miscellaneous',
+          amount: item.actual_amount || 0,
+          currency: item.currency,
+          establishment: item.establishment,
+          expense_type: item.expense_type || 'realizado',
+          payment_method_type: item.payment_method_type,
+          description: item.title,
+          date: formatDateForDisplay(item.expense_date || item.created_at),
+          receipt_image_url: item.receipt_image_url,
+          created_at: item.created_at
+        }));
+        setExpenses(formattedExpenses);
+      }
+
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      toast({
+        title: "Erro ao adicionar gasto",
+        description: "Não foi possível adicionar o gasto. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateExpense = async () => {
+    if (!editingExpense || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from('budget_items')
+        .update({
+          title: editForm.description,
+          category: editForm.category,
+          actual_amount: parseFloat(editForm.amount),
+          currency: editForm.currency,
+          expense_type: editForm.expense_type,
+          payment_method_type: editForm.payment_method_type,
+          establishment: editForm.establishment,
+          expense_date: editForm.date,
+          planned_amount: parseFloat(editForm.amount)
+        })
+        .eq('id', editingExpense.id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Gasto atualizado!",
+        description: "Suas alterações foram salvas com sucesso.",
+      });
+
+      setIsEditingExpense(false);
+      setEditingExpense(null);
+
+      // Refresh expenses
+      const { data: expenseData } = await supabase
+        .from('budget_items')
+        .select('*')
+        .eq('trip_id', trip!.id)
+        .eq('user_id', user.id)
+        .order('expense_date', { ascending: false });
+
+      if (expenseData) {
+        const formattedExpenses = expenseData.map(item => ({
+          id: item.id,
+          trip_id: item.trip_id,
+          category: item.category || 'miscellaneous',
+          amount: item.actual_amount || 0,
+          currency: item.currency,
+          establishment: item.establishment,
+          expense_type: item.expense_type || 'realizado',
+          payment_method_type: item.payment_method_type,
+          description: item.title,
+          date: formatDateForDisplay(item.expense_date || item.created_at),
+          receipt_image_url: item.receipt_image_url,
+          created_at: item.created_at
+        }));
+        setExpenses(formattedExpenses);
+      }
+
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o gasto. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteExpense = async () => {
+    if (!selectedExpense || !user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('budget_items')
+        .delete()
+        .eq('id', selectedExpense.id)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      setIsDeleteDialogOpen(false);
+      setIsViewingExpense(false);
+      setSelectedExpense(null);
+      
+      toast({
+        title: "Gasto excluído",
+        description: "O gasto foi removido com sucesso.",
+      });
+      
+      // Refresh expenses
+      const { data: expenseData } = await supabase
+        .from('budget_items')
+        .select('*')
+        .eq('trip_id', trip!.id)
+        .eq('user_id', user.id)
+        .order('expense_date', { ascending: false });
+
+      if (expenseData) {
+        const formattedExpenses = expenseData.map(item => ({
+          id: item.id,
+          trip_id: item.trip_id,
+          category: item.category || 'miscellaneous',
+          amount: item.actual_amount || 0,
+          currency: item.currency,
+          establishment: item.establishment,
+          expense_type: item.expense_type || 'realizado',
+          payment_method_type: item.payment_method_type,
+          description: item.title,
+          date: formatDateForDisplay(item.expense_date || item.created_at),
+          receipt_image_url: item.receipt_image_url,
+          created_at: item.created_at
+        }));
+        setExpenses(formattedExpenses);
+      }
+      
+    } catch (error) {
+      console.error('Erro ao excluir gasto:', error);
+      toast({
+        title: "Erro ao excluir",
+        description: "Erro interno. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -413,17 +701,103 @@ export default function GastosViagem() {
             </div>
           </div>
 
-          {/* Financial Summary Cards */}
-          <ExpenseStats
-            totalExpenses={calculations.totalExpenses}
-            realizedExpenses={calculations.realizedExpenses}
-            plannedExpenses={calculations.plannedExpenses}
-            budget={trip.total_budget || 0}
-            budgetStatus={calculations.budgetStatus}
-            currency={selectedCurrency.code}
-            dailyAverage={calculations.dailyAverage}
-            projectedTotal={calculations.projectedTotal}
-          />
+          {/* Budget Cards with Edit Functionality */}
+          <div className="px-4">
+            <div className="grid grid-cols-2 gap-3">
+              {/* Card Orçamento */}
+              <div className="c6-card p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium">ORÇAMENTO</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingBudget(true)}
+                    className="h-7 w-7 p-0 hover:bg-muted/50 rounded-full shrink-0"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <p className="text-lg sm:text-2xl font-bold text-foreground mb-2">
+                  {formatCurrency(trip.total_budget || 0, selectedCurrency.symbol)}
+                </p>
+                <p className="c6-text-secondary text-xs mb-3">
+                  Gasto: {formatCurrency(calculations.totalExpenses, selectedCurrency.symbol)}
+                </p>
+                
+                {/* Barra de progresso compacta */}
+                <div className="space-y-2">
+                  <div className="w-full bg-muted/40 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        calculations.budgetStatus.status === "over-budget" ? "bg-destructive" :
+                        calculations.budgetStatus.status === "warning" ? "bg-orange-500" : "bg-primary"
+                      }`}
+                      style={{ width: `${Math.min(100, calculations.budgetStatus.percentage)}%` }}
+                    />
+                  </div>
+                  <p className="c6-text-secondary text-xs">
+                    {calculations.budgetStatus.percentage.toFixed(1)}% utilizado
+                  </p>
+                </div>
+              </div>
+
+              {/* Card Saldo Disponível */}
+              <div className="c6-card p-4">
+                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">SALDO DISPONÍVEL</p>
+                <p className={`text-lg sm:text-2xl font-bold mb-2 ${
+                  calculations.budgetStatus.status === "over-budget" ? "text-destructive" :
+                  calculations.budgetStatus.status === "warning" ? "text-orange-600" : "text-green-600"
+                }`}>
+                  {formatCurrency(Math.max(0, (trip.total_budget || 0) - calculations.totalExpenses), selectedCurrency.symbol)}
+                </p>
+                <div className="flex items-center justify-between">
+                  <Badge 
+                    variant="outline"
+                    className={`text-xs font-medium px-2 py-1 ${
+                      calculations.budgetStatus.status === "over-budget" ? "border-destructive/30 text-destructive bg-destructive/5" :
+                      calculations.budgetStatus.status === "warning" ? "border-orange-500/30 text-orange-600 bg-orange-50 dark:bg-orange-900/20" : 
+                      "border-green-500/30 text-green-600 bg-green-50 dark:bg-green-900/20"
+                    }`}
+                  >
+                    {calculations.budgetStatus.status === "over-budget" ? "Excedido" :
+                     calculations.budgetStatus.status === "warning" ? "Atenção" : "No controle"}
+                  </Badge>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    calculations.budgetStatus.status === "over-budget" ? "bg-destructive/10" :
+                    calculations.budgetStatus.status === "warning" ? "bg-orange-100 dark:bg-orange-900/30" :
+                    "bg-green-100 dark:bg-green-900/30"
+                  }`}>
+                    {calculations.budgetStatus.status === "over-budget" ? (
+                      <AlertCircle className="w-4 h-4 text-destructive" />
+                    ) : calculations.budgetStatus.status === "warning" ? (
+                      <AlertCircle className="w-4 h-4 text-orange-600" />
+                    ) : (
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Gasto Realizado */}
+              <div className="c6-card p-4">
+                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO REALIZADO</p>
+                <p className="text-lg sm:text-2xl font-bold text-destructive mb-1">
+                  {formatCurrency(calculations.realizedExpenses, selectedCurrency.symbol)}
+                </p>
+                <p className="c6-text-secondary text-xs">Despesas realizadas</p>
+              </div>
+
+              {/* Card Gasto Planejado */}
+              <div className="c6-card p-4">
+                <p className="c6-text-secondary text-xs uppercase tracking-wide font-medium mb-3">GASTO PLANEJADO</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-600 mb-1">
+                  {formatCurrency(calculations.plannedExpenses, selectedCurrency.symbol)}
+                </p>
+                <p className="c6-text-secondary text-xs">Despesas planejadas</p>
+              </div>
+
+            </div>
+          </div>
 
           {/* Filters */}
           <ExpenseFilters
@@ -520,6 +894,55 @@ export default function GastosViagem() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Tipo de Gasto *</Label>
+                  <Select 
+                    value={newExpense.expense_type} 
+                    onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EXPENSE_TYPES.map(type => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Método de Pagamento</Label>
+                  <Select 
+                    value={newExpense.payment_method_type} 
+                    onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o método" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAYMENT_METHODS.map(method => (
+                        <SelectItem key={method.id} value={method.name}>
+                          {method.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label>Estabelecimento</Label>
+                <Input
+                  value={newExpense.establishment}
+                  onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
+                  placeholder="Ex: Restaurante Villa Rosa, Hotel Copacabana..."
+                />
+              </div>
+
               <div className="flex gap-2">
                 <Button 
                   onClick={() => setIsAddingExpense(false)}
@@ -529,14 +952,384 @@ export default function GastosViagem() {
                   Cancelar
                 </Button>
                 <Button 
-                  onClick={() => {
-                    // Handle add expense
-                    setIsAddingExpense(false);
-                  }}
+                  onClick={handleAddExpense}
                   disabled={!newExpense.category || !newExpense.description || !newExpense.amount}
                   className="flex-1"
                 >
                   Adicionar Gasto
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Budget Dialog */}
+        <Dialog open={isEditingBudget} onOpenChange={setIsEditingBudget}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Orçamento</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Orçamento Total</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={budgetForm.total_budget}
+                  onChange={(e) => setBudgetForm({...budgetForm, total_budget: e.target.value})}
+                  placeholder="0,00"
+                />
+              </div>
+              <div>
+                <Label>Moeda</Label>
+                <Select value={budgetForm.budget_currency} onValueChange={(value) => setBudgetForm({...budgetForm, budget_currency: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCIES.map(currency => (
+                      <SelectItem key={currency.code} value={currency.code}>
+                        {currency.symbol} {currency.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => setIsEditingBudget(false)} variant="outline" className="flex-1">
+                  Cancelar
+                </Button>
+                <Button onClick={handleUpdateBudget} className="flex-1">
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Expense Dialog */}
+        <Dialog open={isEditingExpense} onOpenChange={setIsEditingExpense}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Gasto</DialogTitle>
+            </DialogHeader>
+            {editingExpense && (
+              <div className="space-y-4">
+                <div>
+                  <Label>Categoria *</Label>
+                  <Select 
+                    value={editForm.category} 
+                    onValueChange={(value) => setEditForm({...editForm, category: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EXPENSE_CATEGORIES.map(category => (
+                        <SelectItem key={category.id} value={category.id}>
+                          <div className="flex items-center gap-2">
+                            <category.icon className="w-4 h-4" />
+                            {category.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Descrição *</Label>
+                  <Textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                    placeholder="Ex: Almoço no restaurante, táxi para o hotel..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Valor *</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={editForm.amount}
+                        onChange={(e) => setEditForm({...editForm, amount: e.target.value})}
+                        placeholder="0,00"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Data</Label>
+                    <Input
+                      type="date"
+                      value={editForm.date}
+                      onChange={(e) => setEditForm({...editForm, date: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Estabelecimento</Label>
+                  <Input
+                    value={editForm.establishment}
+                    onChange={(e) => setEditForm({...editForm, establishment: e.target.value})}
+                    placeholder="Ex: Restaurante Villa Rosa, Hotel Copacabana..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Tipo de Gasto *</Label>
+                    <Select 
+                      value={editForm.expense_type} 
+                      onValueChange={(value) => setEditForm({...editForm, expense_type: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EXPENSE_TYPES.map(type => (
+                          <SelectItem key={type.id} value={type.id}>
+                            {type.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>Método de Pagamento</Label>
+                    <Select 
+                      value={editForm.payment_method_type} 
+                      onValueChange={(value) => setEditForm({...editForm, payment_method_type: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o método" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PAYMENT_METHODS.map(method => (
+                          <SelectItem key={method.id} value={method.name}>
+                            {method.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => setIsEditingExpense(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleUpdateExpense}
+                    disabled={!editForm.category || !editForm.description || !editForm.amount}
+                    className="flex-1"
+                  >
+                    Salvar Alterações
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* View Expense Dialog */}
+        <Dialog open={isViewingExpense} onOpenChange={setIsViewingExpense}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Detalhes do Gasto</DialogTitle>
+            </DialogHeader>
+            {selectedExpense && (
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Valor:</span>
+                    <span className="font-semibold text-lg">
+                      {formatCurrency(Number(selectedExpense.amount) || 0, selectedCurrency.symbol)}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Data:</span>
+                    <span className="font-medium">{formatDateForBrazilian(selectedExpense.date)}</span>
+                  </div>
+
+                  {selectedExpense.establishment && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Estabelecimento:</span>
+                      <span className="font-medium">{selectedExpense.establishment}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tipo de Gasto:</span>
+                    <span className="font-medium">
+                      <Badge variant="secondary" className={
+                        EXPENSE_TYPES.find(type => type.id === selectedExpense.expense_type)?.color || "bg-gray-100 text-gray-800"
+                      }>
+                        {EXPENSE_TYPES.find(type => type.id === selectedExpense.expense_type)?.name || 'Realizado'}
+                      </Badge>
+                    </span>
+                  </div>
+
+                  {selectedExpense.payment_method_type && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Método de Pagamento:</span>
+                      <span className="font-medium">
+                        {PAYMENT_METHODS.find(method => method.id === selectedExpense.payment_method_type)?.name || selectedExpense.payment_method_type}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Categoria:</span>
+                    <span className="font-medium">
+                      {EXPENSE_CATEGORIES.find(cat => cat.id === selectedExpense.category)?.name || 'Outros'}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Descrição:</span>
+                    <span className="font-medium">{selectedExpense.description}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => {
+                      handleEditExpense(selectedExpense);
+                      setIsViewingExpense(false);
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    Editar
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    variant="destructive"
+                    className="flex-1"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Excluir
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => setIsViewingExpense(false)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Fechar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent className="max-w-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                <Trash2 className="h-5 w-5" />
+                Excluir Gasto
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-3 pt-2">
+                <div className="text-sm text-muted-foreground">
+                  Tem certeza que deseja excluir este gasto? Esta ação não pode ser desfeita.
+                </div>
+                
+                {selectedExpense && (
+                  <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                    <div className="font-medium text-sm">{selectedExpense.description}</div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Valor:</span>
+                       <span className="font-medium text-destructive">
+                         {formatCurrency(Number(selectedExpense.amount) || 0, selectedCurrency.symbol)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Data:</span>
+                      <span>{formatDateForBrazilian(selectedExpense.date)}</span>
+                    </div>
+                    {selectedExpense.establishment && (
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Local:</span>
+                        <span>{selectedExpense.establishment}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteExpense}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir Definitivamente
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Receipt Viewer Dialog */}
+        <Dialog open={isViewingReceipt} onOpenChange={setIsViewingReceipt}>
+          <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-primary" />
+                Visualizar Comprovante
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center py-4">
+              {receiptImageUrl && (
+                <div className="w-full max-w-3xl">
+                  <img 
+                    src={receiptImageUrl} 
+                    alt="Comprovante" 
+                    className="w-full h-auto rounded-lg shadow-lg border border-border"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                      toast({
+                        title: "Erro ao carregar imagem",
+                        description: "Não foi possível carregar o comprovante.",
+                        variant: "destructive"
+                      });
+                    }}
+                  />
+                </div>
+              )}
+              <div className="flex gap-3 mt-6">
+                <Button 
+                  onClick={() => setIsViewingReceipt(false)}
+                  variant="outline"
+                >
+                  Fechar
+                </Button>
+                <Button 
+                  onClick={() => {
+                    if (receiptImageUrl) {
+                      window.open(receiptImageUrl, '_blank');
+                    }
+                  }}
+                  variant="default"
+                >
+                  Abrir em Nova Aba
                 </Button>
               </div>
             </div>
