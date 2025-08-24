@@ -30,7 +30,7 @@ export const RecentTrips = ({ trips }: RecentTripsProps) => {
       completed: { variant: "outline" as const, label: "Concluída", color: "bg-gray-500" }
     };
     
-    const config = variants[status];
+    const config = variants[status] || variants.upcoming; // Fallback to upcoming if status is unknown
     return (
       <Badge variant={config.variant} className="text-xs">
         <div className={`w-2 h-2 rounded-full ${config.color} mr-1`} />

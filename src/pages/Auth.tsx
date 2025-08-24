@@ -41,10 +41,14 @@ export default function Auth() {
     }
   }, []);
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to dashboard (with delay to prevent loops)
   useEffect(() => {
     if (!authLoading && user && !isRecoveryFlow && !showResetPassword) {
-      navigate("/");
+      // Add a small delay to prevent immediate redirect loops
+      const timer = setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [user, authLoading, isRecoveryFlow, showResetPassword, navigate]);
 
