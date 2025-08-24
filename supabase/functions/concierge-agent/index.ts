@@ -3,20 +3,160 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+const UNSPLASH_ACCESS_KEY = Deno.env.get("UNSPLASH_ACCESS_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Função para gerar imagem usando OpenAI
+// Função para buscar imagem real no Unsplash
+async function searchUnsplashImage(query: string): Promise<string | null> {
+  if (!UNSPLASH_ACCESS_KEY) {
+    console.log('Unsplash access key not available, skipping Unsplash search');
+    return null;
+  }
+
+  try {
+    console.log('Searching Unsplash for:', query);
+    const response = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`, {
+      headers: {
+        'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Unsplash API error:', response.status, await response.text());
+      return null;
+    }
+
+    const data = await response.json();
+    if (data.results && data.results.length > 0) {
+      console.log('Found Unsplash image');
+      return data.results[0].urls.regular;
+    }
+
+    console.log('No Unsplash images found');
+    return null;
+  } catch (error) {
+    console.error('Error searching Unsplash:', error);
+    return null;
+  }
+}
+
+// Função para buscar imagem na Wikipedia
+async function searchWikipediaImage(query: string): Promise<string | null> {
+  try {
+    console.log('Searching Wikipedia for:', query);
+    
+    // Primeiro busca por artigos relacionados
+    const searchResponse = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=1`
+    );
+    
+    if (!searchResponse.ok) {
+      console.error('Wikipedia search error:', searchResponse.status);
+      return null;
+    }
+    
+    const searchData = await searchResponse.json();
+    if (!searchData.query?.search?.length) {
+      console.log('No Wikipedia articles found');
+      return null;
+    }
+    
+    const pageId = searchData.query.search[0].pageid;
+    
+    // Busca imagens do artigo
+    const imagesResponse = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&pageids=${pageId}&prop=images&format=json&origin=*&imlimit=5`
+    );
+    
+    if (!imagesResponse.ok) {
+      console.error('Wikipedia images error:', imagesResponse.status);
+      return null;
+    }
+    
+    const imagesData = await imagesResponse.json();
+    const images = imagesData.query?.pages?.[pageId]?.images;
+    
+    if (!images?.length) {
+      console.log('No images found in Wikipedia article');
+      return null;
+    }
+    
+    // Procura por uma imagem que não seja ícone/logo
+    for (const image of images) {
+      const filename = image.title;
+      if (filename.includes('.jpg') || filename.includes('.jpeg') || filename.includes('.png')) {
+        // Busca URL da imagem
+        const imageResponse = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(filename)}&prop=imageinfo&iiprop=url&format=json&origin=*`
+        );
+        
+        if (imageResponse.ok) {
+          const imageData = await imageResponse.json();
+          const pages = imageData.query?.pages;
+          const page = pages ? Object.values(pages)[0] as any : null;
+          
+          if (page?.imageinfo?.[0]?.url) {
+            console.log('Found Wikipedia image');
+            return page.imageinfo[0].url;
+          }
+        }
+      }
+    }
+    
+    console.log('No suitable Wikipedia images found');
+    return null;
+  } catch (error) {
+    console.error('Error searching Wikipedia:', error);
+    return null;
+  }
+}
+
+// Função para buscar imagem real (combinando várias fontes)
+async function findRealImage(name: string, type: 'restaurant' | 'attraction', location?: string): Promise<string | null> {
+  console.log(`Searching real image for ${type}:`, name, location);
+  
+  // Criar query de busca otimizada
+  let searchQuery = name;
+  if (location) {
+    searchQuery += ` ${location}`;
+  }
+  if (type === 'restaurant') {
+    searchQuery += ` restaurant food`;
+  } else {
+    searchQuery += ` tourism travel`;
+  }
+  
+  // Tentar Unsplash primeiro (melhor qualidade)
+  let imageUrl = await searchUnsplashImage(searchQuery);
+  
+  // Se não encontrou no Unsplash, tentar Wikipedia
+  if (!imageUrl) {
+    imageUrl = await searchWikipediaImage(name);
+  }
+  
+  // Se ainda não encontrou, tentar busca mais genérica
+  if (!imageUrl && type === 'restaurant') {
+    imageUrl = await searchUnsplashImage(`${location || 'restaurant'} food cuisine`);
+  } else if (!imageUrl && type === 'attraction') {
+    imageUrl = await searchUnsplashImage(`${location || 'tourism'} travel destination`);
+  }
+  
+  console.log(`Real image search result for "${name}":`, imageUrl ? 'SUCCESS' : 'NOT FOUND');
+  return imageUrl;
+}
+
+// Função para gerar imagem usando OpenAI (fallback)
 async function generateImage(prompt: string): Promise<string | null> {
   if (!OPENAI_API_KEY) {
     console.log('OpenAI API key not available, skipping image generation');
     return null;
   }
 
-  console.log('Generating image with prompt:', prompt);
+  console.log('Generating AI image with prompt:', prompt);
 
   try {
     const response = await fetch('https://api.openai.com/v1/images/generations', {
@@ -51,14 +191,14 @@ async function generateImage(prompt: string): Promise<string | null> {
     });
 
     if (data.data && data.data[0] && data.data[0].b64_json) {
-      console.log('Image generated successfully');
+      console.log('AI image generated successfully');
       return `data:image/png;base64,${data.data[0].b64_json}`;
     }
     
     console.log('No image data in response');
     return null;
   } catch (error) {
-    console.error('Error generating image:', error);
+    console.error('Error generating AI image:', error);
     return null;
   }
 }
@@ -180,43 +320,44 @@ Regras adicionais importantes:
         structuredData = JSON.parse(jsonMatch[1]);
         console.log('Extracted structured data:', structuredData);
         
-        // Gerar imagens se houver dados estruturados
+        // Buscar imagens reais se houver dados estruturados
         const imagePromises = [];
         
         if (structuredData.restaurant && structuredData.restaurant.name) {
-          console.log('Generating restaurant image for:', structuredData.restaurant.name);
-          const restaurantPrompt = `Professional food photography of ${structuredData.restaurant.name} restaurant, ${structuredData.restaurant.cuisine || 'cuisine'} food, elegant dining atmosphere, warm lighting, high quality commercial photography`;
+          console.log('Searching real image for restaurant:', structuredData.restaurant.name);
+          const location = structuredData.restaurant.address || structuredData.restaurant.location || '';
           imagePromises.push(
-            generateImage(restaurantPrompt).then(img => {
-              console.log('Restaurant image result:', img ? 'SUCCESS' : 'FAILED');
+            findRealImage(structuredData.restaurant.name, 'restaurant', location).then(img => {
+              console.log('Restaurant image result:', img ? 'REAL IMAGE FOUND' : 'NO REAL IMAGE');
               return { type: 'restaurant', image: img };
             })
           );
         }
         
         if (structuredData.itinerary_item && structuredData.itinerary_item.title) {
-          console.log('Generating attraction image for:', structuredData.itinerary_item.title);
-          const attractionPrompt = `Professional travel photography of ${structuredData.itinerary_item.title}, ${structuredData.itinerary_item.location || 'tourist destination'}, beautiful landscape, architectural details, tourism photography, high quality`;
+          console.log('Searching real image for attraction:', structuredData.itinerary_item.title);
+          const location = structuredData.itinerary_item.location || structuredData.itinerary_item.address || '';
           imagePromises.push(
-            generateImage(attractionPrompt).then(img => {
-              console.log('Attraction image result:', img ? 'SUCCESS' : 'FAILED');
+            findRealImage(structuredData.itinerary_item.title, 'attraction', location).then(img => {
+              console.log('Attraction image result:', img ? 'REAL IMAGE FOUND' : 'NO REAL IMAGE');
               return { type: 'attraction', image: img };
             })
           );
         }
         
         if (imagePromises.length > 0) {
-          console.log('Generating images for structured data...');
+          console.log('Searching for real images...');
           const imageResults = await Promise.all(imagePromises);
           generatedImages = imageResults.filter(result => result.image !== null);
-          console.log(`Generated ${generatedImages.length} images out of ${imagePromises.length} attempts`);
+          console.log(`Found ${generatedImages.length} real images out of ${imagePromises.length} searches`);
           console.log('Final image results:', generatedImages.map(img => ({ 
             type: img.type, 
             hasImage: !!img.image,
-            imageSize: img.image?.length || 0
+            isBase64: img.image?.startsWith('data:') || false,
+            isUrl: img.image?.startsWith('http') || false
           })));
         } else {
-          console.log('No image generation needed - no structured data with names found');
+          console.log('No image search needed - no structured data with names found');
         }
         
       } catch (parseError) {
