@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -135,6 +136,101 @@ export default function Dashboard() {
     return "Datas não definidas";
   };
 
+  // Filtrar viagens por categoria
+  const upcomingTrips = trips.filter(trip => 
+    trip.status === 'planned' || trip.status === 'confirmed'
+  );
+  
+  const planningTrips = trips.filter(trip => 
+    trip.status !== 'completed' && (trip.status === 'draft' || !trip.status || trip.status === 'planned')
+  );
+  
+  const completedTrips = trips.filter(trip => 
+    trip.status === 'completed'
+  );
+
+  const renderTripsList = (tripsList: Trip[], emptyMessage: string) => {
+    if (loading) {
+      return (
+        <div className="text-center py-8">
+          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+          <p className="text-sm text-muted-foreground">Carregando viagens...</p>
+        </div>
+      );
+    }
+
+    if (tripsList.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Plane className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <p className="text-muted-foreground mb-4">{emptyMessage}</p>
+          <Button 
+            onClick={() => navigate("/nova-viagem")}
+            className="bg-gradient-ocean hover:shadow-travel transition-all duration-300"
+          >
+            Criar viagem
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {tripsList.map((trip) => (
+          <div 
+            key={trip.id}
+            className="relative group cursor-pointer transition-all duration-300 hover:scale-[1.02] rounded-xl overflow-hidden"
+            onClick={() => navigate(`/viagem/${trip.id}`)}
+          >
+            {trip.images && trip.images.length > 0 ? (
+              <div 
+                className="h-32 md:h-40 bg-cover bg-center relative rounded-xl"
+                style={{ backgroundImage: `url(${trip.images[0]})` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent rounded-xl" />
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <div className="flex items-center gap-2 text-white mb-1">
+                    <MapPin className="w-4 h-4" />
+                    <h4 className="font-bold text-lg">{trip.destination}</h4>
+                  </div>
+                  <p className="text-white/90 text-sm">{trip.description || trip.title}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-2 text-white/80 text-xs">
+                      <Clock className="w-3 h-3" />
+                      {formatDateRange(trip.start_date, trip.end_date)}
+                    </div>
+                    <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
+                      {getStatusText(trip.status)}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between p-3 md:p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
+                <div className="space-y-1 flex-1 min-w-0">
+                  <h4 className="font-semibold text-foreground text-sm md:text-base truncate">{trip.destination}</h4>
+                  <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                    <Clock className="w-3 h-3 md:w-4 md:h-4" />
+                    {formatDateRange(trip.start_date, trip.end_date)}
+                  </div>
+                </div>
+                <div className="text-right space-y-1">
+                  <Badge 
+                    variant={getStatusColor(trip.status)}
+                    className="mb-1 text-xs"
+                  >
+                    {getStatusText(trip.status)}
+                  </Badge>
+                  <div className="text-xs md:text-sm font-medium text-foreground">{trip.title}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const stats = [
     {
       title: "Viagens Realizadas",
@@ -189,85 +285,41 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Seção de Viagens com Abas */}
       <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Próximas Viagens */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary" />
-              Próximas Viagens
+              <Plane className="w-5 h-5 text-primary" />
+              Minhas Viagens
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-sm text-muted-foreground">Carregando viagens...</p>
-              </div>
-            ) : trips.length === 0 ? (
-              <div className="text-center py-8">
-                <Plane className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">Nenhuma viagem encontrada</p>
-                <Button 
-                  onClick={() => navigate("/nova-viagem")}
-                  className="bg-gradient-ocean hover:shadow-travel transition-all duration-300"
-                >
-                  Criar primeira viagem
-                </Button>
-              </div>
-            ) : (
-              trips.slice(0, 3).map((trip) => (
-                <div 
-                  key={trip.id}
-                  className="relative group cursor-pointer transition-all duration-300 hover:scale-[1.02] rounded-xl overflow-hidden"
-                  onClick={() => navigate(`/viagem/${trip.id}`)}
-                >
-                  {trip.images && trip.images.length > 0 ? (
-                    <div 
-                      className="h-32 md:h-40 bg-cover bg-center relative rounded-xl"
-                      style={{ backgroundImage: `url(${trip.images[0]})` }}
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent rounded-xl" />
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <div className="flex items-center gap-2 text-white mb-1">
-                          <MapPin className="w-4 h-4" />
-                          <h4 className="font-bold text-lg">{trip.destination}</h4>
-                        </div>
-                        <p className="text-white/90 text-sm">{trip.description || trip.title}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-2 text-white/80 text-xs">
-                            <Clock className="w-3 h-3" />
-                            {formatDateRange(trip.start_date, trip.end_date)}
-                          </div>
-                          <Badge variant="secondary" className="bg-white/20 text-white border-white/30 text-xs">
-                            {getStatusText(trip.status)}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between p-3 md:p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
-                      <div className="space-y-1 flex-1 min-w-0">
-                        <h4 className="font-semibold text-foreground text-sm md:text-base truncate">{trip.destination}</h4>
-                        <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                          <Clock className="w-3 h-3 md:w-4 md:h-4" />
-                          {formatDateRange(trip.start_date, trip.end_date)}
-                        </div>
-                      </div>
-                      <div className="text-right space-y-1">
-                        <Badge 
-                          variant={getStatusColor(trip.status)}
-                          className="mb-1 text-xs"
-                        >
-                          {getStatusText(trip.status)}
-                        </Badge>
-                        <div className="text-xs md:text-sm font-medium text-foreground">{trip.title}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
+          <CardContent>
+            <Tabs defaultValue="proximas" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="proximas" className="text-xs">
+                  Próximas ({upcomingTrips.length})
+                </TabsTrigger>
+                <TabsTrigger value="planejamento" className="text-xs">
+                  Planejamento ({planningTrips.length})
+                </TabsTrigger>
+                <TabsTrigger value="realizadas" className="text-xs">
+                  Realizadas ({completedTrips.length})
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="proximas" className="mt-4">
+                {renderTripsList(upcomingTrips, "Nenhuma viagem próxima encontrada")}
+              </TabsContent>
+              
+              <TabsContent value="planejamento" className="mt-4">
+                {renderTripsList(planningTrips, "Nenhuma viagem em planejamento")}
+              </TabsContent>
+              
+              <TabsContent value="realizadas" className="mt-4">
+                {renderTripsList(completedTrips, "Nenhuma viagem realizada ainda")}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
