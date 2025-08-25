@@ -242,39 +242,18 @@ export default function Dashboard() {
     );
   };
 
-  // Calcular estatísticas dinâmicas
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
-  const currentDate = new Date();
-  
-  const completedTrips = trips.filter(trip => trip.status === 'completed');
-  const completedThisYear = completedTrips.filter(trip => {
-    if (!trip.end_date) return false;
-    const tripYear = new Date(trip.end_date).getFullYear();
-    return tripYear === currentYear;
-  });
-  
-  const upcomingTrips = trips.filter(trip => 
-    trip.status === 'planned' || trip.status === 'confirmed'
-  );
-  const upcomingThisMonth = upcomingTrips.filter(trip => {
-    if (!trip.start_date) return false;
-    const tripDate = new Date(trip.start_date);
-    return tripDate.getFullYear() === currentYear && tripDate.getMonth() === currentMonth;
-  });
-
   const stats = [
     {
       title: "Viagens Realizadas",
       value: completedTrips.length.toString(),
-      change: completedThisYear.length > 0 ? `${completedThisYear.length} este ano` : "Nenhuma este ano",
+      change: completedTrips.length > 0 ? `${completedTrips.length} ${completedTrips.length === 1 ? 'viagem' : 'viagens'}` : "Nenhuma viagem",
       icon: MapPin,
       color: "text-accent"
     },
     {
       title: "Próximas Viagens", 
       value: upcomingTrips.length.toString(),
-      change: upcomingThisMonth.length > 0 ? `${upcomingThisMonth.length} este mês` : "Nenhuma este mês",
+      change: upcomingTrips.length > 0 ? `${upcomingTrips.length} ${upcomingTrips.length === 1 ? 'planejada' : 'planejadas'}` : "Nenhuma planejada",
       icon: Calendar,
       color: "text-primary"
     }
