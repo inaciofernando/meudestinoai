@@ -62,17 +62,17 @@ export const PWAHeader = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80">
-              <div className="mt-6 space-y-4">
-                <Button variant="outline" className="w-full justify-start">
-                  Configurações
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Ajuda
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Sobre
-                </Button>
-              </div>
+               <div className="mt-6 space-y-4">
+                 <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/perfil")}>
+                   Configurações
+                 </Button>
+                 <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/perfil")}>
+                   Ajuda
+                 </Button>
+                 <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/")}>
+                   Sobre
+                 </Button>
+               </div>
             </SheetContent>
           </Sheet>
 
@@ -125,16 +125,16 @@ export const PWAHeader = () => {
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Configurações
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+                 <DropdownMenuContent align="end" className="w-56">
+                   <DropdownMenuItem onClick={() => navigate("/perfil")}>
+                     <Settings className="w-4 h-4 mr-2" />
+                     Configurações
+                   </DropdownMenuItem>
+                   <DropdownMenuItem onClick={handleSignOut}>
+                     <LogOut className="w-4 h-4 mr-2" />
+                     Sair
+                   </DropdownMenuItem>
+                 </DropdownMenuContent>
               </DropdownMenu>
             </>
           ) : (
