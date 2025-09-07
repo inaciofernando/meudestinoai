@@ -283,13 +283,12 @@ export default function Dashboard() {
           <p className="text-muted-foreground text-sm">Bem-vindo de volta! Aqui está o resumo das suas viagens</p>
         </div>
         <Button 
-          variant="travel" 
-          className="gap-2 text-sm"
+          variant="outline" 
+          size="icon"
+          className="text-primary border-primary hover:bg-primary hover:text-primary-foreground transition-smooth"
           onClick={() => navigate("/nova-viagem")}
         >
-          <Plane className="w-4 h-4" />
-          <span className="hidden sm:inline">Nova Viagem</span>
-          <span className="sm:hidden">Nova</span>
+          <Plane className="w-5 h-5" />
         </Button>
       </div>
 
