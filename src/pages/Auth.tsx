@@ -284,44 +284,60 @@ export default function Auth() {
   };
 
   if (isRecoveryFlow) {
+    // Password validation
+    const passwordRequirements = {
+      minLength: newPassword.length >= 6,
+      hasNumber: /\d/.test(newPassword),
+      hasLetter: /[a-zA-Z]/.test(newPassword),
+    };
+    
+    const passwordsMatch = newPassword === confirmPassword && confirmPassword.length > 0;
+    const isPasswordValid = Object.values(passwordRequirements).every(Boolean);
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/5 flex items-center justify-center p-4 relative overflow-hidden">
         {/* Background Elements */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-16 h-16 bg-gradient-ocean rounded-full blur-sm animate-pulse"></div>
-          <div className="absolute top-1/3 right-20 w-12 h-12 bg-gradient-sunset rounded-full blur-sm animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-nature rounded-full blur-sm animate-pulse delay-500"></div>
-          <div className="absolute bottom-20 right-10 w-14 h-14 bg-gradient-ocean rounded-full blur-sm animate-pulse delay-700"></div>
+          <div className="absolute top-20 left-10 w-16 h-16 bg-gradient-primary rounded-full blur-sm animate-pulse"></div>
+          <div className="absolute top-1/3 right-20 w-12 h-12 bg-gradient-warm rounded-full blur-sm animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-primary rounded-full blur-sm animate-pulse delay-500"></div>
+          <div className="absolute bottom-20 right-10 w-14 h-14 bg-gradient-warm rounded-full blur-sm animate-pulse delay-700"></div>
         </div>
 
-        <Card className="w-full max-w-md shadow-travel border-0 bg-card/95 backdrop-blur-sm">
+        <Card className="w-full max-w-md shadow-hover border-0 bg-card/95 backdrop-blur-sm">
           <CardHeader className="text-center pb-6">
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-gradient-ocean rounded-full flex items-center justify-center shadow-travel">
+              <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center shadow-hover">
                 <Lock className="w-8 h-8 text-primary-foreground" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold bg-gradient-ocean bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Definir nova senha
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Crie sua nova senha para continuar
+              Crie uma senha segura para proteger sua conta
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleUpdatePassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-password">Nova senha</Label>
+            <form onSubmit={handleUpdatePassword} className="space-y-6">
+              {/* Nova senha */}
+              <div className="space-y-3">
+                <Label htmlFor="new-password" className="text-sm font-semibold">Nova senha</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="new-password"
                     type={showNewPassword ? "text" : "password"}
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder="Digite sua nova senha"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="pl-10 pr-10 border-primary/20 focus:border-primary transition-smooth"
-                    minLength={6}
+                    className={`pl-10 pr-10 transition-smooth ${
+                      newPassword.length > 0 && !isPasswordValid 
+                        ? 'border-destructive focus:border-destructive' 
+                        : newPassword.length > 0 && isPasswordValid 
+                        ? 'border-green-500 focus:border-green-500' 
+                        : 'border-primary/20 focus:border-primary'
+                    }`}
                     required
                   />
                   <Button
@@ -338,20 +354,47 @@ export default function Auth() {
                     )}
                   </Button>
                 </div>
+                
+                {/* Requisitos da senha */}
+                {newPassword.length > 0 && (
+                  <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+                    <p className="text-xs font-medium text-muted-foreground">Requisitos da senha:</p>
+                    <div className="space-y-1">
+                      <div className={`flex items-center gap-2 text-xs ${passwordRequirements.minLength ? 'text-green-600' : 'text-muted-foreground'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${passwordRequirements.minLength ? 'bg-green-500' : 'bg-muted-foreground/40'}`} />
+                        Mínimo 6 caracteres
+                      </div>
+                      <div className={`flex items-center gap-2 text-xs ${passwordRequirements.hasLetter ? 'text-green-600' : 'text-muted-foreground'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${passwordRequirements.hasLetter ? 'bg-green-500' : 'bg-muted-foreground/40'}`} />
+                        Pelo menos uma letra
+                      </div>
+                      <div className={`flex items-center gap-2 text-xs ${passwordRequirements.hasNumber ? 'text-green-600' : 'text-muted-foreground'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${passwordRequirements.hasNumber ? 'bg-green-500' : 'bg-muted-foreground/40'}`} />
+                        Pelo menos um número
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirmar nova senha</Label>
+              {/* Confirmar senha */}
+              <div className="space-y-3">
+                <Label htmlFor="confirm-password" className="text-sm font-semibold">Confirmar nova senha</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Repita a senha"
+                    placeholder="Digite a senha novamente"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 pr-10 border-primary/20 focus:border-primary transition-smooth"
-                    minLength={6}
+                    className={`pl-10 pr-10 transition-smooth ${
+                      confirmPassword.length > 0 && !passwordsMatch 
+                        ? 'border-destructive focus:border-destructive' 
+                        : confirmPassword.length > 0 && passwordsMatch 
+                        ? 'border-green-500 focus:border-green-500' 
+                        : 'border-primary/20 focus:border-primary'
+                    }`}
                     required
                   />
                   <Button
@@ -368,23 +411,58 @@ export default function Auth() {
                     )}
                   </Button>
                 </div>
+                
+                {/* Feedback de confirmação */}
+                {confirmPassword.length > 0 && (
+                  <div className={`text-xs flex items-center gap-2 ${passwordsMatch ? 'text-green-600' : 'text-destructive'}`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${passwordsMatch ? 'bg-green-500' : 'bg-destructive'}`} />
+                    {passwordsMatch ? 'As senhas coincidem' : 'As senhas não coincidem'}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-3">
-                <Button type="submit" className="w-full bg-gradient-ocean hover:shadow-travel transition-smooth" disabled={loading}>
-                  {loading ? "Atualizando..." : "Atualizar senha"}
+              <div className="space-y-3 pt-4">
+                <Button 
+                  type="submit" 
+                  className="w-full decolar-button-primary h-12 text-base font-semibold" 
+                  disabled={loading || !isPasswordValid || !passwordsMatch}
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Atualizando senha...
+                    </div>
+                  ) : (
+                    "Atualizar senha"
+                  )}
                 </Button>
+                
                 <Button
                   type="button"
                   variant="ghost"
-                  className="w-full"
+                  className="w-full h-12 text-muted-foreground hover:text-foreground"
                   onClick={() => {
                     setIsRecoveryFlow(false);
-                    navigate("/");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                    navigate("/auth");
                   }}
                 >
-                  Cancelar
+                  Cancelar e voltar ao login
                 </Button>
+              </div>
+
+              {/* Dica de segurança */}
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4">
+                <div className="flex gap-3">
+                  <div className="w-5 h-5 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Lock className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="text-xs text-blue-800 dark:text-blue-300">
+                    <p className="font-medium mb-1">Dica de segurança:</p>
+                    <p>Use uma senha única que você não usa em outros sites. Considere usar um gerenciador de senhas.</p>
+                  </div>
+                </div>
               </div>
             </form>
           </CardContent>
