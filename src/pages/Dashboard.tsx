@@ -262,16 +262,23 @@ export default function Dashboard() {
     {
       title: "Viagens Realizadas",
       value: completedTrips.length.toString(),
-      change: completedTrips.length > 0 ? `${completedTrips.length} ${completedTrips.length === 1 ? 'viagem' : 'viagens'}` : "Nenhuma viagem",
-      icon: MapPin,
-      color: "text-accent"
+      change: completedTrips.length > 0 ? `${completedTrips.length} ${completedTrips.length === 1 ? 'concluída' : 'concluídas'}` : "Nenhuma concluída",
+      icon: CheckCircle,
+      color: "text-green-600"
     },
     {
-      title: "Próximas Viagens", 
+      title: "Viagens Confirmadas", 
       value: upcomingTrips.length.toString(),
-      change: upcomingTrips.length > 0 ? `${upcomingTrips.length} ${upcomingTrips.length === 1 ? 'planejada' : 'planejadas'}` : "Nenhuma planejada",
+      change: upcomingTrips.length > 0 ? `${upcomingTrips.length} ${upcomingTrips.length === 1 ? 'confirmada' : 'confirmadas'}` : "Nenhuma confirmada",
       icon: Calendar,
       color: "text-primary"
+    },
+    {
+      title: "Em Planejamento",
+      value: planningTrips.length.toString(),
+      change: planningTrips.length > 0 ? `${planningTrips.length} ${planningTrips.length === 1 ? 'planejando' : 'planejando'}` : "Nenhuma em planejamento",
+      icon: MapPin,
+      color: "text-amber-600"
     }
   ];
 
@@ -294,7 +301,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3 md:gap-6">
+      <div className="grid grid-cols-3 gap-3 md:gap-4">
         {stats.map((stat, index) => (
           <Card key={index} className="hover:shadow-card transition-smooth">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -324,7 +331,7 @@ export default function Dashboard() {
             <Tabs defaultValue="proximas" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="proximas" className="text-xs">
-                  Próximas ({upcomingTrips.length})
+                  Confirmadas ({upcomingTrips.length})
                 </TabsTrigger>
                 <TabsTrigger value="planejamento" className="text-xs">
                   Planejamento ({planningTrips.length})
@@ -347,7 +354,7 @@ export default function Dashboard() {
               </div>
               
               <TabsContent value="proximas" className="mt-4">
-                {renderTripsList(filterTrips(upcomingTrips), "Nenhuma viagem próxima encontrada")}
+                {renderTripsList(filterTrips(upcomingTrips), "Nenhuma viagem confirmada encontrada")}
               </TabsContent>
               
               <TabsContent value="planejamento" className="mt-4">
