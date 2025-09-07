@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +16,8 @@ import {
   Wallet, 
   Clock,
   Plane,
-  CheckCircle
+  CheckCircle,
+  Search
 } from "lucide-react";
 
 interface Trip {
@@ -40,6 +42,7 @@ export default function Dashboard() {
   const [showTripSelector, setShowTripSelector] = useState(false);
   const [showDestinationSelector, setShowDestinationSelector] = useState(false);
   const [showItinerarySelector, setShowItinerarySelector] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -50,7 +53,7 @@ export default function Dashboard() {
           .from("trips")
           .select("*")
           .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+          .order("start_date", { ascending: false, nullsFirst: false });
 
         if (error) {
           console.error("Erro ao buscar viagens:", error);
@@ -136,6 +139,18 @@ export default function Dashboard() {
     return "Datas não definidas";
   };
 
+  // Função para filtrar viagens baseada no termo de busca
+  const filterTrips = (tripsList: Trip[]) => {
+    if (!searchTerm.trim()) return tripsList;
+    
+    const term = searchTerm.toLowerCase();
+    return tripsList.filter(trip => 
+      trip.destination.toLowerCase().includes(term) ||
+      trip.title.toLowerCase().includes(term) ||
+      (trip.description && trip.description.toLowerCase().includes(term))
+    );
+  };
+
   // Calcular estatísticas e filtros dinâmicos
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
@@ -148,7 +163,7 @@ export default function Dashboard() {
   });
   
   const upcomingTrips = trips.filter(trip => 
-    trip.status === 'planned' || trip.status === 'confirmed'
+    trip.status === 'confirmed'
   );
   const upcomingThisMonth = upcomingTrips.filter(trip => {
     if (!trip.start_date) return false;
@@ -157,7 +172,7 @@ export default function Dashboard() {
   });
   
   const planningTrips = trips.filter(trip => 
-    trip.status !== 'completed' && (trip.status === 'draft' || !trip.status || trip.status === 'planned')
+    trip.status === 'planned' || trip.status === 'draft' || !trip.status
   );
 
   const renderTripsList = (tripsList: Trip[], emptyMessage: string) => {
@@ -318,17 +333,29 @@ export default function Dashboard() {
                   Realizadas ({completedTrips.length})
                 </TabsTrigger>
               </TabsList>
+
+              {/* Campo de busca */}
+              <div className="relative mt-4 mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  type="text"
+                  placeholder="Buscar viagens por destino, título ou descrição..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-background"
+                />
+              </div>
               
               <TabsContent value="proximas" className="mt-4">
-                {renderTripsList(upcomingTrips, "Nenhuma viagem próxima encontrada")}
+                {renderTripsList(filterTrips(upcomingTrips), "Nenhuma viagem próxima encontrada")}
               </TabsContent>
               
               <TabsContent value="planejamento" className="mt-4">
-                {renderTripsList(planningTrips, "Nenhuma viagem em planejamento")}
+                {renderTripsList(filterTrips(planningTrips), "Nenhuma viagem em planejamento")}
               </TabsContent>
               
               <TabsContent value="realizadas" className="mt-4">
-                {renderTripsList(completedTrips, "Nenhuma viagem realizada ainda")}
+                {renderTripsList(filterTrips(completedTrips), "Nenhuma viagem realizada ainda")}
               </TabsContent>
             </Tabs>
           </CardContent>
