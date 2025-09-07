@@ -34,10 +34,10 @@ export default function TripSectionHeader({
         </Button>
         <div>
           {label ? (
-            <p className="c6-text-secondary text-xs uppercase tracking-wide">{label}</p>
+            <p className="text-muted-foreground text-xs uppercase tracking-wide">{label}</p>
           ) : null}
           <h1 className="text-xl font-semibold text-foreground">{title}</h1>
-          {subtitle ? <p className="c6-text-secondary text-sm">{subtitle}</p> : null}
+          {subtitle ? <p className="text-muted-foreground text-sm">{subtitle}</p> : null}
         </div>
       </div>
 
@@ -45,7 +45,8 @@ export default function TripSectionHeader({
         onAdd ? (
           <Button
             onClick={onAdd}
-            className="c6-button-primary w-10 h-10 p-0 rounded-full"
+            size="sm"
+            className="w-10 h-10 p-0 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
             aria-label={addAriaLabel}
           >
             <Plus className="w-5 h-5" />
