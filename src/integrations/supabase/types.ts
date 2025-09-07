@@ -379,6 +379,102 @@ export type Database = {
         }
         Relationships: []
       }
+      transport_bookings: {
+        Row: {
+          arrival_date: string | null
+          arrival_location: string | null
+          arrival_time: string | null
+          booking_reference: string | null
+          booking_status: string | null
+          confirmation_number: string | null
+          created_at: string
+          currency: string | null
+          departure_date: string | null
+          departure_location: string | null
+          departure_time: string | null
+          description: string | null
+          gate_info: string | null
+          id: string
+          notes: string | null
+          payment_method: string | null
+          provider_name: string | null
+          seat_number: string | null
+          ticket_file_name: string | null
+          ticket_file_url: string | null
+          title: string
+          total_amount: number | null
+          transport_type: string
+          trip_id: string
+          updated_at: string
+          user_id: string
+          vehicle_info: string | null
+          voucher_file_name: string | null
+          voucher_file_url: string | null
+        }
+        Insert: {
+          arrival_date?: string | null
+          arrival_location?: string | null
+          arrival_time?: string | null
+          booking_reference?: string | null
+          booking_status?: string | null
+          confirmation_number?: string | null
+          created_at?: string
+          currency?: string | null
+          departure_date?: string | null
+          departure_location?: string | null
+          departure_time?: string | null
+          description?: string | null
+          gate_info?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          provider_name?: string | null
+          seat_number?: string | null
+          ticket_file_name?: string | null
+          ticket_file_url?: string | null
+          title: string
+          total_amount?: number | null
+          transport_type: string
+          trip_id: string
+          updated_at?: string
+          user_id: string
+          vehicle_info?: string | null
+          voucher_file_name?: string | null
+          voucher_file_url?: string | null
+        }
+        Update: {
+          arrival_date?: string | null
+          arrival_location?: string | null
+          arrival_time?: string | null
+          booking_reference?: string | null
+          booking_status?: string | null
+          confirmation_number?: string | null
+          created_at?: string
+          currency?: string | null
+          departure_date?: string | null
+          departure_location?: string | null
+          departure_time?: string | null
+          description?: string | null
+          gate_info?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          provider_name?: string | null
+          seat_number?: string | null
+          ticket_file_name?: string | null
+          ticket_file_url?: string | null
+          title?: string
+          total_amount?: number | null
+          transport_type?: string
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_info?: string | null
+          voucher_file_name?: string | null
+          voucher_file_url?: string | null
+        }
+        Relationships: []
+      }
       trip_documents: {
         Row: {
           category: string
