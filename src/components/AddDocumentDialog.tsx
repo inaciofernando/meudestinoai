@@ -1,113 +1,227 @@
-import { memo } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Upload } from "lucide-react";
-
-const DOCUMENT_CATEGORIES = {
-  insurance: { name: "Seguro Viagem" },
-  voucher: { name: "Vouchers" },
-  ticket: { name: "Passagens" },
-  visa: { name: "Vistos & Docs" },
-  other: { name: "Outros" }
-};
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { 
+  FileText,
+  IdCard,
+  FileCheck,
+  Shield,
+  CreditCard
+} from "lucide-react";
+import { VoucherUpload } from "@/components/VoucherUpload";
+import { TripDocument } from "@/pages/Documentos";
 
 interface AddDocumentDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: () => void;
-  uploading: boolean;
-  category: string;
-  files: File[];
-  onCategoryChange: (category: string) => void;
-  onFilesChange: (files: File[]) => void;
+  onAdd: (document: TripDocument) => void;
+  tripId: string;
 }
 
-export const AddDocumentDialog = memo(({ 
-  isOpen, 
-  onClose, 
-  onAdd, 
-  uploading, 
-  category, 
-  files, 
-  onCategoryChange, 
-  onFilesChange 
-}: AddDocumentDialogProps) => {
+const formSchema = z.object({
+  title: z.string().min(1, "Título é obrigatório"),
+  description: z.string().optional(),
+  category: z.string().min(1, "Categoria é obrigatória"),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+const DOCUMENT_CATEGORIES = [
+  { value: "passport", label: "Passaporte", icon: IdCard },
+  { value: "visa", label: "Visto", icon: FileCheck },
+  { value: "insurance", label: "Seguro Viagem", icon: Shield },
+  { value: "ticket", label: "Ticket/Bilhete", icon: FileText },
+  { value: "voucher", label: "Voucher", icon: CreditCard },
+  { value: "hotel", label: "Comprovante de Hotel", icon: FileText },
+  { value: "car_rental", label: "Aluguel de Carro", icon: FileText },
+  { value: "other", label: "Outros", icon: FileText },
+];
+
+export function AddDocumentDialog({ isOpen, onClose, onAdd, tripId }: AddDocumentDialogProps) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [documentFiles, setDocumentFiles] = useState<{ url: string; name: string; type: string; description?: string }[]>([]);
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      category: "",
+    },
+  });
+
+  const handleSubmit = async (data: FormData) => {
+    if (!user) return;
+
+    if (documentFiles.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Adicione pelo menos um arquivo",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const file = documentFiles[0];
+      const documentData = {
+        trip_id: tripId,
+        user_id: user.id,
+        title: data.title,
+        description: data.description || null,
+        category: data.category,
+        file_name: file.name,
+        file_url: file.url,
+        file_type: file.type,
+      };
+
+      const { data: newDocument, error } = await supabase
+        .from("trip_documents")
+        .insert([documentData])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      onAdd(newDocument);
+      form.reset();
+      setDocumentFiles([]);
+      
+      toast({
+        title: "Sucesso!",
+        description: "Documento adicionado com sucesso",
+      });
+    } catch (error) {
+      console.error("Erro ao adicionar documento:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar o documento",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    form.reset();
+    setDocumentFiles([]);
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Adicionar Documento</DialogTitle>
+          <DialogTitle className="text-foreground">Adicionar Documento</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label>Categoria</Label>
-            <select
-              value={category}
-              onChange={(e) => onCategoryChange(e.target.value)}
-              className="w-full p-2 border rounded-md"
-            >
-              {Object.entries(DOCUMENT_CATEGORIES).map(([key, config]) => (
-                <option key={key} value={key}>{config.name}</option>
-              ))}
-            </select>
-          </div>
 
-          <div>
-            <Label>Arquivos * (múltiplos arquivos)</Label>
-            <Input
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-              multiple
-              onChange={(e) => onFilesChange(Array.from(e.target.files || []))}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Formatos aceitos: PDF, JPG, PNG, DOC, DOCX. Você pode selecionar múltiplos arquivos.
-            </p>
-            {files.length > 0 && (
-              <div className="mt-2 space-y-1">
-                <p className="text-sm font-medium">Arquivos selecionados:</p>
-                {files.map((file, index) => (
-                  <div key={index} className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                    {file.name} ({(file.size / 1024 / 1024).toFixed(1)}MB)
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={onClose}
-              className="flex-1"
-              disabled={uploading}
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={onAdd} 
-              className="flex-1"
-              disabled={uploading || files.length === 0}
-            >
-              {uploading ? (
-                <>
-                  <Upload className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Adicionar {files.length > 0 ? `(${files.length})` : ''}
-                </>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a categoria" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {DOCUMENT_CATEGORIES.map((category) => {
+                        const IconComponent = category.icon;
+                        return (
+                          <SelectItem key={category.value} value={category.value}>
+                            <div className="flex items-center gap-2">
+                              <IconComponent className="h-4 w-4" />
+                              {category.label}
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
-            </Button>
-          </div>
-        </div>
+            />
+
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Título</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Passaporte Brasileiro" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição (Opcional)</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Informações adicionais sobre o documento..."
+                      className="resize-none"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Arquivo do Documento</label>
+              <VoucherUpload
+                vouchers={documentFiles}
+                onVouchersChange={setDocumentFiles}
+                maxFiles={1}
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={handleClose}>
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={loading || documentFiles.length === 0}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                {loading ? "Salvando..." : "Salvar"}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
-});
-
-AddDocumentDialog.displayName = "AddDocumentDialog";
+}

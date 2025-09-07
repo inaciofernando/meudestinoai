@@ -28,6 +28,7 @@ import EditarRestaurante from "./pages/EditarRestaurante";
 import AdicionarRestaurante from "./pages/AdicionarRestaurante";
 import Transporte from "./pages/Transporte";
 import DetalhesTransporte from "./pages/DetalhesTransporte";
+import Documentos from "./pages/Documentos";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,7 @@ const App: React.FC = () => (
           <Route path="/viagem/:id/restaurantes/:restId/editar" element={<EditarRestaurante />} />
             <Route path="/viagem/:id/transporte" element={<Transporte />} />
             <Route path="/viagem/:tripId/transporte/:transportId" element={<DetalhesTransporte />} />
+            <Route path="/viagem/:id/documentos" element={<Documentos />} />
           <Route path="/planejamento" element={<Planejamento />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/configuracoes" element={<Perfil />} />

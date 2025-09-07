@@ -43,7 +43,8 @@ import {
   ShoppingBag,
   Ticket,
   Route,
-  Bot
+  Bot,
+  FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
@@ -1181,6 +1182,15 @@ export default function DetalhesViagem() {
                   >
                     <Route className="w-6 h-6 text-yellow-600" />
                     <span className="text-xs font-medium">Roteiro</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
+                    onClick={() => navigate(`/viagem/${id}/documentos`)}
+                  >
+                    <FileText className="w-6 h-6 text-emerald-600" />
+                    <span className="text-xs font-medium">Documentos</span>
                   </Button>
                   
                   <Button
