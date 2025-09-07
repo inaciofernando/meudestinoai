@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,23 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+
+  // Debug: test recovery token via ?debug=1&email=&token=
+  const [searchParams] = useSearchParams();
+  const [debugMode, setDebugMode] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const [testToken, setTestToken] = useState("");
+  const [testLoading, setTestLoading] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    const dbg = searchParams.get("debug") === "1";
+    setDebugMode(dbg);
+    if (dbg) {
+      setTestEmail(searchParams.get("email") || "");
+      setTestToken(searchParams.get("token") || "");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Only detect recovery mode from URL (hash or query)
@@ -236,6 +253,32 @@ export default function Auth() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Debug: verify recovery token
+  const handleVerifyRecoveryToken = async () => {
+    setTestLoading(true);
+    setTestResult(null);
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: testEmail.trim(),
+        token: testToken.trim(),
+        type: 'recovery',
+      });
+      if (error) {
+        setTestResult(`Inválido: ${error.message}`);
+        toast({ title: 'Token inválido', description: error.message, variant: 'destructive' });
+      } else {
+        setTestResult('Token válido! Sessão de recuperação iniciada.');
+        toast({ title: 'Token válido', description: 'Sessão de recuperação iniciada.' });
+        setIsRecoveryFlow(true);
+      }
+    } catch (err: any) {
+      setTestResult(`Erro: ${err.message || 'Falha ao verificar'}`);
+      toast({ title: 'Erro ao verificar token', description: err.message || 'Falha ao verificar', variant: 'destructive' });
+    } finally {
+      setTestLoading(false);
     }
   };
 
@@ -672,7 +715,43 @@ export default function Auth() {
             </Button>
           </div>
           
-          <div className="mt-8 text-center">
+           {debugMode && (
+             <div className="mt-8 p-4 rounded-xl border border-border/50 bg-muted/20">
+               <h4 className="text-sm font-semibold mb-3">Dev: Testar token de recuperação</h4>
+               <div className="grid gap-3">
+                 <div>
+                   <Label htmlFor="test-email">Email</Label>
+                   <Input
+                     id="test-email"
+                     type="email"
+                     placeholder="email do reset"
+                     value={testEmail}
+                     onChange={(e) => setTestEmail(e.target.value)}
+                   />
+                 </div>
+                 <div>
+                   <Label htmlFor="test-token">Token</Label>
+                   <Input
+                     id="test-token"
+                     type="text"
+                     placeholder="re_xxx"
+                     value={testToken}
+                     onChange={(e) => setTestToken(e.target.value)}
+                   />
+                 </div>
+                 <div className="flex items-center gap-3">
+                   <Button onClick={handleVerifyRecoveryToken} disabled={testLoading || !testEmail || !testToken}>
+                     {testLoading ? 'Verificando...' : 'Verificar token'}
+                   </Button>
+                   {testResult && (
+                     <span className="text-sm text-muted-foreground">{testResult}</span>
+                   )}
+                 </div>
+               </div>
+             </div>
+           )}
+
+           <div className="mt-8 text-center">
             <p className="text-xs text-muted-foreground leading-relaxed">
               Ao criar uma conta, você concorda com nossos{" "}
               <span className="text-primary hover:text-primary-glow cursor-pointer transition-colors underline">
