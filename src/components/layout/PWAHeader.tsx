@@ -112,29 +112,35 @@ export const PWAHeader = () => {
                {/* User Menu */}
                <DropdownMenu>
                  <DropdownMenuTrigger asChild>
-                   <Button variant="ghost" className="flex items-center gap-2 px-2">
+                   <Button variant="ghost" className="flex items-center gap-2 px-2 hover:bg-primary/10">
                      <Avatar className="w-8 h-8">
                        <AvatarImage src={user.user_metadata?.avatar_url} />
-                       <AvatarFallback>
+                       <AvatarFallback className="bg-primary text-primary-foreground">
                          <User className="w-4 h-4" />
                        </AvatarFallback>
                      </Avatar>
-                     <span className="hidden md:inline text-sm font-medium">
+                     <span className="hidden md:inline text-sm font-medium text-foreground">
                        {user.user_metadata?.full_name || user.email?.split('@')[0]}
                      </span>
-                     <MoreHorizontal className="w-4 h-4" />
+                     <MoreHorizontal className="w-4 h-4 text-foreground" />
                    </Button>
                  </DropdownMenuTrigger>
                  <DropdownMenuContent 
                    align="end" 
-                   className="w-56 z-[100] bg-background border border-border shadow-hover backdrop-blur-sm"
+                   className="w-56 z-[100] bg-card border border-border shadow-hover backdrop-blur-sm"
                    sideOffset={8}
                  >
-                   <DropdownMenuItem onClick={() => navigate("/perfil")} className="cursor-pointer hover:bg-primary/10">
+                   <DropdownMenuItem 
+                     onClick={() => navigate("/perfil")} 
+                     className="cursor-pointer hover:bg-primary/10 text-card-foreground focus:bg-primary/10 focus:text-card-foreground"
+                   >
                      <Settings className="w-4 h-4 mr-2" />
                      Configurações
                    </DropdownMenuItem>
-                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer hover:bg-destructive/10 text-destructive">
+                   <DropdownMenuItem 
+                     onClick={handleSignOut} 
+                     className="cursor-pointer hover:bg-destructive/10 focus:bg-destructive/10 text-destructive focus:text-destructive"
+                   >
                      <LogOut className="w-4 h-4 mr-2" />
                      Sair
                    </DropdownMenuItem>
