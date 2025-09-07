@@ -1214,13 +1214,13 @@ export default function DetalhesViagem() {
               <Button 
                 onClick={() => navigate("/viagens")}
                 variant="outline"
-                className="flex-1"
+                className="flex-1 text-foreground border-border hover:bg-muted"
               >
                 Voltar ao Dashboard
               </Button>
               <Button 
                 onClick={() => setIsEditing(true)}
-                className="flex-1 bg-gradient-ocean hover:shadow-travel transition-all duration-300"
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
               >
                 Editar Viagem
               </Button>
