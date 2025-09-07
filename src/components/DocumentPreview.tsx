@@ -92,29 +92,18 @@ export function DocumentPreview({ isOpen, onClose, fileUrl, fileName, fileType }
             </div>
           ) : isPDF ? (
             <div className="space-y-4">
-              <div className="h-[70vh] w-full flex items-center justify-center">
-                <div className="text-center">
-                  <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Visualização de PDF</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md">
-                    Devido a restrições de segurança do navegador, a visualização inline não está disponível.
-                    Use os botões abaixo para acessar o documento.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button onClick={handleDownload} className="flex items-center gap-2">
-                      <Download className="h-4 w-4" />
-                      Fazer Download
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => window.open(fileUrl, '_blank')}
-                      className="flex items-center gap-2"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Tentar Abrir
-                    </Button>
-                  </div>
-                </div>
+              <div className="h-[70vh] w-full">
+                <iframe
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`}
+                  className="w-full h-full border-0 rounded-lg"
+                  title={fileName}
+                  onError={() => {
+                    console.error('Erro ao carregar PDF');
+                  }}
+                />
+              </div>
+              <div className="text-center text-sm text-muted-foreground">
+                <p>Visualizando via Google Docs Viewer</p>
               </div>
             </div>
           ) : (
