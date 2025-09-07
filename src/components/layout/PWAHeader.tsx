@@ -77,12 +77,12 @@ export const PWAHeader = () => {
           </Sheet>
 
           {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/viagens")}>
-            <div className="w-8 h-8 bg-gradient-ocean rounded-full flex items-center justify-center transition-transform hover:scale-105">
-              <Plane className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <h1 className="text-xl font-bold text-primary hidden sm:block">Meu Destino AI</h1>
-          </div>
+           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/viagens")}>
+             <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center transition-transform hover:scale-105">
+               <Plane className="w-4 h-4 text-primary-foreground" />
+             </div>
+             <h1 className="text-xl font-bold text-primary hidden sm:block">Meu Destino AI</h1>
+           </div>
         </div>
 
         {/* Center - Search (hidden on mobile) */}
@@ -109,33 +109,37 @@ export const PWAHeader = () => {
                 </Badge>
               </Button>
 
-              {/* User Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 px-2">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={user.user_metadata?.avatar_url} />
-                      <AvatarFallback>
-                        <User className="w-4 h-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden md:inline text-sm font-medium">
-                      {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                    </span>
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                 <DropdownMenuContent align="end" className="w-56">
-                   <DropdownMenuItem onClick={() => navigate("/perfil")}>
+               {/* User Menu */}
+               <DropdownMenu>
+                 <DropdownMenuTrigger asChild>
+                   <Button variant="ghost" className="flex items-center gap-2 px-2">
+                     <Avatar className="w-8 h-8">
+                       <AvatarImage src={user.user_metadata?.avatar_url} />
+                       <AvatarFallback>
+                         <User className="w-4 h-4" />
+                       </AvatarFallback>
+                     </Avatar>
+                     <span className="hidden md:inline text-sm font-medium">
+                       {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                     </span>
+                     <MoreHorizontal className="w-4 h-4" />
+                   </Button>
+                 </DropdownMenuTrigger>
+                 <DropdownMenuContent 
+                   align="end" 
+                   className="w-56 z-[100] bg-background border border-border shadow-hover backdrop-blur-sm"
+                   sideOffset={8}
+                 >
+                   <DropdownMenuItem onClick={() => navigate("/perfil")} className="cursor-pointer hover:bg-primary/10">
                      <Settings className="w-4 h-4 mr-2" />
                      Configurações
                    </DropdownMenuItem>
-                   <DropdownMenuItem onClick={handleSignOut}>
+                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer hover:bg-destructive/10 text-destructive">
                      <LogOut className="w-4 h-4 mr-2" />
                      Sair
                    </DropdownMenuItem>
                  </DropdownMenuContent>
-              </DropdownMenu>
+               </DropdownMenu>
             </>
           ) : (
             <Button onClick={() => navigate("/auth")} variant="outline">
