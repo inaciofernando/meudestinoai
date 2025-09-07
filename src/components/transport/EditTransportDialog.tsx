@@ -218,9 +218,9 @@ export function EditTransportDialog({ isOpen, onClose, onUpdate, booking }: Edit
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background text-foreground">
         <DialogHeader>
-          <DialogTitle>Editar Transporte</DialogTitle>
+          <DialogTitle className="text-foreground">Editar Transporte</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -537,7 +537,7 @@ export function EditTransportDialog({ isOpen, onClose, onUpdate, booking }: Edit
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Ticket/Bilhete</label>
+                <label className="text-sm font-medium text-foreground">Ticket/Bilhete</label>
                 <VoucherUpload
                   vouchers={ticketFiles}
                   onVouchersChange={setTicketFiles}
@@ -546,7 +546,7 @@ export function EditTransportDialog({ isOpen, onClose, onUpdate, booking }: Edit
               </div>
 
               <div>
-                <label className="text-sm font-medium">Voucher/Comprovante</label>
+                <label className="text-sm font-medium text-foreground">Voucher/Comprovante</label>
                 <VoucherUpload
                   vouchers={voucherFiles}
                   onVouchersChange={setVoucherFiles}
@@ -574,10 +574,10 @@ export function EditTransportDialog({ isOpen, onClose, onUpdate, booking }: Edit
             />
 
             <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={onClose} className="text-foreground">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 {loading ? "Salvando..." : "Salvar"}
               </Button>
             </div>

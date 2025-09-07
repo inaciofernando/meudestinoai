@@ -181,9 +181,9 @@ export function AddTransportDialog({ isOpen, onClose, onAdd, tripId }: AddTransp
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background text-foreground">
         <DialogHeader>
-          <DialogTitle>Adicionar Transporte</DialogTitle>
+          <DialogTitle className="text-foreground">Adicionar Transporte</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -500,7 +500,7 @@ export function AddTransportDialog({ isOpen, onClose, onAdd, tripId }: AddTransp
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Ticket/Bilhete</label>
+                <label className="text-sm font-medium text-foreground">Ticket/Bilhete</label>
                 <VoucherUpload
                   vouchers={ticketFiles}
                   onVouchersChange={setTicketFiles}
@@ -509,7 +509,7 @@ export function AddTransportDialog({ isOpen, onClose, onAdd, tripId }: AddTransp
               </div>
 
               <div>
-                <label className="text-sm font-medium">Voucher/Comprovante</label>
+                <label className="text-sm font-medium text-foreground">Voucher/Comprovante</label>
                 <VoucherUpload
                   vouchers={voucherFiles}
                   onVouchersChange={setVoucherFiles}
@@ -537,10 +537,10 @@ export function AddTransportDialog({ isOpen, onClose, onAdd, tripId }: AddTransp
             />
 
             <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={handleClose} className="text-foreground">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 {loading ? "Salvando..." : "Salvar"}
               </Button>
             </div>
