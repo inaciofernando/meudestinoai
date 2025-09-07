@@ -17,7 +17,8 @@ import {
   Clock,
   Plane,
   CheckCircle,
-  Search
+  Search,
+  Plus
 } from "lucide-react";
 
 interface Trip {
@@ -288,7 +289,7 @@ export default function Dashboard() {
           className="text-primary border-primary hover:bg-primary hover:text-primary-foreground transition-smooth"
           onClick={() => navigate("/nova-viagem")}
         >
-          <Plane className="w-5 h-5" />
+          <Plus className="w-5 h-5" />
         </Button>
       </div>
 
