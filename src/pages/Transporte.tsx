@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import TripSectionHeader from "@/components/TripSectionHeader";
 import { AddTransportDialog } from "@/components/transport/AddTransportDialog";
-import { EditTransportDialog } from "@/components/transport/EditTransportDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +18,7 @@ import {
   Ship, 
   Clock,
   MapPin,
-  Edit,
+  Eye,
   Trash2,
   Calendar,
   Hash
@@ -79,8 +78,6 @@ export default function Transporte() {
   const [bookings, setBookings] = useState<TransportBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingBooking, setEditingBooking] = useState<TransportBooking | null>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -118,16 +115,6 @@ export default function Transporte() {
   const handleAddBooking = (newBooking: TransportBooking) => {
     setBookings(prev => [...prev, newBooking]);
     setIsAddDialogOpen(false);
-  };
-
-  const handleUpdateBooking = (updatedBooking: TransportBooking) => {
-    setBookings(prev => 
-      prev.map(booking => 
-        booking.id === updatedBooking.id ? updatedBooking : booking
-      )
-    );
-    setIsEditDialogOpen(false);
-    setEditingBooking(null);
   };
 
   const handleDeleteBooking = async (bookingId: string) => {
@@ -260,12 +247,11 @@ export default function Transporte() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => {
-                              setEditingBooking(booking);
-                              setIsEditDialogOpen(true);
-                            }}
+                            onClick={() => navigate(`/viagem/${id}/transporte/${booking.id}`)}
+                            className="text-foreground hover:text-foreground"
+                            title="Ver detalhes do transporte"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
@@ -361,18 +347,6 @@ export default function Transporte() {
             onAdd={handleAddBooking}
             tripId={id!}
           />
-
-          {editingBooking && (
-            <EditTransportDialog
-              isOpen={isEditDialogOpen}
-              onClose={() => {
-                setIsEditDialogOpen(false);
-                setEditingBooking(null);
-              }}
-              onUpdate={handleUpdateBooking}
-              booking={editingBooking}
-            />
-          )}
         </div>
       </PWALayout>
     </ProtectedRoute>

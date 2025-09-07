@@ -27,6 +27,7 @@ import NotFound from "./pages/NotFound";
 import EditarRestaurante from "./pages/EditarRestaurante";
 import AdicionarRestaurante from "./pages/AdicionarRestaurante";
 import Transporte from "./pages/Transporte";
+import DetalhesTransporte from "./pages/DetalhesTransporte";
 
 const queryClient = new QueryClient();
 
@@ -56,7 +57,8 @@ const App: React.FC = () => (
           <Route path="/viagem/:id/restaurantes" element={<Restaurantes />} />
           <Route path="/viagem/:id/restaurantes/novo" element={<AdicionarRestaurante />} />
           <Route path="/viagem/:id/restaurantes/:restId/editar" element={<EditarRestaurante />} />
-          <Route path="/viagem/:id/transporte" element={<Transporte />} />
+            <Route path="/viagem/:id/transporte" element={<Transporte />} />
+            <Route path="/viagem/:tripId/transporte/:transportId" element={<DetalhesTransporte />} />
           <Route path="/planejamento" element={<Planejamento />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/configuracoes" element={<Perfil />} />
