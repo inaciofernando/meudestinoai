@@ -81,7 +81,7 @@ export const PWAHeader = () => {
             <div className="w-8 h-8 bg-gradient-ocean rounded-full flex items-center justify-center transition-transform hover:scale-105">
               <Plane className="w-4 h-4 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-primary hidden sm:block">Travel Manager</h1>
+            <h1 className="text-xl font-bold text-primary hidden sm:block">Meu Destino AI</h1>
           </div>
         </div>
 
