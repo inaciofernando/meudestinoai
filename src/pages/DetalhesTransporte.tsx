@@ -23,12 +23,14 @@ import {
   CreditCard,
   FileText,
   Download,
-  Edit
+  Edit,
+  Eye
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { TransportBooking } from "@/pages/Transporte";
 import { EditTransportDialog } from "@/components/transport/EditTransportDialog";
+import { DocumentPreview } from "@/components/DocumentPreview";
 
 const TRANSPORT_TYPES = {
   flight: { name: "Voo", icon: Plane, color: "bg-blue-500" },
@@ -49,6 +51,7 @@ export default function DetalhesTransporte() {
   const [booking, setBooking] = useState<TransportBooking | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [previewFile, setPreviewFile] = useState<{url: string, name: string, type?: string} | null>(null);
 
   useEffect(() => {
     fetchBooking();
@@ -349,20 +352,34 @@ export default function DetalhesTransporte() {
                     {booking.ticket_file_url && (
                       <Card>
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-8 w-8 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">Ticket/Bilhete</p>
-                                <p className="text-sm text-muted-foreground">{booking.ticket_file_name}</p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <FileText className="h-8 w-8 text-muted-foreground" />
+                                <div>
+                                  <p className="font-medium">Ticket/Bilhete</p>
+                                  <p className="text-sm text-muted-foreground">{booking.ticket_file_name}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => setPreviewFile({
+                                    url: booking.ticket_file_url!,
+                                    name: booking.ticket_file_name || 'Ticket',
+                                    type: booking.ticket_file_name?.split('.').pop()
+                                  })}
+                                  title="Visualizar arquivo"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" asChild>
+                                  <a href={booking.ticket_file_url} target="_blank" rel="noopener noreferrer" title="Fazer download">
+                                    <Download className="h-4 w-4" />
+                                  </a>
+                                </Button>
                               </div>
                             </div>
-                            <Button variant="ghost" size="sm" asChild>
-                              <a href={booking.ticket_file_url} target="_blank" rel="noopener noreferrer">
-                                <Download className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          </div>
                         </CardContent>
                       </Card>
                     )}
@@ -370,20 +387,34 @@ export default function DetalhesTransporte() {
                     {booking.voucher_file_url && (
                       <Card>
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-8 w-8 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">Voucher/Comprovante</p>
-                                <p className="text-sm text-muted-foreground">{booking.voucher_file_name}</p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <FileText className="h-8 w-8 text-muted-foreground" />
+                                <div>
+                                  <p className="font-medium">Voucher/Comprovante</p>
+                                  <p className="text-sm text-muted-foreground">{booking.voucher_file_name}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => setPreviewFile({
+                                    url: booking.voucher_file_url!,
+                                    name: booking.voucher_file_name || 'Voucher',
+                                    type: booking.voucher_file_name?.split('.').pop()
+                                  })}
+                                  title="Visualizar arquivo"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" asChild>
+                                  <a href={booking.voucher_file_url} target="_blank" rel="noopener noreferrer" title="Fazer download">
+                                    <Download className="h-4 w-4" />
+                                  </a>
+                                </Button>
                               </div>
                             </div>
-                            <Button variant="ghost" size="sm" asChild>
-                              <a href={booking.voucher_file_url} target="_blank" rel="noopener noreferrer">
-                                <Download className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          </div>
                         </CardContent>
                       </Card>
                     )}
@@ -404,6 +435,17 @@ export default function DetalhesTransporte() {
               )}
             </CardContent>
           </Card>
+
+          {/* Document Preview Modal */}
+          {previewFile && (
+            <DocumentPreview
+              isOpen={!!previewFile}
+              onClose={() => setPreviewFile(null)}
+              fileUrl={previewFile.url}
+              fileName={previewFile.name}
+              fileType={previewFile.type}
+            />
+          )}
 
           {/* Edit Dialog */}
           {booking && (
