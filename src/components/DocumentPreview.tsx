@@ -69,45 +69,27 @@ export function DocumentPreview({ isOpen, onClose, fileUrl, fileName, fileType }
             </div>
           ) : isPDF ? (
             <div className="space-y-4">
-              <div className="text-center text-muted-foreground">
-                <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">Visualização de PDF</h3>
-                <p className="mb-4">
-                  Por questões de segurança, alguns PDFs não podem ser visualizados diretamente no navegador.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button onClick={handleDownload} className="flex items-center gap-2">
-                    <Download className="h-4 w-4" />
-                    Fazer Download
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => window.open(fileUrl, '_blank')}
-                    className="flex items-center gap-2"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Abrir em Nova Aba
-                  </Button>
-                </div>
-              </div>
-              <div className="border rounded-lg p-4 bg-muted/30">
+              <div className="h-[70vh] w-full">
                 <iframe
-                  src={`${fileUrl}#toolbar=1`}
-                  className="w-full h-[60vh] border-0 rounded"
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`}
+                  className="w-full h-full border-0 rounded-lg"
                   title={fileName}
-                  sandbox="allow-same-origin allow-scripts"
-                  onLoad={(e) => {
-                    const iframe = e.target as HTMLIFrameElement;
-                    try {
-                      // Test if iframe loaded successfully
-                      if (iframe.contentDocument) {
-                        console.log('PDF loaded successfully');
-                      }
-                    } catch (error) {
-                      console.log('PDF blocked by CORS policy');
-                    }
+                  onError={() => {
+                    console.error('Erro ao carregar PDF');
                   }}
                 />
+              </div>
+              <div className="text-center text-sm text-muted-foreground">
+                <p>Visualizando via Google Docs Viewer</p>
+                <div className="flex justify-center gap-2 mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.open(fileUrl, '_blank')}
+                  >
+                    Abrir Original
+                  </Button>
+                </div>
               </div>
             </div>
           ) : (
