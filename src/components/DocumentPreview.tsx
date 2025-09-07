@@ -14,13 +14,36 @@ export function DocumentPreview({ isOpen, onClose, fileUrl, fileName, fileType }
   const isImage = fileType?.startsWith('image/') || fileName.match(/\.(jpg|jpeg|png|gif|webp)$/i);
   const isPDF = fileType?.includes('pdf') || fileName.match(/\.pdf$/i);
 
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = fileUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async () => {
+    try {
+      // Usar fetch para baixar o arquivo e contornar bloqueios do navegador
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      
+      // Criar um URL temporário para o blob
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      // Criar link temporário para download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpeza
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Erro ao fazer download:', error);
+      // Fallback para download direto se fetch falhar
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      link.download = fileName;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   return (
@@ -69,26 +92,28 @@ export function DocumentPreview({ isOpen, onClose, fileUrl, fileName, fileType }
             </div>
           ) : isPDF ? (
             <div className="space-y-4">
-              <div className="h-[70vh] w-full">
-                <iframe
-                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`}
-                  className="w-full h-full border-0 rounded-lg"
-                  title={fileName}
-                  onError={() => {
-                    console.error('Erro ao carregar PDF');
-                  }}
-                />
-              </div>
-              <div className="text-center text-sm text-muted-foreground">
-                <p>Visualizando via Google Docs Viewer</p>
-                <div className="flex justify-center gap-2 mt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => window.open(fileUrl, '_blank')}
-                  >
-                    Abrir Original
-                  </Button>
+              <div className="h-[70vh] w-full flex items-center justify-center">
+                <div className="text-center">
+                  <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Visualização de PDF</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md">
+                    Devido a restrições de segurança do navegador, a visualização inline não está disponível.
+                    Use os botões abaixo para acessar o documento.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button onClick={handleDownload} className="flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      Fazer Download
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => window.open(fileUrl, '_blank')}
+                      className="flex items-center gap-2"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Tentar Abrir
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
