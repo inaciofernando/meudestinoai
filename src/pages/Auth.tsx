@@ -395,64 +395,119 @@ export default function Auth() {
 
   if (showResetPassword) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/5 flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-16 h-16 bg-gradient-ocean rounded-full blur-sm animate-pulse"></div>
-          <div className="absolute top-1/3 right-20 w-12 h-12 bg-gradient-sunset rounded-full blur-sm animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/4 w-20 h-20 bg-gradient-nature rounded-full blur-sm animate-pulse delay-500"></div>
-          <div className="absolute bottom-20 right-10 w-14 h-14 bg-gradient-ocean rounded-full blur-sm animate-pulse delay-700"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-purple-950/30 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-20 w-24 h-24 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-40 h-40 bg-gradient-to-r from-indigo-400/15 to-blue-400/15 rounded-full blur-3xl animate-pulse delay-500"></div>
+          <div className="absolute bottom-20 right-10 w-28 h-28 bg-gradient-to-r from-pink-400/20 to-purple-400/20 rounded-full blur-2xl animate-pulse delay-700"></div>
+          
+          {/* Floating Icons */}
+          <div className="absolute top-32 right-1/4 animate-bounce delay-300">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+              <Mail className="w-6 h-6 text-blue-500/60" />
+            </div>
+          </div>
+          <div className="absolute bottom-32 left-1/3 animate-bounce delay-700">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
+              <Lock className="w-5 h-5 text-purple-500/60" />
+            </div>
+          </div>
         </div>
 
-        <Card className="w-full max-w-md shadow-travel border-0 bg-card/95 backdrop-blur-sm">
-          <CardHeader className="text-center pb-6">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-gradient-ocean rounded-full flex items-center justify-center shadow-travel">
-                <Lock className="w-8 h-8 text-primary-foreground" />
+        <div className="w-full max-w-md animate-fade-in">
+          <Card className="shadow-2xl border-0 bg-white/80 dark:bg-card/90 backdrop-blur-xl overflow-hidden">
+            {/* Header with Icon */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4 animate-scale-in">
+                <Mail className="w-8 h-8 text-white" />
               </div>
+              <h1 className="text-2xl font-bold text-white mb-2">Esqueceu sua senha?</h1>
+              <p className="text-blue-100 text-sm">Não se preocupe, isso acontece com todos!</p>
             </div>
-            <CardTitle className="text-2xl font-bold bg-gradient-ocean bg-clip-text text-transparent">
-              Redefinir Senha
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Digite seu email para receber as instruções
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reset-email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="reset-email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    className="pl-10 border-primary/20 focus:border-primary transition-smooth"
-                    required
-                  />
+
+            <CardContent className="px-8 py-8">
+              <div className="text-center mb-8">
+                <h2 className="text-xl font-semibold text-foreground mb-2">Recupere seu acesso</h2>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Digite seu email abaixo e enviaremos um link seguro para você redefinir sua senha
+                </p>
+              </div>
+
+              <form onSubmit={handleResetPassword} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email" className="text-sm font-semibold text-foreground">
+                    Endereço de email
+                  </Label>
+                  <div className="relative group">
+                    <Mail className="absolute left-4 top-4 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      className="pl-12 h-14 border-2 border-border/50 focus:border-primary/50 transition-all duration-300 bg-background/50 rounded-xl text-base"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <Button 
+                    type="submit" 
+                    className="w-full h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 text-base" 
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Enviando link...
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-5 h-5" />
+                        Enviar link de recuperação
+                      </div>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full h-12 border-2 hover:bg-muted/50 transition-all duration-200 rounded-xl font-medium" 
+                    onClick={() => setShowResetPassword(false)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                      </svg>
+                      Voltar ao login
+                    </div>
+                  </Button>
+                </div>
+              </form>
+
+              {/* Help Text */}
+              <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200/50 dark:border-blue-800/50">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-blue-800 dark:text-blue-200 font-medium mb-1">📧 Verifique sua caixa de entrada</p>
+                    <p className="text-blue-700 dark:text-blue-300 text-xs leading-relaxed">
+                      O email pode levar alguns minutos para chegar. Não esqueça de verificar sua pasta de spam!
+                    </p>
+                  </div>
                 </div>
               </div>
-              
-              <div className="space-y-3">
-                <Button type="submit" className="w-full bg-gradient-ocean hover:shadow-travel transition-smooth" disabled={loading}>
-                  {loading ? "Enviando..." : "Enviar instruções"}
-                </Button>
-                
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  className="w-full" 
-                  onClick={() => setShowResetPassword(false)}
-                >
-                  Voltar ao login
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
