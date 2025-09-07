@@ -214,15 +214,24 @@ export default function Transporte() {
 
           {bookings.length === 0 ? (
             <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Plane className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="font-semibold text-lg mb-2">Nenhum transporte cadastrado</h3>
-                <p className="text-muted-foreground text-center mb-6">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="p-4 rounded-full bg-primary/10 mb-6">
+                  <Plane className="h-16 w-16 text-primary" />
+                </div>
+                <h3 className="font-semibold text-xl mb-3">Nenhum transporte cadastrado</h3>
+                <p className="text-muted-foreground text-center mb-8 max-w-md">
                   Adicione seus tickets de voo, reservas de carro e outros transportes para organizar sua viagem.
                 </p>
-                <Button onClick={() => setIsAddDialogOpen(true)}>
-                  Adicionar Primeiro Transporte
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button 
+                    onClick={() => setIsAddDialogOpen(true)}
+                    size="lg"
+                    className="px-8"
+                  >
+                    <Plane className="w-5 h-5 mr-2" />
+                    Adicionar Primeiro Transporte
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ) : (
