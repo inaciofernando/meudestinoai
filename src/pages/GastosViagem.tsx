@@ -177,7 +177,7 @@ export default function GastosViagem() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isViewingExpense, setIsViewingExpense] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<'todos' | 'planejado' | 'realizado'>('realizado');
+  const [activeFilter, setActiveFilter] = useState<'todos' | 'planejado' | 'realizado'>('todos');
   const [showChart, setShowChart] = useState(false);
 
   // Form states for budget editing
