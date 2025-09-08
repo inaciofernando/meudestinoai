@@ -41,6 +41,7 @@ export type Database = {
           user_id: string
           voucher_file_name: string | null
           voucher_file_url: string | null
+          waze_link: string | null
           wifi_available: boolean | null
         }
         Insert: {
@@ -69,6 +70,7 @@ export type Database = {
           user_id: string
           voucher_file_name?: string | null
           voucher_file_url?: string | null
+          waze_link?: string | null
           wifi_available?: boolean | null
         }
         Update: {
@@ -97,6 +99,7 @@ export type Database = {
           user_id?: string
           voucher_file_name?: string | null
           voucher_file_url?: string | null
+          waze_link?: string | null
           wifi_available?: boolean | null
         }
         Relationships: []

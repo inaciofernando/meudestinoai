@@ -62,17 +62,18 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
             country = "Brasil";
           }
           
-          accommodations.push({
-            name: item.title || "",
-            address: item.address || "",
-            city: city,
-            country: country,
-            phone: "", // Não disponível nos dados estruturados
-            email: "", // Não disponível nos dados estruturados  
-            website: item.link || item.website_link || "",
-            type: "hotel",
-            description: item.description || ""
-          });
+           accommodations.push({
+             name: item.title || "",
+             address: item.address || "",
+             city: city,
+             country: country,
+             phone: "", // Não disponível nos dados estruturados
+             email: "", // Não disponível nos dados estruturados  
+             website: item.link || item.website_link || "",
+             waze: item.waze_link || item.waze || "",
+             type: "hotel",
+             description: item.description || ""
+           });
         } else {
           // Caso contrário, é uma atração normal
           attractions.push({
@@ -90,15 +91,16 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
       }
       
       if (messageData.structuredData.accommodation) {
-        accommodations.push({
-          name: messageData.structuredData.accommodation.name || "",
-          address: messageData.structuredData.accommodation.address || "",
-          phone: messageData.structuredData.accommodation.phone || "",
-          email: messageData.structuredData.accommodation.email || "",
-          website: messageData.structuredData.accommodation.website || messageData.structuredData.accommodation.link || "",
-          type: messageData.structuredData.accommodation.type || "hotel",
-          description: messageData.structuredData.accommodation.description || ""
-        });
+         accommodations.push({
+           name: messageData.structuredData.accommodation.name || "",
+           address: messageData.structuredData.accommodation.address || "",
+           phone: messageData.structuredData.accommodation.phone || "",
+           email: messageData.structuredData.accommodation.email || "",
+           website: messageData.structuredData.accommodation.website || messageData.structuredData.accommodation.link || "",
+           waze: messageData.structuredData.accommodation.waze_link || messageData.structuredData.accommodation.waze || "",
+           type: messageData.structuredData.accommodation.type || "hotel",
+           description: messageData.structuredData.accommodation.description || ""
+         });
       }
       
       return { restaurants, attractions, accommodations };
@@ -145,15 +147,16 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
           });
         }
         if (parsed?.accommodation) {
-          accommodations.push({
-            name: parsed.accommodation.name || "",
-            address: parsed.accommodation.address || "",
-            phone: parsed.accommodation.phone || "",
-            email: parsed.accommodation.email || "",
-            website: parsed.accommodation.website || parsed.accommodation.link || "",
-            type: parsed.accommodation.type || "hotel",
-            description: parsed.accommodation.description || ""
-          });
+           accommodations.push({
+             name: parsed.accommodation.name || "",
+             address: parsed.accommodation.address || "",
+             phone: parsed.accommodation.phone || "",
+             email: parsed.accommodation.email || "",
+             website: parsed.accommodation.website || parsed.accommodation.link || "",
+             waze: parsed.accommodation.waze_link || parsed.accommodation.waze || "",
+             type: parsed.accommodation.type || "hotel",
+             description: parsed.accommodation.description || ""
+           });
         }
       }
     } catch (e) {
@@ -210,15 +213,16 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
             const hasParking = /estacionamento|parking/i.test(amenitiesText);
             const hasPool = /piscina|pool/i.test(amenitiesText);
             
-            const extractedAccommodation = {
-              name: match[1].trim(),
-              description: `Sugerido pelo concierge. ${hasBreakfast ? 'Inclui café da manhã. ' : ''}${hasWifi ? 'WiFi disponível. ' : ''}${hasParking ? 'Estacionamento disponível. ' : ''}${hasPool ? 'Piscina disponível. ' : ''}`,
-              type: "hotel",
-              address: addressMatch ? addressMatch[1].trim() : "",
-              phone: phoneMatch ? phoneMatch[1] ? phoneMatch[1].trim() : phoneMatch[0].trim() : "",
-              email: "",
-              website: ""
-            };
+             const extractedAccommodation = {
+               name: match[1].trim(),
+               description: `Sugerido pelo concierge. ${hasBreakfast ? 'Inclui café da manhã. ' : ''}${hasWifi ? 'WiFi disponível. ' : ''}${hasParking ? 'Estacionamento disponível. ' : ''}${hasPool ? 'Piscina disponível. ' : ''}`,
+               type: "hotel",
+               address: addressMatch ? addressMatch[1].trim() : "",
+               phone: phoneMatch ? phoneMatch[1] ? phoneMatch[1].trim() : phoneMatch[0].trim() : "",
+               email: "",
+               website: "",
+               waze: ""
+             };
             
             accommodations.push(extractedAccommodation);
             break;
@@ -279,6 +283,7 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
       phone: accommodation.phone || '',
       email: accommodation.email || '',
       hotel_link: accommodation.website || '',
+      waze_link: accommodation.waze || '',
       accommodation_type: accommodation.type || 'hotel',
       notes: accommodation.description || '',
       fromConcierge: 'true'
