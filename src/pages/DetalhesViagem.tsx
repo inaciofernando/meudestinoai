@@ -1122,22 +1122,9 @@ export default function DetalhesViagem() {
                           index === 0 ? "bg-primary" : "bg-muted-foreground"
                         )}></div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-foreground">
-                              {location.location_name}
-                            </span>
-                            {index === 0 && (
-                              <Badge variant="secondary" className="text-xs bg-primary text-white border-0 px-2 py-0.5">
-                                Principal
-                              </Badge>
-                            )}
-                            <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-                              {location.location_type === 'city' && 'Cidade'}
-                              {location.location_type === 'region' && 'Região'}
-                              {location.location_type === 'attraction' && 'Atração'}
-                              {location.location_type === 'airport' && 'Aeroporto'}
-                            </Badge>
-                          </div>
+                          <span className="font-medium text-foreground">
+                            {location.location_name}
+                          </span>
                         </div>
                       </div>
                     ))}
