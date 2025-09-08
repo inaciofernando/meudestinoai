@@ -388,7 +388,7 @@ export default function Concierge() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyDown}
                       placeholder="Faça sua pergunta sobre a viagem..."
-                      className="min-h-[52px] max-h-32 resize-none pr-12 rounded-2xl border-2 focus:border-primary"
+                      className="min-h-[52px] max-h-32 resize-none pr-12 rounded-2xl border-2 focus:border-primary bg-background text-foreground placeholder:text-muted-foreground"
                       disabled={loading}
                       rows={1}
                     />
@@ -396,9 +396,14 @@ export default function Concierge() {
                       onClick={ask}
                       disabled={loading || !input.trim()}
                       size="icon"
-                      className="absolute right-2 bottom-2 h-8 w-8 rounded-full"
+                      className="absolute right-2 bottom-2 h-8 w-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground disabled:bg-muted disabled:text-muted-foreground transition-smooth"
+                      aria-label="Enviar mensagem"
                     >
-                      <Send className="h-4 w-4" />
+                      {loading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
