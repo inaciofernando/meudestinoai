@@ -240,16 +240,16 @@ export default function Documentos() {
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-base leading-tight truncate">
-                                {document.title}
+                                {format(parseISO(document.created_at), "dd/MM/yyyy", { locale: ptBR })}
                               </h3>
                               <div className="flex items-center gap-2 mt-1">
                                 <Badge variant="secondary" className="text-xs px-2 py-0.5">
                                   {categoryConfig.name}
                                 </Badge>
-                                <span className="text-xs text-muted-foreground">
-                                  {format(parseISO(document.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                                </span>
                               </div>
+                              <p className="text-sm text-muted-foreground mt-1 truncate">
+                                {document.title}
+                              </p>
                             </div>
                             
                             <div className="flex items-center gap-0.5 flex-shrink-0">
