@@ -155,12 +155,26 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         for (const pattern of hotelPatterns) {
           const match = message.match(pattern);
           if (match) {
+            // Extrair informações adicionais da mensagem
+            const addressMatch = message.match(/endereço[:\s]*([^\n.]+)/i) || 
+                                 message.match(/localizado[^\n]*?([A-Z][^.\n]+)/i) ||
+                                 message.match(/(?:em|na|no)\s+([A-Z][^.\n,]+)/);
+                                 
+            const phoneMatch = message.match(/telefone[:\s]*([0-9\-\s\(\)]+)/i) ||
+                              message.match(/\(?[\d\s\-\(\)]{10,}\)?/);
+                              
+            const amenitiesText = message.toLowerCase();
+            const hasBreakfast = /café da manhã|breakfast|gratuito/i.test(amenitiesText);
+            const hasWifi = /wifi|internet/i.test(amenitiesText);
+            const hasParking = /estacionamento|parking/i.test(amenitiesText);
+            const hasPool = /piscina|pool/i.test(amenitiesText);
+            
             accommodations.push({
               name: match[1].trim(),
-              description: "Sugerido pelo concierge",
+              description: `Sugerido pelo concierge. ${hasBreakfast ? 'Inclui café da manhã. ' : ''}${hasWifi ? 'WiFi disponível. ' : ''}${hasParking ? 'Estacionamento disponível. ' : ''}${hasPool ? 'Piscina disponível. ' : ''}`,
               type: "hotel",
-              address: "",
-              phone: "",
+              address: addressMatch ? addressMatch[1].trim() : "",
+              phone: phoneMatch ? phoneMatch[1] ? phoneMatch[1].trim() : phoneMatch[0].trim() : "",
               email: "",
               website: ""
             });
@@ -227,6 +241,9 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
     
     // Salvar fonte da sugestão no sessionStorage
     sessionStorage.setItem('conciergeSource', message.slice(0, 1000));
+    
+    // Log para debug
+    console.log('Redirecionando para hospedagem com params:', Object.fromEntries(params));
     
     navigate(`/viagem/${tripId}/hospedagem?${params.toString()}`);
   };
