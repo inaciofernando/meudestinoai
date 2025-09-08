@@ -459,20 +459,20 @@ export default function Hospedagem() {
                 />
               </div>
 
-              <div className="flex gap-2 pt-4 border-t border-border">
-                <Button 
-                  onClick={handleSaveAccommodation} 
-                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  <Save className="w-4 h-4" />
-                  {editingAccommodation ? 'Atualizar' : 'Salvar'}
-                </Button>
+              <div className="flex justify-between gap-3 pt-6 border-t border-border mt-6">
                 <Button 
                   variant="outline" 
                   onClick={handleCancelEdit}
-                  className="flex items-center gap-2"
+                  className="flex-1 sm:flex-none sm:px-6"
                 >
                   Cancelar
+                </Button>
+                <Button 
+                  onClick={handleSaveAccommodation} 
+                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground flex-1 sm:flex-none sm:px-6"
+                >
+                  <Save className="w-4 h-4" />
+                  {editingAccommodation ? 'Atualizar' : 'Salvar'}
                 </Button>
               </div>
             </div>
