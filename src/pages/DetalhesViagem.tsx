@@ -1060,40 +1060,33 @@ export default function DetalhesViagem() {
                   
                   {locations.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <h4 className="font-semibold text-foreground mb-6 flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-primary" />
                         Destinos da Viagem
                       </h4>
-                      <div className="space-y-3 pl-6">
+                      <div className="space-y-6 pl-6">
                         {locations.map((location, index) => (
-                          <div key={location.id || location.order_index} className="bg-muted/30 rounded-lg p-4 border border-border/50">
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className={cn(
-                                  "w-3 h-3 rounded-full mt-1",
-                                  index === 0 ? "bg-primary" : "bg-muted-foreground"
-                                )}></div>
-                                <div>
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className={cn(
-                                      "text-base font-medium",
-                                      index === 0 ? "text-foreground" : "text-foreground"
-                                    )}>
-                                      {location.location_name}
-                                    </span>
-                                    {index === 0 && (
-                                      <Badge variant="default" className="text-xs bg-primary/20 text-primary border-primary/30">
-                                        Principal
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <Badge variant="outline" className="text-xs">
-                                    {location.location_type === 'city' && 'Cidade'}
-                                    {location.location_type === 'region' && 'Região'}
-                                    {location.location_type === 'attraction' && 'Atração'}
-                                    {location.location_type === 'airport' && 'Aeroporto'}
+                          <div key={location.id || location.order_index} className="flex items-start gap-4">
+                            <div className={cn(
+                              "w-3 h-3 rounded-full mt-2 flex-shrink-0",
+                              index === 0 ? "bg-primary" : "bg-muted-foreground"
+                            )}></div>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-1">
+                                <span className="text-xl font-medium text-foreground">
+                                  {location.location_name}
+                                </span>
+                                {index === 0 && (
+                                  <Badge variant="secondary" className="text-xs px-2 py-1 bg-primary/10 text-primary border-0">
+                                    Principal
                                   </Badge>
-                                </div>
+                                )}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {location.location_type === 'city' && 'Cidade'}
+                                {location.location_type === 'region' && 'Região'}
+                                {location.location_type === 'attraction' && 'Atração'}
+                                {location.location_type === 'airport' && 'Aeroporto'}
                               </div>
                             </div>
                           </div>
@@ -1115,12 +1108,12 @@ export default function DetalhesViagem() {
                 
                 <div className="pl-9">
                   {trip.start_date && trip.end_date ? (
-                    <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-8">
                       <div>
                         <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
                           Entrada
                         </div>
-                        <div className="text-2xl font-bold text-foreground">
+                        <div className="text-3xl font-bold text-foreground">
                           {format(parseISO(trip.start_date), "dd MMM yyyy", { locale: ptBR })}
                         </div>
                       </div>
@@ -1129,28 +1122,26 @@ export default function DetalhesViagem() {
                         <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
                           Saída
                         </div>
-                        <div className="text-2xl font-bold text-foreground">
+                        <div className="text-3xl font-bold text-foreground">
                           {format(parseISO(trip.end_date), "dd MMM yyyy", { locale: ptBR })}
                         </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-muted-foreground pt-2">
+                        <Clock className="w-4 h-4" />
+                        <span className="text-sm">
+                          {(() => {
+                            const start = parseISO(trip.start_date);
+                            const end = parseISO(trip.end_date);
+                            const diffTime = Math.abs(end.getTime() - start.getTime());
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                            return `${diffDays} dias de viagem`;
+                          })()}
+                        </span>
                       </div>
                     </div>
                   ) : (
                     <p className="text-muted-foreground">Datas não definidas</p>
-                  )}
-                  
-                  {trip.start_date && trip.end_date && (
-                    <div className="flex items-center gap-2 text-muted-foreground mt-6 pl-0">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-sm">
-                        {(() => {
-                          const start = parseISO(trip.start_date);
-                          const end = parseISO(trip.end_date);
-                          const diffTime = Math.abs(end.getTime() - start.getTime());
-                          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                          return `${diffDays} dias de viagem`;
-                        })()}
-                      </span>
-                    </div>
                   )}
                 </div>
               </div>
