@@ -229,7 +229,13 @@ export default function Hospedagem() {
   const handleSaveAccommodation = async () => {
     if (!user || !tripId) return;
 
+    console.log('=== DEBUG SAVE ACCOMMODATION ===');
+    console.log('User:', user?.id);
+    console.log('Trip ID:', tripId);
+    console.log('Form data:', newAccommodation);
+
     if (!newAccommodation.hotel_name || !newAccommodation.check_in_date || !newAccommodation.check_out_date) {
+      console.log('Validation failed - missing required fields');
       toast.error('Preencha os campos obrigatórios');
       return;
     }
@@ -261,22 +267,34 @@ export default function Hospedagem() {
         pet_friendly: newAccommodation.pet_friendly
       };
 
+      console.log('Data to save:', accommodationData);
+
       if (editingAccommodation) {
+        console.log('Updating existing accommodation:', editingAccommodation.id);
         // Atualizar hospedagem existente
         const { error } = await supabase
           .from('accommodations')
           .update(accommodationData)
           .eq('id', editingAccommodation.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
+        console.log('Update successful');
         toast.success('Hospedagem atualizada com sucesso!');
       } else {
+        console.log('Creating new accommodation');
         // Criar nova hospedagem
         const { error } = await supabase
           .from('accommodations')
           .insert([accommodationData]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
+        console.log('Insert successful');
         toast.success('Hospedagem adicionada com sucesso!');
       }
 
