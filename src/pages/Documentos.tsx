@@ -223,102 +223,117 @@ export default function Documentos() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {documents.map((document) => {
                 const categoryConfig = getCategoryConfig(document.category);
                 const IconComponent = categoryConfig.icon;
                 
                 return (
-                  <Card key={document.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${categoryConfig.color} text-white`}>
-                            <IconComponent className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-lg">{document.title}</CardTitle>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="outline">{categoryConfig.name}</Badge>
-                              <span className="text-xs text-muted-foreground">
-                                {format(parseISO(document.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                              </span>
+                  <Card key={document.id} className="hover:shadow-md transition-smooth">
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-lg ${categoryConfig.color} text-white flex-shrink-0`}>
+                          <IconComponent className="h-4 w-4" />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-base leading-tight truncate">
+                                {document.title}
+                              </h3>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                                  {categoryConfig.name}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  {format(parseISO(document.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-0.5 flex-shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => setPreviewFile({
+                                  url: document.file_url,
+                                  name: document.file_name,
+                                  type: document.file_type
+                                })}
+                                title="Visualizar documento"
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => handleDownload(document.file_url, document.file_name)}
+                                title="Fazer download"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => {
+                                  setEditingDocument(document);
+                                  setIsEditDialogOpen(true);
+                                }}
+                                title="Editar documento"
+                              >
+                                <Edit className="h-3.5 w-3.5" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive" 
+                                    title="Excluir documento"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir este documento? Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteDocument(document.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </div>
+                          
+                          {document.description && (
+                            <p className="text-muted-foreground text-sm mt-2 line-clamp-2">
+                              {document.description}
+                            </p>
+                          )}
+                          
+                          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                            <FileText className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{document.file_name}</span>
+                            <span className="px-1">•</span>
+                            <span className="font-medium">
+                              {document.file_type.toUpperCase()}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setPreviewFile({
-                              url: document.file_url,
-                              name: document.file_name,
-                              type: document.file_type
-                            })}
-                            title="Visualizar documento"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDownload(document.file_url, document.file_name)}
-                            title="Fazer download"
-                          >
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setEditingDocument(document);
-                              setIsEditDialogOpen(true);
-                            }}
-                            title="Editar documento"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="sm" title="Excluir documento">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir este documento? Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteDocument(document.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="space-y-3">
-                      {document.description && (
-                        <p className="text-muted-foreground text-sm">{document.description}</p>
-                      )}
-                      
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="flex items-center gap-1">
-                          <FileText className="h-3 w-3" />
-                          {document.file_name}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {document.file_type.toUpperCase()}
-                        </span>
                       </div>
                     </CardContent>
                   </Card>
