@@ -778,17 +778,63 @@ export default function Hospedagem() {
                 </div>
 
                 <div>
-                  <Label htmlFor="voucher">Voucher/Comprovante</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="voucher"
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                      onChange={handleVoucherUpload}
-                      className="cursor-pointer"
-                    />
+                  <Label htmlFor="voucher" className="text-base font-medium">Voucher/Comprovante</Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Faça upload do voucher da reserva, confirmação ou comprovante de pagamento
+                  </p>
+                  
+                  <div className="space-y-3">
+                    {/* Upload Area */}
+                    <div className="relative border-2 border-dashed border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+                      <div className="flex flex-col items-center justify-center text-center">
+                        <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-foreground">
+                            Clique para selecionar ou arraste o arquivo
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            PDF, JPG, PNG, DOC ou DOCX (máx. 10MB)
+                          </p>
+                        </div>
+                        <Input
+                          id="voucher"
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                          onChange={handleVoucherUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+
+                    {/* File Status */}
                     {newAccommodation.voucher_file_name && (
-                      <span className="text-sm text-muted-foreground">{newAccommodation.voucher_file_name}</span>
+                      <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                        <div className="flex-shrink-0">
+                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {newAccommodation.voucher_file_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Arquivo enviado com sucesso
+                          </p>
+                        </div>
+                        {newAccommodation.voucher_file_url && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDownloadVoucher(newAccommodation.voucher_file_url, newAccommodation.voucher_file_name)}
+                            className="flex-shrink-0"
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
