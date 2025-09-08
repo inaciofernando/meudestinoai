@@ -177,7 +177,7 @@ export default function GastosViagem() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [isViewingExpense, setIsViewingExpense] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<'todos' | 'planejado' | 'realizado'>('todos');
+  const [activeFilter, setActiveFilter] = useState<'todos' | 'planejado' | 'realizado'>('realizado');
   const [showChart, setShowChart] = useState(false);
 
   // Form states for budget editing
@@ -813,7 +813,7 @@ export default function GastosViagem() {
                 
                 <div className="text-center">
                   <div className="bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20 mb-2">
-                    <span className="text-sm font-medium">Transações</span>
+                    <span className="text-sm font-medium">Gastos de Viagem</span>
                   </div>
                   <p className="text-sm text-muted-foreground">{trip.destination}</p>
                 </div>
@@ -886,39 +886,25 @@ export default function GastosViagem() {
               <div className="bg-primary/10 rounded-full p-1 border border-primary/20">
                 <div className="flex">
                   <button
-                    onClick={() => handleFilterChange('todos')}
+                    onClick={() => handleFilterChange('realizado')}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      activeFilter === 'todos'
+                      activeFilter === 'realizado'
                         ? 'bg-primary text-white shadow-sm'
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    Transações
+                    Realizados
                   </button>
-                  {calculations.realizedExpenses > 0 && (
-                    <button
-                      onClick={() => handleFilterChange('realizado')}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                        activeFilter === 'realizado'
-                          ? 'bg-primary text-white shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      Realizados
-                    </button>
-                  )}
-                  {calculations.plannedExpenses > 0 && (
-                    <button
-                      onClick={() => handleFilterChange('planejado')}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                        activeFilter === 'planejado'
-                          ? 'bg-primary text-white shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      Planejados
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleFilterChange('planejado')}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      activeFilter === 'planejado'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Planejados
+                  </button>
                 </div>
               </div>
             </div>
