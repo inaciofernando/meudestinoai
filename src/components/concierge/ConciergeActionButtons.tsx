@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { UtensilsCrossed, MapPinPlus, MoreVertical, ExternalLink, Map, Globe, Navigation } from "lucide-react";
+import { UtensilsCrossed, MapPinPlus, MoreVertical, ExternalLink, Map, Globe, Navigation, Hotel } from "lucide-react";
 
 interface QuickActionButtonsProps {
   message: string;
@@ -18,6 +18,7 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
     if (messageData?.structuredData) {
       let restaurants: any[] = [];
       let attractions: any[] = [];
+      let accommodations: any[] = [];
       
       if (messageData.structuredData.restaurant) {
         restaurants.push({
@@ -47,15 +48,29 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         });
       }
       
-      return { restaurants, attractions };
+      if (messageData.structuredData.accommodation) {
+        accommodations.push({
+          name: messageData.structuredData.accommodation.name || "",
+          address: messageData.structuredData.accommodation.address || "",
+          phone: messageData.structuredData.accommodation.phone || "",
+          email: messageData.structuredData.accommodation.email || "",
+          website: messageData.structuredData.accommodation.website || messageData.structuredData.accommodation.link || "",
+          type: messageData.structuredData.accommodation.type || "hotel",
+          description: messageData.structuredData.accommodation.description || ""
+        });
+      }
+      
+      return { restaurants, attractions, accommodations };
     }
 
     // Fallback: lógica original de extração da string
     const containsRestaurant = /restaurante|comida|culinária|gastronomia|prato|comer|jantar|almoçar|café da manhã|food|restaurant/i.test(message);
     const containsAttraction = /vinícola|atração|ponto turístico|visitar|museu|parque|monumento|igreja|teatro|shopping|mercado|praia|trilha|passeio|winery|attraction/i.test(message);
+    const containsAccommodation = /hotel|hospedagem|acomodação|pousada|resort|inn|residence|marriott|hilton|hyatt|radisson|intercontinental|onde ficar|estadia|pernoite|accommodation/i.test(message);
 
     let restaurants: any[] = [];
     let attractions: any[] = [];
+    let accommodations: any[] = [];
 
     // Try to extract JSON data first (fastest method)
     try {
@@ -88,6 +103,17 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
             waze: parsed.itinerary_item.waze_link || parsed.itinerary_item.waze || ""
           });
         }
+        if (parsed?.accommodation) {
+          accommodations.push({
+            name: parsed.accommodation.name || "",
+            address: parsed.accommodation.address || "",
+            phone: parsed.accommodation.phone || "",
+            email: parsed.accommodation.email || "",
+            website: parsed.accommodation.website || parsed.accommodation.link || "",
+            type: parsed.accommodation.type || "hotel",
+            description: parsed.accommodation.description || ""
+          });
+        }
       }
     } catch (e) {
       // Fallback to simple text extraction only if JSON fails
@@ -118,9 +144,33 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
           });
         }
       }
+      if (containsAccommodation) {
+        // Extrair nome do hotel da mensagem
+        const hotelPatterns = [
+          /\*\*([^*]*(?:Hotel|Inn|Resort|Residence|Marriott|Hilton|Hyatt|Radisson|InterContinental)[^*]*)\*\*/i,
+          /Residence Inn by Marriott ([^.\n]+)/i,
+          /([^.\n]*(?:Hotel|Inn|Resort|Residence)[^.\n]*)/i
+        ];
+        
+        for (const pattern of hotelPatterns) {
+          const match = message.match(pattern);
+          if (match) {
+            accommodations.push({
+              name: match[1].trim(),
+              description: "Sugerido pelo concierge",
+              type: "hotel",
+              address: "",
+              phone: "",
+              email: "",
+              website: ""
+            });
+            break;
+          }
+        }
+      }
     }
 
-    return { restaurants, attractions };
+    return { restaurants, attractions, accommodations };
   }, [message, messageData]);
 
   const handleAddRestaurant = (restaurant: any) => {
@@ -161,6 +211,24 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
     }
     
     navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
+  };
+
+  const handleAddAccommodation = (accommodation: any) => {
+    const params = new URLSearchParams({
+      hotel_name: accommodation.name,
+      address: accommodation.address || '',
+      phone: accommodation.phone || '',
+      email: accommodation.email || '',
+      hotel_link: accommodation.website || '',
+      accommodation_type: accommodation.type || 'hotel',
+      notes: accommodation.description || '',
+      fromConcierge: 'true'
+    });
+    
+    // Salvar fonte da sugestão no sessionStorage
+    sessionStorage.setItem('conciergeSource', message.slice(0, 1000));
+    
+    navigate(`/viagem/${tripId}/hospedagem?${params.toString()}`);
   };
 
   const openExternalLink = (url: string, linkType?: string) => {
@@ -218,6 +286,24 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
               {`Restaurante${
                 extractedData.restaurants.length > 0 && extractedData.restaurants[0].name
                   ? ` – ${extractedData.restaurants[0].name}`
+                  : ''
+              }`}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                if (extractedData.accommodations.length > 0) {
+                  handleAddAccommodation(extractedData.accommodations[0]);
+                } else {
+                  const params = new URLSearchParams({ fromConcierge: 'true' });
+                  navigate(`/viagem/${tripId}/hospedagem?${params.toString()}`);
+                }
+              }}
+              className="cursor-pointer"
+            >
+              <Hotel className="w-4 h-4 mr-2" />
+              {`Hospedagem${
+                extractedData.accommodations.length > 0 && extractedData.accommodations[0].name
+                  ? ` – ${extractedData.accommodations[0].name}`
                   : ''
               }`}
             </DropdownMenuItem>

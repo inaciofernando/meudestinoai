@@ -117,6 +117,29 @@ export default function Hospedagem() {
   useEffect(() => {
     if (tripId && user) {
       loadTripAndAccommodations();
+      // Verificar se veio do Concierge e preencher formulário
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('fromConcierge') === 'true') {
+        const conciergeData = {
+          hotel_name: urlParams.get('hotel_name') || "",
+          address: urlParams.get('address') || "",
+          phone: urlParams.get('phone') || "",
+          email: urlParams.get('email') || "",
+          hotel_link: urlParams.get('hotel_link') || "",
+          accommodation_type: urlParams.get('accommodation_type') || "hotel",
+          notes: urlParams.get('notes') || ""
+        };
+        
+        setNewAccommodation(prev => ({
+          ...prev,
+          ...conciergeData
+        }));
+        
+        setShowAddForm(true);
+        
+        // Limpar URL params para uma navegação mais limpa
+        window.history.replaceState({}, '', window.location.pathname);
+      }
     }
   }, [tripId, user]);
 
