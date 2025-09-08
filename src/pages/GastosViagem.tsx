@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -1345,9 +1346,14 @@ export default function GastosViagem() {
         {/* AI Processing Modal - Design Melhorado */}
         <Dialog open={showAIProcessingModal} onOpenChange={() => {}}>
           <DialogContent className="max-w-md w-[90vw] p-0 overflow-hidden">
-            <DialogHeader className="sr-only">
-              <DialogTitle>Processando dados com IA</DialogTitle>
-            </DialogHeader>
+            <VisuallyHidden>
+              <DialogHeader>
+                <DialogTitle>Processando dados com IA</DialogTitle>
+                <DialogDescription>
+                  Aguarde enquanto processamos seus dados com inteligência artificial.
+                </DialogDescription>
+              </DialogHeader>
+            </VisuallyHidden>
             {/* Background animado */}
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700"></div>

@@ -5,7 +5,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -970,9 +971,14 @@ export default function RoteiroSimples() {
         {/* Image Viewer Dialog */}
          <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
            <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-             <DialogHeader className="sr-only">
-               <DialogTitle>Visualizador de Imagem</DialogTitle>
-             </DialogHeader>
+             <VisuallyHidden>
+               <DialogHeader>
+                 <DialogTitle>Visualizador de Imagem</DialogTitle>
+                 <DialogDescription>
+                   Visualize a imagem em tamanho ampliado.
+                 </DialogDescription>
+               </DialogHeader>
+             </VisuallyHidden>
              <div className="relative">
                <Button
                  variant="ghost"
