@@ -328,10 +328,6 @@ export default function Documentos() {
                           <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
                             <FileText className="h-3 w-3 flex-shrink-0" />
                             <span className="truncate">{document.file_name}</span>
-                            <span className="px-1">•</span>
-                            <span className="font-medium">
-                              {document.file_type.toUpperCase()}
-                            </span>
                           </div>
                         </div>
                       </div>
