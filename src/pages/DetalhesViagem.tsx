@@ -1043,12 +1043,12 @@ export default function DetalhesViagem() {
           ) : (
             <div className="space-y-0">
               {/* Hero Section with Trip Title */}
-              <div className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 rounded-2xl p-8 mb-8">
-                <div className="space-y-6">
+              <div className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 rounded-2xl p-6 mb-6">
+                <div className="space-y-4">
                   {/* Trip Overview */}
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     <div>
-                      <h1 className="text-4xl font-bold text-foreground mb-3">{trip.title}</h1>
+                      <h1 className="text-2xl font-bold text-foreground mb-2">{trip.title}</h1>
                       <div className="flex items-center gap-3">
                         <Badge 
                           variant={getStatusColor(trip.status)} 
@@ -1061,8 +1061,8 @@ export default function DetalhesViagem() {
 
                     {/* Quick Trip Stats */}
                     {trip.start_date && trip.end_date && (
-                      <div className="bg-white/50 dark:bg-black/20 rounded-lg p-6 backdrop-blur-sm border border-white/20 max-w-md">
-                        <div className="grid grid-cols-2 gap-6">
+                      <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 backdrop-blur-sm border border-white/20 max-w-md">
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
                             <div className="text-sm font-medium text-muted-foreground mb-1">Partida</div>
                             <div className="text-lg font-bold text-foreground">
@@ -1082,7 +1082,7 @@ export default function DetalhesViagem() {
                             </div>
                           </div>
                         </div>
-                        <div className="mt-4 pt-4 border-t border-white/20">
+                        <div className="mt-3 pt-3 border-t border-white/20">
                           <div className="flex items-center gap-2 text-primary">
                             <Clock className="w-4 h-4" />
                             <span className="text-sm font-medium">
