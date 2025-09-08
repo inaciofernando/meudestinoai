@@ -324,10 +324,6 @@ export default function Documentos() {
                               {document.description}
                             </p>
                           )}
-                          
-                          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                            <FileText className="h-3 w-3 flex-shrink-0" />
-                          </div>
                         </div>
                       </div>
                     </CardContent>
