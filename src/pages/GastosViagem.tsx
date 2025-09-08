@@ -948,9 +948,9 @@ export default function GastosViagem() {
                         className="flex items-center gap-3 p-3 bg-card hover:bg-card/80 transition-colors cursor-pointer rounded-lg border border-border/30"
                         onClick={() => handleViewExpense(expense)}
                       >
-                        {/* Ícone da Categoria - Padronizado */}
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${category.color}`}>
-                          <CategoryIcon className="w-5 h-5 text-white" />
+                        {/* Ícone da Categoria - Reduzido */}
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${category.color}`}>
+                          <CategoryIcon className="w-4 h-4 text-white" />
                         </div>
 
                         {/* Transaction Info - Cleaner */}
