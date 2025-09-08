@@ -930,12 +930,6 @@ export default function Hospedagem() {
                     </div>
                   )}
 
-                   {accommodation.reservation_amount && (
-                     <div>
-                       <strong>Valor da Reserva:</strong> {formatCurrency(accommodation.reservation_amount)}
-                     </div>
-                   )}
-
                    {accommodation.notes && (
                      <div>
                        <strong>Observações:</strong>
