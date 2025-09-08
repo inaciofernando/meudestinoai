@@ -1132,15 +1132,14 @@ export default function DetalhesViagem() {
 
           {/* Travel Management Menu */}
           {!isEditing && (
-            <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <DollarSign className="w-5 h-5 text-primary" />
-                  Gestão da Viagem
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <DollarSign className="w-6 h-6 text-primary" />
+                <h2 className="text-xl font-semibold text-foreground">Gestão da Viagem</h2>
+              </div>
+              
+              <div className="pl-9">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Button
                     variant="outline"
                     className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
@@ -1205,20 +1204,26 @@ export default function DetalhesViagem() {
                     <span className="text-xs font-medium">Concierge</span>
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
 
           {/* Descrição */}
           {!isEditing && trip.description && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Descrição</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground whitespace-pre-wrap">{trip.description}</p>
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              <Separator className="my-6" />
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <FileText className="w-6 h-6 text-primary" />
+                  <h2 className="text-xl font-semibold text-foreground">Descrição</h2>
+                </div>
+                
+                <div className="pl-9">
+                  <p className="text-foreground whitespace-pre-wrap leading-relaxed">{trip.description}</p>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Ações */}
