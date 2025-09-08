@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { format, parseISO } from "date-fns";
-import { Download, ExternalLink, ArrowLeft, Edit, Trash2, Calendar as CalendarIcon, Save, Upload } from "lucide-react";
+import { Download, ExternalLink, ArrowLeft, Edit, Trash2, Calendar as CalendarIcon, Save, Upload, MapPin, Phone, Mail, Wifi, Car, Coffee, Heart, Navigation } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,8 +26,21 @@ interface Accommodation {
   voucher_file_url?: string;
   voucher_file_name?: string;
   hotel_link?: string;
+  waze_link?: string;
   reservation_amount?: number;
   notes?: string;
+  accommodation_type?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  phone?: string;
+  email?: string;
+  room_type?: string;
+  confirmation_number?: string;
+  includes_breakfast?: boolean;
+  wifi_available?: boolean;
+  parking_available?: boolean;
+  pet_friendly?: boolean;
 }
 
 export default function DetalhesHospedagem() {
@@ -320,10 +333,49 @@ export default function DetalhesHospedagem() {
               </Card>
             )}
 
-            {/* Informações da Reserva */}
+            {/* Informações Básicas */}
             <Card>
               <CardHeader>
-                <CardTitle>Detalhes da Reserva</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Coffee className="w-5 h-5" />
+                  Informações Básicas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <strong>Tipo de Hospedagem:</strong>
+                    <p className="text-muted-foreground mt-1 capitalize">
+                      {accommodation.accommodation_type || 'Hotel'}
+                    </p>
+                  </div>
+                  {accommodation.confirmation_number && (
+                    <div>
+                      <strong>Número da Reserva:</strong>
+                      <p className="text-muted-foreground mt-1 font-mono">
+                        {accommodation.confirmation_number}
+                      </p>
+                    </div>
+                  )}
+                  {accommodation.room_type && (
+                    <div>
+                      <strong>Tipo de Quarto:</strong>
+                      <p className="text-muted-foreground mt-1 capitalize">
+                        {accommodation.room_type}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Período da Estadia */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5" />
+                  Período da Estadia
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -336,61 +388,190 @@ export default function DetalhesHospedagem() {
                     <p className="text-lg mt-1">{format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                {accommodation.reservation_amount && (
+            {/* Localização */}
+            {(accommodation.address || accommodation.city || accommodation.country) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5" />
+                    Localização
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {accommodation.address && (
+                    <div>
+                      <strong>Endereço:</strong>
+                      <p className="text-muted-foreground mt-1">{accommodation.address}</p>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {accommodation.city && (
+                      <div>
+                        <strong>Cidade:</strong>
+                        <p className="text-muted-foreground mt-1">{accommodation.city}</p>
+                      </div>
+                    )}
+                    {accommodation.country && (
+                      <div>
+                        <strong>País:</strong>
+                        <p className="text-muted-foreground mt-1">{accommodation.country}</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Contato */}
+            {(accommodation.phone || accommodation.email) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Phone className="w-5 h-5" />
+                    Contato
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {accommodation.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <div>
+                        <strong>Telefone:</strong>
+                        <p className="text-muted-foreground">{accommodation.phone}</p>
+                      </div>
+                    </div>
+                  )}
+                  {accommodation.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <div>
+                        <strong>Email:</strong>
+                        <p className="text-muted-foreground">{accommodation.email}</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Comodidades */}
+            {(accommodation.includes_breakfast || accommodation.wifi_available || accommodation.parking_available || accommodation.pet_friendly) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Coffee className="w-5 h-5" />
+                    Comodidades
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {accommodation.includes_breakfast && (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <Coffee className="w-4 h-4" />
+                        <span className="text-sm">Café da manhã</span>
+                      </div>
+                    )}
+                    {accommodation.wifi_available && (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <Wifi className="w-4 h-4" />
+                        <span className="text-sm">Wi-Fi gratuito</span>
+                      </div>
+                    )}
+                    {accommodation.parking_available && (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <Car className="w-4 h-4" />
+                        <span className="text-sm">Estacionamento</span>
+                      </div>
+                    )}
+                    {accommodation.pet_friendly && (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <Heart className="w-4 h-4" />
+                        <span className="text-sm">Pet friendly</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Informações Financeiras */}
+            {accommodation.reservation_amount && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Informações Financeiras</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div>
-                    <strong>Valor da Reserva:</strong>
+                    <strong>Valor Total da Reserva:</strong>
                     <p className="text-2xl font-bold text-primary mt-1">
                       {formatCurrency(accommodation.reservation_amount, "R$")}
                     </p>
                   </div>
-                )}
+                </CardContent>
+              </Card>
+            )}
 
-                {accommodation.notes && (
-                  <div>
-                    <strong>Observações:</strong>
-                    <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{accommodation.notes}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Documentos e Links - só mostra se houver voucher ou link */}
-            {(accommodation.voucher_file_url || accommodation.hotel_link) && (
+            {/* Links e Navegação */}
+            {(accommodation.hotel_link || accommodation.waze_link) && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Documentos e Links</CardTitle>
+                  <CardTitle>Links e Navegação</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {accommodation.voucher_file_url && (
-                    <div className="flex items-center gap-2">
-                      <strong>Voucher:</strong>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownloadVoucher(accommodation.voucher_file_url!, accommodation.voucher_file_name!)}
-                        className="flex items-center gap-2"
-                      >
-                        <Download className="w-4 h-4" />
-                        {accommodation.voucher_file_name}
-                      </Button>
-                    </div>
-                  )}
-
+                <CardContent className="space-y-3">
                   {accommodation.hotel_link && (
-                    <div className="flex items-center gap-2">
-                      <strong>Link do Hotel:</strong>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(accommodation.hotel_link, '_blank')}
-                        className="flex items-center gap-2"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        Acessar Site
-                      </Button>
-                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => window.open(accommodation.hotel_link, '_blank')}
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Acessar Site do Hotel
+                    </Button>
                   )}
+                  {accommodation.waze_link && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-blue-600 border-blue-200 hover:bg-blue-50"
+                      onClick={() => window.open(accommodation.waze_link, '_blank')}
+                    >
+                      <Navigation className="w-4 h-4 mr-2" />
+                      Abrir no Waze
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Documentos */}
+            {accommodation.voucher_file_url && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Documentos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => handleDownloadVoucher(accommodation.voucher_file_url!, accommodation.voucher_file_name!)}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    {accommodation.voucher_file_name || 'Baixar Voucher'}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Observações */}
+            {accommodation.notes && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Observações</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground whitespace-pre-wrap">{accommodation.notes}</p>
                 </CardContent>
               </Card>
             )}
