@@ -1,7 +1,6 @@
 import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Bot } from "lucide-react";
 import { AddressCopyButton } from "./AddressCopyButton";
 
 interface Message {
@@ -128,17 +127,12 @@ const ConciergeChatMessage = memo(({ message, index }: ConciergeChatMessageProps
   return (
     <div
       key={index}
-      className={`flex items-start gap-3 sm:gap-4 ${
+      className={`flex ${
         message.role === "user" ? "justify-end" : "justify-start"
-      } px-4 mb-6`}
+      } px-4 mb-4`}
     >
-      {message.role !== "user" && (
-        <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-muted text-foreground/80 flex items-center justify-center flex-shrink-0 mt-1">
-          <Bot className="h-4 w-4" />
-        </div>
-      )}
       <div
-        className={`w-full max-w-[85%] sm:max-w-[75%] lg:max-w-[65%] rounded-2xl px-4 sm:px-5 py-3 sm:py-4 shadow-sm ${
+        className={`w-full max-w-[95%] sm:max-w-[90%] lg:max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
           message.role === "user"
             ? "bg-primary text-primary-foreground"
             : "bg-muted text-foreground"
@@ -177,11 +171,6 @@ const ConciergeChatMessage = memo(({ message, index }: ConciergeChatMessageProps
           <p className="text-sm leading-relaxed">{message.content}</p>
         )}
       </div>
-      {message.role === "user" && (
-        <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 mt-1">
-          <span className="text-xs font-medium">Eu</span>
-        </div>
-      )}
     </div>
   );
 });
