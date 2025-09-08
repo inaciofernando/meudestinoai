@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, parseISO } from "date-fns";
 import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
@@ -307,12 +308,17 @@ export default function Hospedagem() {
         </div>
 
         {/* Formulário para adicionar nova hospedagem */}
-        {showAddForm && (
-          <Card className="mb-4">
-            <CardHeader>
-              <CardTitle>{editingAccommodation ? 'Editar Hospedagem' : 'Nova Hospedagem'}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        <Dialog open={showAddForm} onOpenChange={(open) => {
+          if (!open) {
+            handleCancelEdit();
+          }
+          setShowAddForm(open);
+        }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingAccommodation ? 'Editar Hospedagem' : 'Nova Hospedagem'}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
               <div>
                 <Label htmlFor="hotel_name">Nome do Hotel *</Label>
                 <Input
@@ -453,7 +459,7 @@ export default function Hospedagem() {
                 />
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 pt-4">
                 <Button onClick={handleSaveAccommodation} className="flex items-center gap-2">
                   <Save className="w-4 h-4" />
                   {editingAccommodation ? 'Atualizar' : 'Salvar'}
@@ -462,9 +468,9 @@ export default function Hospedagem() {
                   Cancelar
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Lista de hospedagens */}
         <div className="grid gap-4">
