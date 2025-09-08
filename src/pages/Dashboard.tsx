@@ -261,21 +261,21 @@ export default function Dashboard() {
     {
       title: "Viagens Realizadas",
       value: completedTrips.length.toString(),
-      change: completedTrips.length > 0 ? `${completedTrips.length} ${completedTrips.length === 1 ? 'concluída' : 'concluídas'}` : "Nenhuma concluída",
+      change: completedTrips.length > 0 ? "Concluídas" : "Nenhuma concluída",
       icon: CheckCircle,
       color: "text-green-600"
     },
     {
       title: "Viagens Confirmadas", 
       value: upcomingTrips.length.toString(),
-      change: upcomingTrips.length > 0 ? `${upcomingTrips.length} ${upcomingTrips.length === 1 ? 'confirmada' : 'confirmadas'}` : "Nenhuma confirmada",
+      change: upcomingTrips.length > 0 ? "Confirmadas" : "Nenhuma confirmada",
       icon: Calendar,
       color: "text-primary"
     },
     {
       title: "Em Planejamento",
       value: planningTrips.length.toString(),
-      change: planningTrips.length > 0 ? `${planningTrips.length} ${planningTrips.length === 1 ? 'planejando' : 'planejando'}` : "Nenhuma em planejamento",
+      change: planningTrips.length > 0 ? "Planejando" : "Nenhuma em planejamento",
       icon: MapPin,
       color: "text-amber-600"
     }
