@@ -1042,29 +1042,11 @@ export default function DetalhesViagem() {
             </Form>
           ) : (
             <div className="space-y-0">
-              {/* Hero Section with Trip Image and Title */}
+              {/* Hero Section with Trip Title */}
               <div className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 rounded-2xl p-8 mb-8">
-                <div className="flex flex-col lg:flex-row gap-8 items-start">
-                  {/* Trip Image */}
-                  <div className="w-full lg:w-1/2">
-                    {trip.images && trip.images.length > 0 ? (
-                      <div className="relative overflow-hidden rounded-xl aspect-video group">
-                        <img
-                          src={trip.images[0]}
-                          alt={`Imagem da viagem ${trip.title}`}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                      </div>
-                    ) : (
-                      <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl flex items-center justify-center">
-                        <Image className="w-16 h-16 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-
+                <div className="space-y-6">
                   {/* Trip Overview */}
-                  <div className="w-full lg:w-1/2 space-y-6">
+                  <div className="space-y-6">
                     <div>
                       <h1 className="text-4xl font-bold text-foreground mb-3">{trip.title}</h1>
                       <div className="flex items-center gap-3">
@@ -1079,7 +1061,7 @@ export default function DetalhesViagem() {
 
                     {/* Quick Trip Stats */}
                     {trip.start_date && trip.end_date && (
-                      <div className="bg-white/50 dark:bg-black/20 rounded-lg p-6 backdrop-blur-sm border border-white/20">
+                      <div className="bg-white/50 dark:bg-black/20 rounded-lg p-6 backdrop-blur-sm border border-white/20 max-w-md">
                         <div className="grid grid-cols-2 gap-6">
                           <div>
                             <div className="text-sm font-medium text-muted-foreground mb-1">Partida</div>
