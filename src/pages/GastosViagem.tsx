@@ -948,11 +948,9 @@ export default function GastosViagem() {
                         className="flex items-center gap-3 p-3 bg-card hover:bg-card/80 transition-colors cursor-pointer rounded-lg border border-border/30"
                         onClick={() => handleViewExpense(expense)}
                       >
-                        {/* Simple Icon */}
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          isRealized ? category.color : 'bg-muted'
-                        }`}>
-                          <CategoryIcon className={`w-5 h-5 ${isRealized ? 'text-white' : 'text-muted-foreground'}`} />
+                        {/* Ícone da Categoria - Padronizado */}
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${category.color}`}>
+                          <CategoryIcon className="w-5 h-5 text-white" />
                         </div>
 
                         {/* Transaction Info - Cleaner */}
@@ -968,12 +966,10 @@ export default function GastosViagem() {
                           </p>
                         </div>
 
-                        {/* Amount - Prominent */}
+                        {/* Valor - Cor Padronizada */}
                         <div className="text-right flex items-center gap-2">
                           <div>
-                            <p className={`font-semibold ${
-                              isRealized ? 'text-red-600' : 'text-muted-foreground'
-                            }`}>
+                            <p className="font-semibold text-foreground">
                               {formatCurrency(expense.amount, selectedCurrency.symbol)}
                             </p>
                           </div>
