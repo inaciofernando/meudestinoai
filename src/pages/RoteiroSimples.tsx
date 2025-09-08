@@ -970,6 +970,9 @@ export default function RoteiroSimples() {
         {/* Image Viewer Dialog */}
          <Dialog open={imageViewerOpen} onOpenChange={setImageViewerOpen}>
            <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+             <DialogHeader className="sr-only">
+               <DialogTitle>Visualizador de Imagem</DialogTitle>
+             </DialogHeader>
              <div className="relative">
                <Button
                  variant="ghost"

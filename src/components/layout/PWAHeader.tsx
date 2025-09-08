@@ -113,14 +113,14 @@ export const PWAHeader = () => {
                      <MoreHorizontal className="w-4 h-4 text-foreground" />
                    </Button>
                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className="w-56 z-[9999] bg-background border border-border shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/95"
-                    sideOffset={8}
-                  >
+                 <DropdownMenuContent 
+                   align="end" 
+                   className="w-56 z-[9999] bg-background border border-border shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/95"
+                   sideOffset={8}
+                 >
                    <DropdownMenuItem 
                      onClick={() => navigate("/perfil")} 
-                     className="cursor-pointer hover:bg-primary/10 text-card-foreground focus:bg-primary/10 focus:text-card-foreground"
+                     className="cursor-pointer hover:bg-primary/10 text-foreground focus:bg-primary/10 focus:text-foreground"
                    >
                      <Settings className="w-4 h-4 mr-2" />
                      Configurações

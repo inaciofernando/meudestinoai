@@ -1345,6 +1345,9 @@ export default function GastosViagem() {
         {/* AI Processing Modal - Design Melhorado */}
         <Dialog open={showAIProcessingModal} onOpenChange={() => {}}>
           <DialogContent className="max-w-md w-[90vw] p-0 overflow-hidden">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Processando dados com IA</DialogTitle>
+            </DialogHeader>
             {/* Background animado */}
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700"></div>
