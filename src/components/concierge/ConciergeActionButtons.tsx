@@ -14,13 +14,8 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
   const navigate = useNavigate();
 
   const extractedData = useMemo(() => {
-    console.log('=== EXTRAÇÃO DE DADOS ===');
-    console.log('Mensagem completa:', message);
-    console.log('MessageData:', JSON.stringify(messageData, null, 2));
-    
     // Primeiro, tentar usar dados estruturados se disponíveis
     if (messageData?.structuredData) {
-      console.log('Dados estruturados encontrados:', JSON.stringify(messageData.structuredData, null, 2));
       let restaurants: any[] = [];
       let attractions: any[] = [];
       let accommodations: any[] = [];
@@ -40,17 +35,33 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
       }
       
       if (messageData.structuredData.itinerary_item) {
-        attractions.push({
-          name: messageData.structuredData.itinerary_item.title || "",
-          description: messageData.structuredData.itinerary_item.description || "",
-          category: messageData.structuredData.itinerary_item.category || "attraction",
-          location: messageData.structuredData.itinerary_item.location || "",
-          address: messageData.structuredData.itinerary_item.address || "",
-          website: messageData.structuredData.itinerary_item.link || messageData.structuredData.itinerary_item.website_link || "",
-          tripadvisor: messageData.structuredData.itinerary_item.tripadvisor_link || messageData.structuredData.itinerary_item.tripadvisor || "",
-          gmap: messageData.structuredData.itinerary_item.google_maps_link || messageData.structuredData.itinerary_item.gmap || "",
-          waze: messageData.structuredData.itinerary_item.waze_link || messageData.structuredData.itinerary_item.waze || ""
-        });
+        const item = messageData.structuredData.itinerary_item;
+        
+        // Se a categoria é accommodation, adicionar aos accommodations
+        if (item.category === "accommodation") {
+          accommodations.push({
+            name: item.title || "",
+            address: item.address || "",
+            phone: "", // Não disponível nos dados estruturados
+            email: "", // Não disponível nos dados estruturados  
+            website: item.link || item.website_link || "",
+            type: "hotel",
+            description: item.description || ""
+          });
+        } else {
+          // Caso contrário, é uma atração normal
+          attractions.push({
+            name: item.title || "",
+            description: item.description || "",
+            category: item.category || "attraction",
+            location: item.location || "",
+            address: item.address || "",
+            website: item.link || item.website_link || "",
+            tripadvisor: item.tripadvisor_link || item.tripadvisor || "",
+            gmap: item.google_maps_link || item.gmap || "",
+            waze: item.waze_link || item.waze || ""
+          });
+        }
       }
       
       if (messageData.structuredData.accommodation) {
@@ -65,20 +76,13 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         });
       }
       
-      console.log('=== RESULTADO DOS DADOS ESTRUTURADOS ===');
-      console.log('Restaurants:', JSON.stringify(restaurants, null, 2));
-      console.log('Attractions:', JSON.stringify(attractions, null, 2)); 
-      console.log('Accommodations:', JSON.stringify(accommodations, null, 2));
       return { restaurants, attractions, accommodations };
     }
 
     // Fallback: lógica original de extração da string
-    console.log('=== EXTRAÇÃO MANUAL ===');
     const containsRestaurant = /restaurante|comida|culinária|gastronomia|prato|comer|jantar|almoçar|café da manhã|food|restaurant/i.test(message);
     const containsAttraction = /vinícola|atração|ponto turístico|visitar|museu|parque|monumento|igreja|teatro|shopping|mercado|praia|trilha|passeio|winery|attraction/i.test(message);
     const containsAccommodation = /hotel|hospedagem|acomodação|pousada|resort|inn|residence|marriott|hilton|hyatt|radisson|intercontinental|onde ficar|estadia|pernoite|accommodation/i.test(message);
-
-    console.log('Padrões encontrados:', { containsRestaurant, containsAttraction, containsAccommodation });
 
     let restaurants: any[] = [];
     let attractions: any[] = [];
@@ -157,7 +161,6 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         }
       }
       if (containsAccommodation) {
-        console.log('Contém dados de acomodação, extraindo...');
         // Extrair nome do hotel da mensagem
         const hotelPatterns = [
           /\*\*([^*]*(?:Hotel|Inn|Resort|Residence|Marriott|Hilton|Hyatt|Radisson|InterContinental)[^*]*)\*\*/i,
@@ -168,7 +171,6 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         for (const pattern of hotelPatterns) {
           const match = message.match(pattern);
           if (match) {
-            console.log('Nome do hotel encontrado:', match[1]);
             // Extrair informações adicionais da mensagem
             const addressMatch = message.match(/endereço[:\s]*([^\n.]+)/i) || 
                                  message.match(/localizado[^\n]*?([A-Z][^.\n]+)/i) ||
@@ -193,7 +195,6 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
               website: ""
             };
             
-            console.log('Dados da acomodação extraídos:', extractedAccommodation);
             accommodations.push(extractedAccommodation);
             break;
           }
@@ -201,10 +202,6 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
       }
     }
 
-    console.log('=== RESULTADO FINAL ===');
-    console.log('Restaurants finais:', JSON.stringify(restaurants, null, 2));
-    console.log('Attractions finais:', JSON.stringify(attractions, null, 2));
-    console.log('Accommodations finais:', JSON.stringify(accommodations, null, 2));
     return { restaurants, attractions, accommodations };
   }, [message, messageData]);
 
@@ -262,9 +259,6 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
     
     // Salvar fonte da sugestão no sessionStorage
     sessionStorage.setItem('conciergeSource', message.slice(0, 1000));
-    
-    // Log para debug
-    console.log('Redirecionando para hospedagem com params:', Object.fromEntries(params));
     
     navigate(`/viagem/${tripId}/hospedagem?${params.toString()}`);
   };
