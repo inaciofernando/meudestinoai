@@ -1133,7 +1133,7 @@ export default function GastosViagem() {
                     <div>
                       <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
                         <DollarSign className="w-4 h-4" />
-                        Valor <span className="text-red-500">*</span>
+                        Valor ({selectedCurrency.symbol}) <span className="text-red-500">*</span>
                       </Label>
                       <div className="relative">
                         <Input
@@ -1488,7 +1488,7 @@ export default function GastosViagem() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Valor *</Label>
+                    <Label>Valor ({selectedCurrency.symbol}) *</Label>
                     <div className="relative">
                       <Input
                         type="number"
