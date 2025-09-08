@@ -886,6 +886,16 @@ export default function GastosViagem() {
               <div className="bg-primary/10 rounded-full p-1 border border-primary/20">
                 <div className="flex">
                   <button
+                    onClick={() => handleFilterChange('todos')}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      activeFilter === 'todos'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Todos
+                  </button>
+                  <button
                     onClick={() => handleFilterChange('realizado')}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                       activeFilter === 'realizado'
