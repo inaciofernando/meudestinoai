@@ -119,8 +119,12 @@ export default function Hospedagem() {
       loadTripAndAccommodations();
       // Verificar se veio do Concierge e preencher formulário
       const urlParams = new URLSearchParams(window.location.search);
+      console.log('=== PÁGINA HOSPEDAGEM ===');
+      console.log('URL atual:', window.location.href);
+      console.log('Parâmetros da URL:', Object.fromEntries(urlParams));
+      
       if (urlParams.get('fromConcierge') === 'true') {
-        console.log('Carregando dados do Concierge...', Object.fromEntries(urlParams));
+        console.log('Detectado origem do Concierge');
         
         const conciergeData = {
           hotel_name: urlParams.get('hotel_name') || "",
@@ -132,7 +136,7 @@ export default function Hospedagem() {
           notes: urlParams.get('notes') || ""
         };
         
-        console.log('Dados extraídos:', conciergeData);
+        console.log('Dados do Concierge extraídos:', JSON.stringify(conciergeData, null, 2));
         
         setNewAccommodation(prev => ({
           ...prev,

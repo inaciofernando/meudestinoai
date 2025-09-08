@@ -14,10 +14,13 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
   const navigate = useNavigate();
 
   const extractedData = useMemo(() => {
-    console.log('Extraindo dados da mensagem:', { message: message.slice(0, 200), messageData });
+    console.log('=== EXTRAÇÃO DE DADOS ===');
+    console.log('Mensagem completa:', message);
+    console.log('MessageData:', JSON.stringify(messageData, null, 2));
     
     // Primeiro, tentar usar dados estruturados se disponíveis
     if (messageData?.structuredData) {
+      console.log('Dados estruturados encontrados:', JSON.stringify(messageData.structuredData, null, 2));
       let restaurants: any[] = [];
       let attractions: any[] = [];
       let accommodations: any[] = [];
@@ -62,14 +65,20 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         });
       }
       
-      console.log('Dados estruturados extraídos:', { restaurants, attractions, accommodations });
+      console.log('=== RESULTADO DOS DADOS ESTRUTURADOS ===');
+      console.log('Restaurants:', JSON.stringify(restaurants, null, 2));
+      console.log('Attractions:', JSON.stringify(attractions, null, 2)); 
+      console.log('Accommodations:', JSON.stringify(accommodations, null, 2));
       return { restaurants, attractions, accommodations };
     }
 
     // Fallback: lógica original de extração da string
+    console.log('=== EXTRAÇÃO MANUAL ===');
     const containsRestaurant = /restaurante|comida|culinária|gastronomia|prato|comer|jantar|almoçar|café da manhã|food|restaurant/i.test(message);
     const containsAttraction = /vinícola|atração|ponto turístico|visitar|museu|parque|monumento|igreja|teatro|shopping|mercado|praia|trilha|passeio|winery|attraction/i.test(message);
     const containsAccommodation = /hotel|hospedagem|acomodação|pousada|resort|inn|residence|marriott|hilton|hyatt|radisson|intercontinental|onde ficar|estadia|pernoite|accommodation/i.test(message);
+
+    console.log('Padrões encontrados:', { containsRestaurant, containsAttraction, containsAccommodation });
 
     let restaurants: any[] = [];
     let attractions: any[] = [];
@@ -192,7 +201,10 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
       }
     }
 
-    console.log('Resultado final da extração:', { restaurants, attractions, accommodations });
+    console.log('=== RESULTADO FINAL ===');
+    console.log('Restaurants finais:', JSON.stringify(restaurants, null, 2));
+    console.log('Attractions finais:', JSON.stringify(attractions, null, 2));
+    console.log('Accommodations finais:', JSON.stringify(accommodations, null, 2));
     return { restaurants, attractions, accommodations };
   }, [message, messageData]);
 
