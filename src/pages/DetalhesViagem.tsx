@@ -1060,30 +1060,42 @@ export default function DetalhesViagem() {
                   
                   {locations.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                      <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-primary" />
                         Destinos da Viagem
                       </h4>
-                      <div className="space-y-2 pl-6">
+                      <div className="space-y-3 pl-6">
                         {locations.map((location, index) => (
-                          <div key={location.id || location.order_index} className="flex items-center gap-3">
-                            <div className={cn(
-                              "w-2 h-2 rounded-full",
-                              index === 0 ? "bg-primary" : "bg-muted-foreground"
-                            )}></div>
-                            <span className={cn(
-                              "text-sm",
-                              index === 0 ? "font-medium text-foreground" : "text-foreground"
-                            )}>
-                              {location.location_name}
-                              {index === 0 && " (Principal)"}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              {location.location_type === 'city' && 'Cidade'}
-                              {location.location_type === 'region' && 'Região'}
-                              {location.location_type === 'attraction' && 'Atração'}
-                              {location.location_type === 'airport' && 'Aeroporto'}
-                            </Badge>
+                          <div key={location.id || location.order_index} className="bg-muted/30 rounded-lg p-4 border border-border/50">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className={cn(
+                                  "w-3 h-3 rounded-full mt-1",
+                                  index === 0 ? "bg-primary" : "bg-muted-foreground"
+                                )}></div>
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className={cn(
+                                      "text-base font-medium",
+                                      index === 0 ? "text-foreground" : "text-foreground"
+                                    )}>
+                                      {location.location_name}
+                                    </span>
+                                    {index === 0 && (
+                                      <Badge variant="default" className="text-xs bg-primary/20 text-primary border-primary/30">
+                                        Principal
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <Badge variant="outline" className="text-xs">
+                                    {location.location_type === 'city' && 'Cidade'}
+                                    {location.location_type === 'region' && 'Região'}
+                                    {location.location_type === 'attraction' && 'Atração'}
+                                    {location.location_type === 'airport' && 'Aeroporto'}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1103,27 +1115,46 @@ export default function DetalhesViagem() {
                 
                 <div className="pl-9">
                   {trip.start_date && trip.end_date ? (
-                    <div className="space-y-3">
-                      <div>
-                        <span className="text-2xl font-bold text-foreground">
-                          {format(parseISO(trip.start_date), "dd/MMM", { locale: ptBR })} - {format(parseISO(trip.end_date), "dd/MMM/yy", { locale: ptBR })}
-                        </span>
+                    <div className="bg-muted/30 rounded-lg p-6 border border-border/50">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+                            Entrada
+                          </div>
+                          <div className="text-lg font-semibold text-foreground">
+                            {format(parseISO(trip.start_date), "dd MMM yyyy", { locale: ptBR })}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+                            Saída
+                          </div>
+                          <div className="text-lg font-semibold text-foreground">
+                            {format(parseISO(trip.end_date), "dd MMM yyyy", { locale: ptBR })}
+                          </div>
+                        </div>
                       </div>
+                      
+                      <Separator className="my-4" />
+                      
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="w-4 h-4" />
-                        <span className="text-sm">
+                        <span className="text-sm font-medium">
                           {(() => {
                             const start = parseISO(trip.start_date);
                             const end = parseISO(trip.end_date);
                             const diffTime = Math.abs(end.getTime() - start.getTime());
                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                            return `${diffDays} dias`;
+                            return `${diffDays} dias de viagem`;
                           })()}
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">Datas não definidas</p>
+                    <div className="bg-muted/30 rounded-lg p-6 border border-border/50">
+                      <p className="text-muted-foreground text-center">Datas não definidas</p>
+                    </div>
                   )}
                 </div>
               </div>
