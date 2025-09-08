@@ -1268,27 +1268,6 @@ export default function DetalhesViagem() {
                   </CardContent>
                 </Card>
               )}
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <Button 
-                  onClick={() => navigate("/viagens")}
-                  variant="outline"
-                  size="lg"
-                  className="flex-1 h-14 text-lg font-medium hover:bg-muted transition-all duration-300"
-                >
-                  <ArrowLeft className="w-5 h-5 mr-2" />
-                  Voltar ao Dashboard
-                </Button>
-                <Button 
-                  onClick={() => setIsEditing(true)}
-                  size="lg"
-                  className="flex-1 h-14 text-lg font-medium bg-primary hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  <Edit className="w-5 h-5 mr-2" />
-                  Editar Viagem
-                </Button>
-              </div>
             </div>
           )}
           </div>
