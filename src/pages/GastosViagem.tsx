@@ -48,6 +48,14 @@ import {
   ChevronDown,
   ChevronUp,
   Bot,
+  Tag,
+  Folder,
+  FileText,
+  Clock,
+  Info,
+  CreditCard,
+  X,
+  Save,
   MoreVertical
 } from "lucide-react";
 
@@ -1014,275 +1022,388 @@ export default function GastosViagem() {
           </div>
         </div>
 
-        {/* Add Expense Dialog - Botões sempre visíveis */}
+        {/* Add Expense Dialog - Melhorado */}
         <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
-          <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-                <Plus className="w-5 h-5" />
-                Novo Gasto
-              </DialogTitle>
-            </DialogHeader>
-            
-            {/* Conteúdo com scroll limitado */}
-            <div className="max-h-[60vh] overflow-y-auto space-y-6 pr-2">
-              {/* Upload Section */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl">📸</span>
-                  <div>
-                    <h3 className="font-semibold">Comprovante</h3>
-                    <p className="text-sm text-muted-foreground">Anexe seu recibo ou cupom fiscal</p>
+          <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-hidden p-0">
+            {/* Header Moderno */}
+            <div className="px-6 py-4 border-b bg-gradient-to-r from-primary/5 to-accent/5">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center">
+                    <Plus className="w-5 h-5 text-white" />
                   </div>
-                </div>
+                  <div>
+                    <div>Novo Gasto</div>
+                    <div className="text-sm font-normal text-muted-foreground">Registre sua despesa de viagem</div>
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
+            </div>
+            
+            {/* Conteúdo com scroll otimizado */}
+            <div className="max-h-[60vh] overflow-y-auto px-6 py-4">
+              <div className="space-y-6">
                 
-                <ImageUpload
-                  images={newExpense.receiptImages}
-                  onImagesChange={handleReceiptImagesChange}
-                  maxImages={1}
-                />
-              </div>
-
-              {/* Formulário */}
-              <div className="space-y-4">
-                <div>
-                  <Label className="font-semibold">Categoria <span className="text-red-500">*</span></Label>
-                  <Select 
-                    value={newExpense.category} 
-                    onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}
-                    disabled={showAIProcessingModal}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent className="z-[100] bg-background border border-border shadow-lg">
-                      {EXPENSE_CATEGORIES.map(category => (
-                        <SelectItem key={category.id} value={category.id}>
-                          <div className="flex items-center gap-3">
-                            <category.icon className="w-5 h-5" />
-                            <span>{category.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="font-semibold">Descrição <span className="text-red-500">*</span></Label>
-                  <Textarea
-                    value={newExpense.description}
-                    onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
-                    placeholder="Ex: Almoço no restaurante, táxi para o aeroporto..."
-                    rows={3}
-                    disabled={showAIProcessingModal}
-                    className="resize-none"
-                  />
-                </div>
-
-                <div>
-                  <Label className="font-semibold">Valor <span className="text-red-500">*</span></Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newExpense.amount}
-                      onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
-                      placeholder="0,00"
-                      className="pl-12 h-12 text-lg font-semibold"
-                      disabled={showAIProcessingModal}
+                {/* Seção de Upload com design melhorado */}
+                <div className="group relative overflow-hidden rounded-2xl border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 hover:border-primary/40 transition-all duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent dark:from-black/20"></div>
+                  <div className="relative p-6">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <Camera className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg mb-1">Comprovante</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Anexe seu recibo para processamento automático com IA
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <ImageUpload
+                      images={newExpense.receiptImages}
+                      onImagesChange={handleReceiptImagesChange}
+                      maxImages={1}
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Data</Label>
-                    <Input
-                      type="date"
-                      value={newExpense.date}
-                      onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
-                      disabled={showAIProcessingModal}
-                      className="h-12"
-                    />
-                  </div>
-                  <div>
-                    <Label>Tipo <span className="text-red-500">*</span></Label>
-                    <Select 
-                      value={newExpense.expense_type} 
-                      onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
-                      disabled={showAIProcessingModal}
-                    >
-                      <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Tipo" />
-                      </SelectTrigger>
-                      <SelectContent className="z-50">
-                        {EXPENSE_TYPES.map(type => (
-                          <SelectItem key={type.id} value={type.id}>
-                            {type.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                {/* Formulário com cards organizados */}
+                <div className="space-y-5">
+                  
+                  {/* Informações Básicas */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+                        <Tag className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Informações Básicas</span>
+                    </div>
+                    
+                    <div className="grid gap-4">
+                      <div>
+                        <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                          <Folder className="w-4 h-4" />
+                          Categoria <span className="text-red-500">*</span>
+                        </Label>
+                        <Select 
+                          value={newExpense.category} 
+                          onValueChange={(value) => setNewExpense({...newExpense, category: value, subcategory: ""})}
+                          disabled={showAIProcessingModal}
+                        >
+                          <SelectTrigger className="h-12 border-2 hover:border-primary/50 transition-colors">
+                            <SelectValue placeholder="Selecione uma categoria" />
+                          </SelectTrigger>
+                          <SelectContent className="z-[100] bg-background border-2 border-border shadow-xl rounded-xl">
+                            {EXPENSE_CATEGORIES.map(category => (
+                              <SelectItem key={category.id} value={category.id} className="py-3">
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${category.color}`}>
+                                    <category.icon className="w-4 h-4 text-white" />
+                                  </div>
+                                  <span className="font-medium">{category.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                <div>
-                  <Label>Método de Pagamento</Label>
-                  <Select 
-                    value={newExpense.payment_method_type} 
-                    onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
-                    disabled={showAIProcessingModal}
-                  >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Como foi pago" />
-                    </SelectTrigger>
-                    <SelectContent className="z-50">
-                      {PAYMENT_METHODS.map(method => (
-                        <SelectItem key={method.id} value={method.name}>
-                          {method.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                      <div>
+                        <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4" />
+                          Descrição <span className="text-red-500">*</span>
+                        </Label>
+                        <Textarea
+                          value={newExpense.description}
+                          onChange={(e) => setNewExpense({...newExpense, description: e.target.value})}
+                          placeholder="Ex: Almoço no restaurante, táxi para o aeroporto..."
+                          rows={3}
+                          disabled={showAIProcessingModal}
+                          className="resize-none border-2 hover:border-primary/50 transition-colors focus:border-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
 
-                <div>
-                  <Label>Estabelecimento</Label>
-                  <Input
-                    value={newExpense.establishment}
-                    onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
-                    placeholder="Nome do restaurante, hotel, loja..."
-                    disabled={showAIProcessingModal}
-                    className="h-12"
-                  />
+                  {/* Valor e Data */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                        <DollarSign className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Valor e Timing</span>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                        <DollarSign className="w-4 h-4" />
+                        Valor <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                          <DollarSign className="w-4 h-4 text-white" />
+                        </div>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={newExpense.amount}
+                          onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
+                          placeholder="0,00"
+                          className="pl-16 pr-4 h-14 text-xl font-bold border-2 hover:border-primary/50 transition-colors focus:border-primary"
+                          disabled={showAIProcessingModal}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                          <Calendar className="w-4 h-4" />
+                          Data
+                        </Label>
+                        <Input
+                          type="date"
+                          value={newExpense.date}
+                          onChange={(e) => setNewExpense({...newExpense, date: e.target.value})}
+                          disabled={showAIProcessingModal}
+                          className="h-12 border-2 hover:border-primary/50 transition-colors focus:border-primary"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                          <Clock className="w-4 h-4" />
+                          Tipo <span className="text-red-500">*</span>
+                        </Label>
+                        <Select 
+                          value={newExpense.expense_type} 
+                          onValueChange={(value) => setNewExpense({...newExpense, expense_type: value})}
+                          disabled={showAIProcessingModal}
+                        >
+                          <SelectTrigger className="h-12 border-2 hover:border-primary/50 transition-colors">
+                            <SelectValue placeholder="Tipo" />
+                          </SelectTrigger>
+                          <SelectContent className="z-50">
+                            {EXPENSE_TYPES.map(type => (
+                              <SelectItem key={type.id} value={type.id}>
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full ${type.id === 'realizado' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                                  {type.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Detalhes Adicionais */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <Info className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Detalhes Adicionais</span>
+                    </div>
+                    
+                    <div className="grid gap-4">
+                      <div>
+                        <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                          <CreditCard className="w-4 h-4" />
+                          Método de Pagamento
+                        </Label>
+                        <Select 
+                          value={newExpense.payment_method_type} 
+                          onValueChange={(value) => setNewExpense({...newExpense, payment_method_type: value})}
+                          disabled={showAIProcessingModal}
+                        >
+                          <SelectTrigger className="h-12 border-2 hover:border-primary/50 transition-colors">
+                            <SelectValue placeholder="Como foi pago" />
+                          </SelectTrigger>
+                          <SelectContent className="z-50">
+                            {PAYMENT_METHODS.map(method => (
+                              <SelectItem key={method.id} value={method.name}>
+                                <div className="flex items-center gap-2">
+                                  <CreditCard className="w-4 h-4" />
+                                  {method.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+                          <MapPin className="w-4 h-4" />
+                          Estabelecimento
+                        </Label>
+                        <Input
+                          value={newExpense.establishment}
+                          onChange={(e) => setNewExpense({...newExpense, establishment: e.target.value})}
+                          placeholder="Nome do restaurante, hotel, loja..."
+                          disabled={showAIProcessingModal}
+                          className="h-12 border-2 hover:border-primary/50 transition-colors focus:border-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Botões sempre visíveis na parte inferior */}
-            <div className="flex gap-3 pt-6 border-t">
-              <Button 
-                onClick={() => setIsAddingExpense(false)}
-                variant="outline"
-                size="lg"
-                disabled={showAIProcessingModal}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleAddExpense}
-                disabled={showAIProcessingModal || !newExpense.category || !newExpense.description || !newExpense.amount}
-                size="lg"
-                className="flex-1"
-              >
-                {showAIProcessingModal ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Processando...
-                  </div>
-                ) : (
-                  "Salvar Gasto"
-                )}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Upload Options Modal */}
-        <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
-          <DialogContent className="max-w-md w-[90vw]">
-            <DialogHeader>
-              <DialogTitle className="text-center text-xl font-bold flex items-center justify-center gap-2">
-                <span className="text-2xl">🤖</span>
-                Processamento Inteligente
-              </DialogTitle>
-            </DialogHeader>
-            
-            <div className="py-6 space-y-6">
-              <div className="text-center">
-                <p className="text-muted-foreground">
-                  Como você deseja processar este recibo?
-                </p>
-              </div>
-              
-              <div className="space-y-4">
+            {/* Botões com design melhorado */}
+            <div className="px-6 py-4 border-t bg-muted/30">
+              <div className="flex gap-3">
                 <Button 
-                  onClick={handleProcessWithAI}
-                  className="w-full h-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                      ✨
-                    </div>
-                    <div className="text-left">
-                      <div>Processar com IA</div>
-                      <div className="text-sm opacity-80">Preenchimento automático</div>
-                    </div>
-                  </div>
-                </Button>
-                
-                <Button 
-                  onClick={handleJustAttach}
+                  onClick={() => setIsAddingExpense(false)}
                   variant="outline"
-                  className="w-full h-16 border-2 font-semibold text-lg"
+                  size="lg"
+                  disabled={showAIProcessingModal}
+                  className="flex-1 h-12 border-2 hover:bg-muted"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                      📎
+                  <X className="w-4 h-4 mr-2" />
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleAddExpense}
+                  disabled={showAIProcessingModal || !newExpense.category || !newExpense.description || !newExpense.amount}
+                  size="lg"
+                  className="flex-1 h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+                >
+                  {showAIProcessingModal ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Processando...
                     </div>
-                    <div className="text-left">
-                      <div>Apenas Anexar</div>
-                      <div className="text-sm text-muted-foreground">Preencher manualmente</div>
-                    </div>
-                  </div>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Salvar Gasto
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* AI Processing Modal */}
-        <Dialog open={showAIProcessingModal} onOpenChange={() => {}}>
-          <DialogContent className="max-w-md w-[90vw] p-8">
-            <div className="text-center space-y-6">
-              <div className="relative">
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        {/* Upload Options Modal - Design Melhorado */}
+        <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
+          <DialogContent className="max-w-md w-[90vw] p-0 overflow-hidden">
+            {/* Header com gradiente */}
+            <div className="px-6 py-6 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 text-white">
+              <DialogHeader>
+                <DialogTitle className="text-center text-xl font-bold flex items-center justify-center gap-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <Bot className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div>Processamento Inteligente</div>
+                    <div className="text-sm font-normal opacity-90">Como deseja processar este recibo?</div>
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
+            </div>
+            
+            {/* Conteúdo com opções */}
+            <div className="p-6 space-y-4">
+              <Button 
+                onClick={handleProcessWithAI}
+                className="w-full h-20 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700 text-white font-semibold text-base shadow-xl border-0 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                    <div className="text-2xl">✨</div>
+                  </div>
+                  <div className="text-left">
+                    <div className="text-lg font-bold">Processar com IA</div>
+                    <div className="text-sm opacity-90">Preenchimento automático inteligente</div>
+                  </div>
                 </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-pulse">
-                  🤖
+              </Button>
+              
+              <Button 
+                onClick={handleJustAttach}
+                variant="outline"
+                className="w-full h-20 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 font-semibold text-base bg-gradient-to-r from-muted/30 to-muted/10 hover:from-muted/50 hover:to-muted/20 transition-all duration-300 hover:scale-[1.01]"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-muted/50 rounded-2xl flex items-center justify-center">
+                    <Camera className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-lg font-bold text-foreground">Apenas Anexar</div>
+                    <div className="text-sm text-muted-foreground">Preencher manualmente depois</div>
+                  </div>
+                </div>
+              </Button>
+              
+              {/* Dica */}
+              <div className="text-center pt-2">
+                <p className="text-xs text-muted-foreground">
+                  💡 A IA pode extrair automaticamente categoria, valor e estabelecimento
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* AI Processing Modal - Design Melhorado */}
+        <Dialog open={showAIProcessingModal} onOpenChange={() => {}}>
+          <DialogContent className="max-w-md w-[90vw] p-0 overflow-hidden">
+            {/* Background animado */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700"></div>
+              <div className="absolute inset-0 opacity-20 animate-pulse">
+                <div className="h-full w-full bg-white/10 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] [background-size:20px_20px]"></div>
+              </div>
+            </div>
+            
+            <div className="relative text-center space-y-8 p-8 text-white">
+              {/* Ícone central animado */}
+              <div className="relative mx-auto">
+                <div className="w-24 h-24 mx-auto bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+                  <div className="w-16 h-16 border-4 border-white/70 border-t-white rounded-full animate-spin"></div>
+                </div>
+                <div className="absolute -top-2 -right-2 w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center animate-bounce shadow-lg">
+                  <Bot className="w-6 h-6 text-white" />
                 </div>
               </div>
               
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold">Processando Recibo</h3>
-                <p className="text-muted-foreground">
-                  {aiProcessingStep === 'analyzing' && "Analisando imagem com IA..."}
-                  {aiProcessingStep === 'extracting' && "Extraindo dados do recibo..."}
-                  {aiProcessingStep === 'completing' && "Finalizando preenchimento..."}
+              {/* Conteúdo */}
+              <div className="space-y-3">
+                <h3 className="text-2xl font-bold">Processando Recibo</h3>
+                <p className="text-white/90 text-lg">
+                  {aiProcessingStep === 'analyzing' && "🔍 Analisando imagem com IA..."}
+                  {aiProcessingStep === 'extracting' && "📋 Extraindo dados do recibo..."}
+                  {aiProcessingStep === 'completing' && "✅ Finalizando preenchimento..."}
                 </p>
               </div>
               
-              {/* Progress Steps */}
-              <div className="flex justify-center space-x-2">
+              {/* Progress Steps - Melhorado */}
+              <div className="flex justify-center items-center space-x-4">
                 {['analyzing', 'extracting', 'completing'].map((step, index) => (
                   <div key={step} className="flex items-center">
-                    <div className={`w-3 h-3 rounded-full transition-all duration-500 ${
-                      aiProcessingStep === step ? 'bg-blue-500 scale-125' :
-                      ['analyzing', 'extracting', 'completing'].indexOf(aiProcessingStep) > index ? 'bg-green-500' : 'bg-gray-300'
+                    <div className={`w-4 h-4 rounded-full transition-all duration-700 ${
+                      aiProcessingStep === step ? 'bg-white scale-150 shadow-lg' :
+                      ['analyzing', 'extracting', 'completing'].indexOf(aiProcessingStep) > index ? 'bg-green-400 scale-110' : 'bg-white/30'
                     }`}></div>
-                    {index < 2 && <div className="w-8 h-0.5 bg-gray-300 mx-2"></div>}
+                    {index < 2 && <div className="w-12 h-1 bg-white/30 mx-2 rounded-full overflow-hidden">
+                      <div className={`h-full bg-white transition-all duration-700 ${
+                        ['analyzing', 'extracting', 'completing'].indexOf(aiProcessingStep) > index ? 'w-full' : 'w-0'
+                      }`}></div>
+                    </div>}
                   </div>
                 ))}
               </div>
               
-              <div className="bg-muted/50 rounded-lg p-4">
-                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  IA trabalhando em segundo plano
+              {/* Status adicional */}
+              <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/20">
+                <div className="flex items-center justify-center gap-3 text-sm">
+                  <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-sm"></div>
+                  <span className="font-medium">IA trabalhando em segundo plano</span>
                 </div>
               </div>
             </div>
