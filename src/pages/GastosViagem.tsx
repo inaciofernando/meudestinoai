@@ -978,18 +978,21 @@ export default function GastosViagem() {
                             </p>
                           </div>
                           
-                          {/* Minimal Indicators */}
+                          {/* Indicadores de Tipo */}
                           <div className="flex flex-col gap-1">
                             {expense.receipt_image_url && (
                               <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
                                 <Receipt className="w-2 h-2 text-primary" />
                               </div>
                             )}
-                            {!isRealized && (
-                              <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center">
-                                <Calendar className="w-2 h-2 text-blue-600" />
-                              </div>
-                            )}
+                            {/* Badge P ou R */}
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                              expense.expense_type === 'realizado' 
+                                ? 'bg-green-500 text-white' 
+                                : 'bg-blue-500 text-white'
+                            }`}>
+                              {expense.expense_type === 'realizado' ? 'R' : 'P'}
+                            </div>
                           </div>
                         </div>
                       </div>
