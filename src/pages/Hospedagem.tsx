@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft, Star } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,15 +38,11 @@ interface Accommodation {
   phone?: string;
   email?: string;
   room_type?: string;
-  number_of_guests?: number;
-  number_of_rooms?: number;
   confirmation_number?: string;
   includes_breakfast?: boolean;
   wifi_available?: boolean;
   parking_available?: boolean;
   pet_friendly?: boolean;
-  rating?: number;
-  cancellation_policy?: string;
 }
 
 interface AccommodationForm {
@@ -66,15 +62,11 @@ interface AccommodationForm {
   phone: string;
   email: string;
   room_type: string;
-  number_of_guests: string;
-  number_of_rooms: string;
   confirmation_number: string;
   includes_breakfast: boolean;
   wifi_available: boolean;
   parking_available: boolean;
   pet_friendly: boolean;
-  rating: string;
-  cancellation_policy: string;
 }
 
 export default function Hospedagem() {
@@ -103,15 +95,11 @@ export default function Hospedagem() {
     phone: "",
     email: "",
     room_type: "",
-    number_of_guests: "2",
-    number_of_rooms: "1",
     confirmation_number: "",
     includes_breakfast: false,
     wifi_available: true,
     parking_available: false,
-    pet_friendly: false,
-    rating: "",
-    cancellation_policy: ""
+    pet_friendly: false
   });
 
   useEffect(() => {
@@ -202,15 +190,11 @@ export default function Hospedagem() {
       phone: "",
       email: "",
       room_type: "",
-      number_of_guests: "2",
-      number_of_rooms: "1",
       confirmation_number: "",
       includes_breakfast: false,
       wifi_available: true,
       parking_available: false,
-      pet_friendly: false,
-      rating: "",
-      cancellation_policy: ""
+      pet_friendly: false
     });
   };
 
@@ -233,15 +217,11 @@ export default function Hospedagem() {
       phone: accommodation.phone || "",
       email: accommodation.email || "",
       room_type: accommodation.room_type || "",
-      number_of_guests: accommodation.number_of_guests?.toString() || "2",
-      number_of_rooms: accommodation.number_of_rooms?.toString() || "1",
       confirmation_number: accommodation.confirmation_number || "",
       includes_breakfast: accommodation.includes_breakfast || false,
       wifi_available: accommodation.wifi_available !== false,
       parking_available: accommodation.parking_available || false,
-      pet_friendly: accommodation.pet_friendly || false,
-      rating: accommodation.rating?.toString() || "",
-      cancellation_policy: accommodation.cancellation_policy || ""
+      pet_friendly: accommodation.pet_friendly || false
     });
     setShowAddForm(true);
   };
@@ -274,15 +254,11 @@ export default function Hospedagem() {
         phone: newAccommodation.phone || null,
         email: newAccommodation.email || null,
         room_type: newAccommodation.room_type || null,
-        number_of_guests: newAccommodation.number_of_guests ? parseInt(newAccommodation.number_of_guests) : 1,
-        number_of_rooms: newAccommodation.number_of_rooms ? parseInt(newAccommodation.number_of_rooms) : 1,
         confirmation_number: newAccommodation.confirmation_number || null,
         includes_breakfast: newAccommodation.includes_breakfast,
         wifi_available: newAccommodation.wifi_available,
         parking_available: newAccommodation.parking_available,
-        pet_friendly: newAccommodation.pet_friendly,
-        rating: newAccommodation.rating ? parseFloat(newAccommodation.rating) : null,
-        cancellation_policy: newAccommodation.cancellation_policy || null
+        pet_friendly: newAccommodation.pet_friendly
       };
 
       if (editingAccommodation) {
@@ -491,24 +467,6 @@ export default function Hospedagem() {
                       placeholder="Ex: ABC123456"
                     />
                   </div>
-
-                  <div>
-                    <Label htmlFor="rating">Avaliação (1-5)</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="rating"
-                        type="number"
-                        min="1"
-                        max="5"
-                        step="0.1"
-                        value={newAccommodation.rating}
-                        onChange={(e) => setNewAccommodation({ ...newAccommodation, rating: e.target.value })}
-                        placeholder="4.5"
-                        className="w-20"
-                      />
-                      <Star className="w-4 h-4 text-amber-500" />
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -655,30 +613,6 @@ export default function Hospedagem() {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <div>
-                    <Label htmlFor="number_of_guests">Número de Hóspedes</Label>
-                    <Input
-                      id="number_of_guests"
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={newAccommodation.number_of_guests}
-                      onChange={(e) => setNewAccommodation({ ...newAccommodation, number_of_guests: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="number_of_rooms">Número de Quartos</Label>
-                    <Input
-                      id="number_of_rooms"
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={newAccommodation.number_of_rooms}
-                      onChange={(e) => setNewAccommodation({ ...newAccommodation, number_of_rooms: e.target.value })}
-                    />
-                  </div>
                 </div>
 
                 {/* Comodidades */}
@@ -775,17 +709,6 @@ export default function Hospedagem() {
                     value={newAccommodation.reservation_amount}
                     onChange={(e) => setNewAccommodation({ ...newAccommodation, reservation_amount: e.target.value })}
                     placeholder="0.00"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="cancellation_policy">Política de Cancelamento</Label>
-                  <Textarea
-                    id="cancellation_policy"
-                    value={newAccommodation.cancellation_policy}
-                    onChange={(e) => setNewAccommodation({ ...newAccommodation, cancellation_policy: e.target.value })}
-                    placeholder="Cancelamento gratuito até 24h antes..."
-                    rows={3}
                   />
                 </div>
               </div>

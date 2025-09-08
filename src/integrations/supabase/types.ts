@@ -18,7 +18,6 @@ export type Database = {
         Row: {
           accommodation_type: string | null
           address: string | null
-          cancellation_policy: string | null
           check_in_date: string
           check_out_date: string
           city: string | null
@@ -32,12 +31,9 @@ export type Database = {
           id: string
           includes_breakfast: boolean | null
           notes: string | null
-          number_of_guests: number | null
-          number_of_rooms: number | null
           parking_available: boolean | null
           pet_friendly: boolean | null
           phone: string | null
-          rating: number | null
           reservation_amount: number | null
           room_type: string | null
           trip_id: string
@@ -50,7 +46,6 @@ export type Database = {
         Insert: {
           accommodation_type?: string | null
           address?: string | null
-          cancellation_policy?: string | null
           check_in_date: string
           check_out_date: string
           city?: string | null
@@ -64,12 +59,9 @@ export type Database = {
           id?: string
           includes_breakfast?: boolean | null
           notes?: string | null
-          number_of_guests?: number | null
-          number_of_rooms?: number | null
           parking_available?: boolean | null
           pet_friendly?: boolean | null
           phone?: string | null
-          rating?: number | null
           reservation_amount?: number | null
           room_type?: string | null
           trip_id: string
@@ -82,7 +74,6 @@ export type Database = {
         Update: {
           accommodation_type?: string | null
           address?: string | null
-          cancellation_policy?: string | null
           check_in_date?: string
           check_out_date?: string
           city?: string | null
@@ -96,12 +87,9 @@ export type Database = {
           id?: string
           includes_breakfast?: boolean | null
           notes?: string | null
-          number_of_guests?: number | null
-          number_of_rooms?: number | null
           parking_available?: boolean | null
           pet_friendly?: boolean | null
           phone?: string | null
-          rating?: number | null
           reservation_amount?: number | null
           room_type?: string | null
           trip_id?: string
