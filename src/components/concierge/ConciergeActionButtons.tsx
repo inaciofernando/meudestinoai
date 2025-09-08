@@ -14,6 +14,8 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
   const navigate = useNavigate();
 
   const extractedData = useMemo(() => {
+    console.log('Extraindo dados da mensagem:', { message: message.slice(0, 200), messageData });
+    
     // Primeiro, tentar usar dados estruturados se disponíveis
     if (messageData?.structuredData) {
       let restaurants: any[] = [];
@@ -60,6 +62,7 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         });
       }
       
+      console.log('Dados estruturados extraídos:', { restaurants, attractions, accommodations });
       return { restaurants, attractions, accommodations };
     }
 
@@ -145,6 +148,7 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         }
       }
       if (containsAccommodation) {
+        console.log('Contém dados de acomodação, extraindo...');
         // Extrair nome do hotel da mensagem
         const hotelPatterns = [
           /\*\*([^*]*(?:Hotel|Inn|Resort|Residence|Marriott|Hilton|Hyatt|Radisson|InterContinental)[^*]*)\*\*/i,
@@ -155,6 +159,7 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         for (const pattern of hotelPatterns) {
           const match = message.match(pattern);
           if (match) {
+            console.log('Nome do hotel encontrado:', match[1]);
             // Extrair informações adicionais da mensagem
             const addressMatch = message.match(/endereço[:\s]*([^\n.]+)/i) || 
                                  message.match(/localizado[^\n]*?([A-Z][^.\n]+)/i) ||
@@ -169,7 +174,7 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
             const hasParking = /estacionamento|parking/i.test(amenitiesText);
             const hasPool = /piscina|pool/i.test(amenitiesText);
             
-            accommodations.push({
+            const extractedAccommodation = {
               name: match[1].trim(),
               description: `Sugerido pelo concierge. ${hasBreakfast ? 'Inclui café da manhã. ' : ''}${hasWifi ? 'WiFi disponível. ' : ''}${hasParking ? 'Estacionamento disponível. ' : ''}${hasPool ? 'Piscina disponível. ' : ''}`,
               type: "hotel",
@@ -177,13 +182,17 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
               phone: phoneMatch ? phoneMatch[1] ? phoneMatch[1].trim() : phoneMatch[0].trim() : "",
               email: "",
               website: ""
-            });
+            };
+            
+            console.log('Dados da acomodação extraídos:', extractedAccommodation);
+            accommodations.push(extractedAccommodation);
             break;
           }
         }
       }
     }
 
+    console.log('Resultado final da extração:', { restaurants, attractions, accommodations });
     return { restaurants, attractions, accommodations };
   }, [message, messageData]);
 
