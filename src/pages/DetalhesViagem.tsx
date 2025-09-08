@@ -1040,17 +1040,17 @@ export default function DetalhesViagem() {
               </form>
             </Form>
           ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    Informações da Viagem
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            <div className="space-y-8">
+              {/* Informações da Viagem */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-6 h-6 text-primary" />
+                  <h2 className="text-xl font-semibold text-foreground">Informações da Viagem</h2>
+                </div>
+                
+                <div className="pl-9 space-y-4">
                   <div>
-                    <h3 className="text-xl font-bold text-foreground">{trip.title}</h3>
+                    <h3 className="text-2xl font-bold text-foreground">{trip.title}</h3>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant={getStatusColor(trip.status)}>
                         {getStatusText(trip.status)}
@@ -1060,13 +1060,13 @@ export default function DetalhesViagem() {
                   
                   {locations.length > 0 && (
                     <div>
-                      <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-primary" />
                         Destinos da Viagem
                       </h4>
-                      <div className="space-y-2">
+                      <div className="space-y-2 pl-6">
                         {locations.map((location, index) => (
-                          <div key={location.id || location.order_index} className="flex items-center gap-2">
+                          <div key={location.id || location.order_index} className="flex items-center gap-3">
                             <div className={cn(
                               "w-2 h-2 rounded-full",
                               index === 0 ? "bg-primary" : "bg-muted-foreground"
@@ -1089,20 +1089,23 @@ export default function DetalhesViagem() {
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CalendarIcon className="w-5 h-5 text-destructive" />
-                    Datas da Viagem
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+              </div>
+
+              <Separator className="my-6" />
+
+              {/* Datas da Viagem */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <CalendarIcon className="w-6 h-6 text-primary" />
+                  <h2 className="text-xl font-semibold text-foreground">Datas da Viagem</h2>
+                </div>
+                
+                <div className="pl-9">
                   {trip.start_date && trip.end_date ? (
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-medium text-foreground">
+                      <div>
+                        <span className="text-2xl font-bold text-foreground">
                           {format(parseISO(trip.start_date), "dd/MMM", { locale: ptBR })} - {format(parseISO(trip.end_date), "dd/MMM/yy", { locale: ptBR })}
                         </span>
                       </div>
@@ -1122,8 +1125,8 @@ export default function DetalhesViagem() {
                   ) : (
                     <p className="text-muted-foreground">Datas não definidas</p>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           )}
 
