@@ -259,25 +259,25 @@ export default function Dashboard() {
 
   const stats = [
     {
-      title: "Viagens Realizadas",
-      value: completedTrips.length.toString(),
-      change: completedTrips.length > 0 ? "Concluídas" : "Nenhuma concluída",
-      icon: CheckCircle,
-      color: "text-green-600"
-    },
-    {
-      title: "Viagens Confirmadas", 
+      title: "Confirmadas",
       value: upcomingTrips.length.toString(),
-      change: upcomingTrips.length > 0 ? "Confirmadas" : "Nenhuma confirmada",
+      change: "",
       icon: Calendar,
       color: "text-primary"
     },
     {
-      title: "Em Planejamento",
+      title: "Planejadas",
       value: planningTrips.length.toString(),
-      change: planningTrips.length > 0 ? "Planejando" : "Nenhuma em planejamento",
+      change: "",
       icon: MapPin,
       color: "text-amber-600"
+    },
+    {
+      title: "Realizadas",
+      value: completedTrips.length.toString(),
+      change: "",
+      icon: CheckCircle,
+      color: "text-green-600"
     }
   ];
 
@@ -311,7 +311,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-lg md:text-2xl font-bold text-foreground">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.change}</p>
+              {stat.change && <p className="text-xs text-muted-foreground">{stat.change}</p>}
             </CardContent>
           </Card>
         ))}
