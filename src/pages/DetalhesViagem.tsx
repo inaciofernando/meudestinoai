@@ -44,7 +44,8 @@ import {
   Ticket,
   Route,
   Bot,
-  FileText
+  FileText,
+  Image
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
@@ -1040,226 +1041,283 @@ export default function DetalhesViagem() {
               </form>
             </Form>
           ) : (
-            <div className="space-y-8">
-              {/* Informações da Viagem */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-6 h-6 text-primary" />
-                  <h2 className="text-xl font-semibold text-foreground">Informações da Viagem</h2>
-                </div>
-                
-                <div className="pl-9 space-y-4">
-                  <div>
-                    <h3 className="text-2xl font-bold text-foreground">{trip.title}</h3>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant={getStatusColor(trip.status)}>
-                        {getStatusText(trip.status)}
-                      </Badge>
-                    </div>
+            <div className="space-y-0">
+              {/* Hero Section with Trip Image and Title */}
+              <div className="relative bg-gradient-to-br from-primary/5 via-background to-secondary/5 rounded-2xl p-8 mb-8">
+                <div className="flex flex-col lg:flex-row gap-8 items-start">
+                  {/* Trip Image */}
+                  <div className="w-full lg:w-1/2">
+                    {trip.images && trip.images.length > 0 ? (
+                      <div className="relative overflow-hidden rounded-xl aspect-video group">
+                        <img
+                          src={trip.images[0]}
+                          alt={`Imagem da viagem ${trip.title}`}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                      </div>
+                    ) : (
+                      <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl flex items-center justify-center">
+                        <Image className="w-16 h-16 text-muted-foreground" />
+                      </div>
+                    )}
                   </div>
-                  
-                  {locations.length > 0 && (
+
+                  {/* Trip Overview */}
+                  <div className="w-full lg:w-1/2 space-y-6">
                     <div>
-                      <h4 className="font-semibold text-foreground mb-6 flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-primary" />
-                        Destinos da Viagem
-                      </h4>
-                      <div className="space-y-6 pl-6">
-                        {locations.map((location, index) => (
-                          <div key={location.id || location.order_index} className="flex items-start gap-4">
-                            <div className={cn(
-                              "w-3 h-3 rounded-full mt-2 flex-shrink-0",
-                              index === 0 ? "bg-primary" : "bg-muted-foreground"
-                            )}></div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-1">
-                                <span className="text-xl font-medium text-foreground">
+                      <h1 className="text-4xl font-bold text-foreground mb-3">{trip.title}</h1>
+                      <div className="flex items-center gap-3">
+                        <Badge 
+                          variant={getStatusColor(trip.status)} 
+                          className="text-sm px-3 py-1 font-medium"
+                        >
+                          {getStatusText(trip.status)}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Quick Trip Stats */}
+                    {trip.start_date && trip.end_date && (
+                      <div className="bg-white/50 dark:bg-black/20 rounded-lg p-6 backdrop-blur-sm border border-white/20">
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <div className="text-sm font-medium text-muted-foreground mb-1">Partida</div>
+                            <div className="text-lg font-bold text-foreground">
+                              {format(parseISO(trip.start_date), "dd MMM", { locale: ptBR })}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {format(parseISO(trip.start_date), "yyyy", { locale: ptBR })}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-muted-foreground mb-1">Retorno</div>
+                            <div className="text-lg font-bold text-foreground">
+                              {format(parseISO(trip.end_date), "dd MMM", { locale: ptBR })}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {format(parseISO(trip.end_date), "yyyy", { locale: ptBR })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-white/20">
+                          <div className="flex items-center gap-2 text-primary">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-sm font-medium">
+                              {(() => {
+                                const start = parseISO(trip.start_date);
+                                const end = parseISO(trip.end_date);
+                                const diffTime = Math.abs(end.getTime() - start.getTime());
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                                return `${diffDays} dias de aventura`;
+                              })()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Destinations Section */}
+              {locations.length > 0 && (
+                <Card className="mb-8 border-0 shadow-lg bg-gradient-to-r from-background via-background to-primary/5">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <MapPin className="w-6 h-6 text-primary" />
+                      </div>
+                      Roteiro de Destinos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {locations.map((location, index) => (
+                        <div key={location.id || location.order_index} 
+                             className="group p-4 rounded-xl bg-white/50 dark:bg-white/5 border border-white/20 hover:bg-white/70 dark:hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] cursor-pointer">
+                          <div className="flex items-start gap-4">
+                            <div className="relative">
+                              <div className={cn(
+                                "w-4 h-4 rounded-full border-2 border-white shadow-lg",
+                                index === 0 ? "bg-primary" : "bg-muted-foreground"
+                              )}></div>
+                              {index === 0 && (
+                                <div className="absolute -inset-1 bg-primary/20 rounded-full animate-pulse" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="font-semibold text-foreground text-lg truncate">
                                   {location.location_name}
-                                </span>
+                                </h4>
                                 {index === 0 && (
-                                  <Badge variant="secondary" className="text-xs px-2 py-1 bg-primary/10 text-primary border-0">
+                                  <Badge variant="secondary" className="text-xs bg-primary text-white border-0 shadow-sm">
                                     Principal
                                   </Badge>
                                 )}
                               </div>
-                              <div className="text-sm text-muted-foreground">
-                                {location.location_type === 'city' && 'Cidade'}
-                                {location.location_type === 'region' && 'Região'}
-                                {location.location_type === 'attraction' && 'Atração'}
-                                {location.location_type === 'airport' && 'Aeroporto'}
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                                  {location.location_type === 'city' && 'Cidade'}
+                                  {location.location_type === 'region' && 'Região'}
+                                  {location.location_type === 'attraction' && 'Atração'}
+                                  {location.location_type === 'airport' && 'Aeroporto'}
+                                </Badge>
                               </div>
                             </div>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </div>
-              </div>
+                  </CardContent>
+                </Card>
+              )}
 
-              <Separator className="my-6" />
-
-              {/* Datas da Viagem */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <CalendarIcon className="w-6 h-6 text-primary" />
-                  <h2 className="text-xl font-semibold text-foreground">Datas da Viagem</h2>
-                </div>
-                
-                <div className="pl-9">
-                  {trip.start_date && trip.end_date ? (
-                    <div className="space-y-8">
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
-                          Entrada
-                        </div>
-                        <div className="text-3xl font-bold text-foreground">
-                          {format(parseISO(trip.start_date), "dd MMM yyyy", { locale: ptBR })}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
-                          Saída
-                        </div>
-                        <div className="text-3xl font-bold text-foreground">
-                          {format(parseISO(trip.end_date), "dd MMM yyyy", { locale: ptBR })}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 text-muted-foreground pt-2">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-sm">
-                          {(() => {
-                            const start = parseISO(trip.start_date);
-                            const end = parseISO(trip.end_date);
-                            const diffTime = Math.abs(end.getTime() - start.getTime());
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                            return `${diffDays} dias de viagem`;
-                          })()}
-                        </span>
-                      </div>
+              {/* Travel Management Dashboard */}
+              <Card className="mb-8 border-0 shadow-lg bg-gradient-to-br from-background to-secondary/5">
+                <CardHeader className="pb-6">
+                  <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <DollarSign className="w-6 h-6 text-primary" />
                     </div>
-                  ) : (
-                    <p className="text-muted-foreground">Datas não definidas</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+                    Central de Gestão
+                  </CardTitle>
+                  <p className="text-muted-foreground">Organize todos os aspectos da sua viagem</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Card 
+                      className="group cursor-pointer border-2 border-transparent hover:border-green-200 dark:hover:border-green-800 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900"
+                      onClick={() => navigate(`/viagem/${id}/gastos`)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
+                        </div>
+                        <h3 className="font-semibold text-green-700 dark:text-green-300">Gastos</h3>
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">Controle financeiro</p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card 
+                      className="group cursor-pointer border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900"
+                      onClick={() => navigate(`/viagem/${id}/transporte`)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Plane className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <h3 className="font-semibold text-blue-700 dark:text-blue-300">Transporte</h3>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Voos e deslocamentos</p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card 
+                      className="group cursor-pointer border-2 border-transparent hover:border-purple-200 dark:hover:border-purple-800 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900"
+                      onClick={() => navigate(`/viagem/${id}/hospedagem`)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-100 dark:bg-purple-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Hotel className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <h3 className="font-semibold text-purple-700 dark:text-purple-300">Hospedagem</h3>
+                        <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Hotéis e estadias</p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card 
+                      className="group cursor-pointer border-2 border-transparent hover:border-orange-200 dark:hover:border-orange-800 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900"
+                      onClick={() => navigate(`/viagem/${id}/restaurantes`)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-100 dark:bg-orange-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <UtensilsCrossed className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <h3 className="font-semibold text-orange-700 dark:text-orange-300">Restaurantes</h3>
+                        <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">Gastronomia local</p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card 
+                      className="group cursor-pointer border-2 border-transparent hover:border-yellow-200 dark:hover:border-yellow-800 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950 dark:to-yellow-900"
+                      onClick={() => navigate(`/viagem/${id}/roteiro`)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-yellow-100 dark:bg-yellow-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Route className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                        </div>
+                        <h3 className="font-semibold text-yellow-700 dark:text-yellow-300">Roteiro</h3>
+                        <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Planejamento diário</p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card 
+                      className="group cursor-pointer border-2 border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900"
+                      onClick={() => navigate(`/viagem/${id}/documentos`)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <FileText className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <h3 className="font-semibold text-emerald-700 dark:text-emerald-300">Documentos</h3>
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">Papelada importante</p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card 
+                      className="group cursor-pointer border-2 border-transparent hover:border-primary/40 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-primary/5 to-primary/10"
+                      onClick={() => navigate(`/viagem/${id}/concierge`)}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Bot className="w-6 h-6 text-primary" />
+                        </div>
+                        <h3 className="font-semibold text-primary">Concierge AI</h3>
+                        <p className="text-xs text-primary/80 mt-1">Assistente inteligente</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Travel Management Menu */}
-          {!isEditing && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <DollarSign className="w-6 h-6 text-primary" />
-                <h2 className="text-xl font-semibold text-foreground">Gestão da Viagem</h2>
-              </div>
-              
-              <div className="pl-9">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Button
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    onClick={() => navigate(`/viagem/${id}/gastos`)}
-                  >
-                    <DollarSign className="w-6 h-6 text-green-600" />
-                    <span className="text-xs font-medium">Gastos</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    onClick={() => navigate(`/viagem/${id}/transporte`)}
-                  >
-                    <Plane className="w-6 h-6 text-blue-600" />
-                    <span className="text-xs font-medium">Transporte</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    onClick={() => navigate(`/viagem/${id}/hospedagem`)}
-                  >
-                    <Hotel className="w-6 h-6 text-purple-600" />
-                    <span className="text-xs font-medium">Hospedagem</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    onClick={() => navigate(`/viagem/${id}/restaurantes`)}
-                  >
-                    <UtensilsCrossed className="w-6 h-6 text-orange-600" />
-                    <span className="text-xs font-medium">Restaurantes</span>
-                  </Button>
-                  
-                  
-                  <Button
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    onClick={() => navigate(`/viagem/${id}/roteiro`)}
-                  >
-                    <Route className="w-6 h-6 text-yellow-600" />
-                    <span className="text-xs font-medium">Roteiro</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    onClick={() => navigate(`/viagem/${id}/documentos`)}
-                  >
-                    <FileText className="w-6 h-6 text-emerald-600" />
-                    <span className="text-xs font-medium">Documentos</span>
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    className="h-20 flex flex-col gap-2 hover:bg-primary/10 hover:border-primary/30 transition-all"
-                    onClick={() => navigate(`/viagem/${id}/concierge`)}
-                  >
-                    <Bot className="w-6 h-6 text-primary" />
-                    <span className="text-xs font-medium">Concierge</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+              {/* Description Section */}
+              {trip.description && (
+                <Card className="mb-8 border-0 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <FileText className="w-6 h-6 text-primary" />
+                      </div>
+                      Sobre Esta Viagem
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-foreground leading-relaxed text-lg">{trip.description}</p>
+                  </CardContent>
+                </Card>
+              )}
 
-          {/* Descrição */}
-          {!isEditing && trip.description && (
-            <div className="space-y-4">
-              <Separator className="my-6" />
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-6 h-6 text-primary" />
-                  <h2 className="text-xl font-semibold text-foreground">Descrição</h2>
-                </div>
-                
-                <div className="pl-9">
-                  <p className="text-foreground whitespace-pre-wrap leading-relaxed">{trip.description}</p>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                <Button 
+                  onClick={() => navigate("/viagens")}
+                  variant="outline"
+                  size="lg"
+                  className="flex-1 h-14 text-lg font-medium hover:bg-muted transition-all duration-300"
+                >
+                  <ArrowLeft className="w-5 h-5 mr-2" />
+                  Voltar ao Dashboard
+                </Button>
+                <Button 
+                  onClick={() => setIsEditing(true)}
+                  size="lg"
+                  className="flex-1 h-14 text-lg font-medium bg-primary hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  <Edit className="w-5 h-5 mr-2" />
+                  Editar Viagem
+                </Button>
               </div>
-            </div>
-          )}
-
-          {/* Ações */}
-          {!isEditing && (
-            <div className="flex gap-4 pt-4">
-              <Button 
-                onClick={() => navigate("/viagens")}
-                variant="outline"
-                className="flex-1 text-foreground border-border hover:bg-muted"
-              >
-                Voltar ao Dashboard
-              </Button>
-              <Button 
-                onClick={() => setIsEditing(true)}
-                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
-              >
-                Editar Viagem
-              </Button>
             </div>
           )}
           </div>
