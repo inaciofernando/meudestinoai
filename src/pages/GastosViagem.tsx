@@ -1136,16 +1136,13 @@ export default function GastosViagem() {
                         Valor <span className="text-red-500">*</span>
                       </Label>
                       <div className="relative">
-                        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                          <DollarSign className="w-4 h-4 text-white" />
-                        </div>
                         <Input
                           type="number"
                           step="0.01"
                           value={newExpense.amount}
                           onChange={(e) => setNewExpense({...newExpense, amount: e.target.value})}
                           placeholder="0,00"
-                          className="pl-16 pr-4 h-14 text-xl font-bold border-2 hover:border-primary/50 transition-colors focus:border-primary"
+                          className="px-4 h-14 text-xl font-bold border-2 hover:border-primary/50 transition-colors focus:border-primary"
                           disabled={showAIProcessingModal}
                         />
                       </div>
@@ -1493,14 +1490,13 @@ export default function GastosViagem() {
                   <div>
                     <Label>Valor *</Label>
                     <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         type="number"
                         step="0.01"
                         value={editForm.amount}
                         onChange={(e) => setEditForm({...editForm, amount: e.target.value})}
                         placeholder="0,00"
-                        className="pl-10"
+                        className="px-3"
                       />
                     </div>
                   </div>
