@@ -153,9 +153,6 @@ export const DocumentViewer = memo(({ document, isOpen, onClose, onDelete, onEdi
               <div className="text-center">
                 <FileText className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                 <p className="text-lg font-medium mb-2">Prévia não disponível</p>
-                <p className="text-muted-foreground mb-4">
-                  Tipo de arquivo: {document.file_type}
-                </p>
                 <Button onClick={handleDownload}>
                   <Download className="w-4 h-4 mr-2" />
                   Baixar Arquivo
