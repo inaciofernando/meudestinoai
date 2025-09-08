@@ -1115,45 +1115,41 @@ export default function DetalhesViagem() {
                 
                 <div className="pl-9">
                   {trip.start_date && trip.end_date ? (
-                    <div className="bg-muted/30 rounded-lg p-6 border border-border/50">
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
-                            Entrada
-                          </div>
-                          <div className="text-lg font-semibold text-foreground">
-                            {format(parseISO(trip.start_date), "dd MMM yyyy", { locale: ptBR })}
-                          </div>
+                    <div className="grid md:grid-cols-2 gap-8">
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+                          Entrada
                         </div>
-                        
-                        <div>
-                          <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
-                            Saída
-                          </div>
-                          <div className="text-lg font-semibold text-foreground">
-                            {format(parseISO(trip.end_date), "dd MMM yyyy", { locale: ptBR })}
-                          </div>
+                        <div className="text-2xl font-bold text-foreground">
+                          {format(parseISO(trip.start_date), "dd MMM yyyy", { locale: ptBR })}
                         </div>
                       </div>
                       
-                      <Separator className="my-4" />
-                      
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          {(() => {
-                            const start = parseISO(trip.start_date);
-                            const end = parseISO(trip.end_date);
-                            const diffTime = Math.abs(end.getTime() - start.getTime());
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-                            return `${diffDays} dias de viagem`;
-                          })()}
-                        </span>
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+                          Saída
+                        </div>
+                        <div className="text-2xl font-bold text-foreground">
+                          {format(parseISO(trip.end_date), "dd MMM yyyy", { locale: ptBR })}
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-muted/30 rounded-lg p-6 border border-border/50">
-                      <p className="text-muted-foreground text-center">Datas não definidas</p>
+                    <p className="text-muted-foreground">Datas não definidas</p>
+                  )}
+                  
+                  {trip.start_date && trip.end_date && (
+                    <div className="flex items-center gap-2 text-muted-foreground mt-6 pl-0">
+                      <Clock className="w-4 h-4" />
+                      <span className="text-sm">
+                        {(() => {
+                          const start = parseISO(trip.start_date);
+                          const end = parseISO(trip.end_date);
+                          const diffTime = Math.abs(end.getTime() - start.getTime());
+                          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                          return `${diffDays} dias de viagem`;
+                        })()}
+                      </span>
                     </div>
                   )}
                 </div>
