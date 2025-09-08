@@ -39,9 +39,34 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
         
         // Se a categoria é accommodation, adicionar aos accommodations
         if (item.category === "accommodation") {
+          // Extrair cidade e país do location e address
+          const location = item.location || ""; // Ex: "Redondo Beach, Califórnia"
+          const address = item.address || ""; // Ex: "2420 Marine Ave, Redondo Beach, CA 90278, Estados Unidos"
+          
+          // Extrair cidade (primeiro item antes da vírgula no location ou segundo item no address)
+          let city = "";
+          if (location.includes(",")) {
+            city = location.split(",")[0].trim();
+          } else if (address.includes(",")) {
+            const addressParts = address.split(",");
+            if (addressParts.length >= 2) {
+              city = addressParts[1].trim(); // Ex: "Redondo Beach"
+            }
+          }
+          
+          // Extrair país (último item do address se contém "Estados Unidos" ou similar)
+          let country = "Estados Unidos"; // Default para endereços americanos
+          if (address.toLowerCase().includes("estados unidos")) {
+            country = "Estados Unidos";
+          } else if (address.toLowerCase().includes("brazil") || address.toLowerCase().includes("brasil")) {
+            country = "Brasil";
+          }
+          
           accommodations.push({
             name: item.title || "",
             address: item.address || "",
+            city: city,
+            country: country,
             phone: "", // Não disponível nos dados estruturados
             email: "", // Não disponível nos dados estruturados  
             website: item.link || item.website_link || "",
@@ -249,6 +274,8 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
     const params = new URLSearchParams({
       hotel_name: accommodation.name,
       address: accommodation.address || '',
+      city: accommodation.city || '',
+      country: accommodation.country || '',
       phone: accommodation.phone || '',
       email: accommodation.email || '',
       hotel_link: accommodation.website || '',

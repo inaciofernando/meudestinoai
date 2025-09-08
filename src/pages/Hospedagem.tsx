@@ -124,6 +124,8 @@ export default function Hospedagem() {
         const conciergeData = {
           hotel_name: urlParams.get('hotel_name') || "",
           address: urlParams.get('address') || "",
+          city: urlParams.get('city') || "",
+          country: urlParams.get('country') || "",
           phone: urlParams.get('phone') || "",
           email: urlParams.get('email') || "",
           hotel_link: urlParams.get('hotel_link') || "",
