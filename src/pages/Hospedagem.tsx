@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft, Star } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +31,22 @@ interface Accommodation {
   hotel_link?: string;
   reservation_amount?: number;
   notes?: string;
+  accommodation_type?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  phone?: string;
+  email?: string;
+  room_type?: string;
+  number_of_guests?: number;
+  number_of_rooms?: number;
+  confirmation_number?: string;
+  includes_breakfast?: boolean;
+  wifi_available?: boolean;
+  parking_available?: boolean;
+  pet_friendly?: boolean;
+  rating?: number;
+  cancellation_policy?: string;
 }
 
 interface AccommodationForm {
@@ -41,6 +59,22 @@ interface AccommodationForm {
   hotel_link: string;
   reservation_amount: string;
   notes: string;
+  accommodation_type: string;
+  address: string;
+  city: string;
+  country: string;
+  phone: string;
+  email: string;
+  room_type: string;
+  number_of_guests: string;
+  number_of_rooms: string;
+  confirmation_number: string;
+  includes_breakfast: boolean;
+  wifi_available: boolean;
+  parking_available: boolean;
+  pet_friendly: boolean;
+  rating: string;
+  cancellation_policy: string;
 }
 
 export default function Hospedagem() {
@@ -61,7 +95,23 @@ export default function Hospedagem() {
     voucher_file_name: "",
     hotel_link: "",
     reservation_amount: "",
-    notes: ""
+    notes: "",
+    accommodation_type: "hotel",
+    address: "",
+    city: "",
+    country: "Brasil",
+    phone: "",
+    email: "",
+    room_type: "",
+    number_of_guests: "2",
+    number_of_rooms: "1",
+    confirmation_number: "",
+    includes_breakfast: false,
+    wifi_available: true,
+    parking_available: false,
+    pet_friendly: false,
+    rating: "",
+    cancellation_policy: ""
   });
 
   useEffect(() => {
@@ -118,7 +168,23 @@ export default function Hospedagem() {
       voucher_file_name: "",
       hotel_link: "",
       reservation_amount: "",
-      notes: ""
+      notes: "",
+      accommodation_type: "hotel",
+      address: "",
+      city: "",
+      country: "Brasil",
+      phone: "",
+      email: "",
+      room_type: "",
+      number_of_guests: "2",
+      number_of_rooms: "1",
+      confirmation_number: "",
+      includes_breakfast: false,
+      wifi_available: true,
+      parking_available: false,
+      pet_friendly: false,
+      rating: "",
+      cancellation_policy: ""
     });
   };
 
@@ -133,7 +199,23 @@ export default function Hospedagem() {
       voucher_file_name: accommodation.voucher_file_name || "",
       hotel_link: accommodation.hotel_link || "",
       reservation_amount: accommodation.reservation_amount?.toString() || "",
-      notes: accommodation.notes || ""
+      notes: accommodation.notes || "",
+      accommodation_type: accommodation.accommodation_type || "hotel",
+      address: accommodation.address || "",
+      city: accommodation.city || "",
+      country: accommodation.country || "Brasil",
+      phone: accommodation.phone || "",
+      email: accommodation.email || "",
+      room_type: accommodation.room_type || "",
+      number_of_guests: accommodation.number_of_guests?.toString() || "2",
+      number_of_rooms: accommodation.number_of_rooms?.toString() || "1",
+      confirmation_number: accommodation.confirmation_number || "",
+      includes_breakfast: accommodation.includes_breakfast || false,
+      wifi_available: accommodation.wifi_available !== false,
+      parking_available: accommodation.parking_available || false,
+      pet_friendly: accommodation.pet_friendly || false,
+      rating: accommodation.rating?.toString() || "",
+      cancellation_policy: accommodation.cancellation_policy || ""
     });
     setShowAddForm(true);
   };
@@ -158,7 +240,23 @@ export default function Hospedagem() {
         voucher_file_name: newAccommodation.voucher_file_name || null,
         hotel_link: newAccommodation.hotel_link || null,
         reservation_amount: newAccommodation.reservation_amount ? parseFloat(newAccommodation.reservation_amount) : null,
-        notes: newAccommodation.notes || null
+        notes: newAccommodation.notes || null,
+        accommodation_type: newAccommodation.accommodation_type || 'hotel',
+        address: newAccommodation.address || null,
+        city: newAccommodation.city || null,
+        country: newAccommodation.country || null,
+        phone: newAccommodation.phone || null,
+        email: newAccommodation.email || null,
+        room_type: newAccommodation.room_type || null,
+        number_of_guests: newAccommodation.number_of_guests ? parseInt(newAccommodation.number_of_guests) : 1,
+        number_of_rooms: newAccommodation.number_of_rooms ? parseInt(newAccommodation.number_of_rooms) : 1,
+        confirmation_number: newAccommodation.confirmation_number || null,
+        includes_breakfast: newAccommodation.includes_breakfast,
+        wifi_available: newAccommodation.wifi_available,
+        parking_available: newAccommodation.parking_available,
+        pet_friendly: newAccommodation.pet_friendly,
+        rating: newAccommodation.rating ? parseFloat(newAccommodation.rating) : null,
+        cancellation_policy: newAccommodation.cancellation_policy || null
       };
 
       if (editingAccommodation) {
@@ -318,145 +416,398 @@ export default function Hospedagem() {
             <DialogHeader>
               <DialogTitle>{editingAccommodation ? 'Editar Hospedagem' : 'Nova Hospedagem'}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <Label htmlFor="hotel_name">Nome do Hotel *</Label>
-                <Input
-                  id="hotel_name"
-                  value={newAccommodation.hotel_name}
-                  onChange={(e) => setNewAccommodation({ ...newAccommodation, hotel_name: e.target.value })}
-                  placeholder="Digite o nome do hotel"
-                />
-              </div>
+            <div className="space-y-6 py-4">
+              {/* Informações Básicas */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Informações Básicas</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="hotel_name">Nome do Hotel *</Label>
+                    <Input
+                      id="hotel_name"
+                      value={newAccommodation.hotel_name}
+                      onChange={(e) => setNewAccommodation({ ...newAccommodation, hotel_name: e.target.value })}
+                      placeholder="Digite o nome do hotel"
+                    />
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Data de Check-in *</Label>
-                  {trip?.start_date && trip?.end_date && (
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Período da viagem: {format(parseISO(trip.start_date), "dd/MM/yyyy")} - {format(parseISO(trip.end_date), "dd/MM/yyyy")}
-                    </p>
-                  )}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !newAccommodation.check_in_date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newAccommodation.check_in_date ? format(newAccommodation.check_in_date, "dd/MM/yyyy") : "Selecione a data"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={newAccommodation.check_in_date}
-                        onSelect={(date) => setNewAccommodation({ ...newAccommodation, check_in_date: date })}
-                        disabled={(date) => {
-                          if (!trip?.start_date || !trip?.end_date) return false;
-                          const startDate = parseISO(trip.start_date);
-                          const endDate = parseISO(trip.end_date);
-                          return date < startDate || date > endDate;
-                        }}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <div>
+                    <Label htmlFor="accommodation_type">Tipo de Hospedagem</Label>
+                    <Select 
+                      value={newAccommodation.accommodation_type}
+                      onValueChange={(value) => setNewAccommodation({ ...newAccommodation, accommodation_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hotel">Hotel</SelectItem>
+                        <SelectItem value="airbnb">Airbnb</SelectItem>
+                        <SelectItem value="pousada">Pousada</SelectItem>
+                        <SelectItem value="resort">Resort</SelectItem>
+                        <SelectItem value="hostel">Hostel</SelectItem>
+                        <SelectItem value="apartamento">Apartamento</SelectItem>
+                        <SelectItem value="casa">Casa</SelectItem>
+                        <SelectItem value="outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                <div>
-                  <Label>Data de Check-out *</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !newAccommodation.check_out_date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newAccommodation.check_out_date ? format(newAccommodation.check_out_date, "dd/MM/yyyy") : "Selecione a data"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={newAccommodation.check_out_date}
-                        onSelect={(date) => setNewAccommodation({ ...newAccommodation, check_out_date: date })}
-                        disabled={(date) => {
-                          if (!trip?.start_date || !trip?.end_date) return false;
-                          const startDate = parseISO(trip.start_date);
-                          const endDate = parseISO(trip.end_date);
-                          return date < startDate || date > endDate || (newAccommodation.check_in_date && date <= newAccommodation.check_in_date);
-                        }}
-                        initialFocus
-                        className="p-3 pointer-events-auto"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="confirmation_number">Número da Reserva</Label>
+                    <Input
+                      id="confirmation_number"
+                      value={newAccommodation.confirmation_number}
+                      onChange={(e) => setNewAccommodation({ ...newAccommodation, confirmation_number: e.target.value })}
+                      placeholder="Ex: ABC123456"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="rating">Avaliação (1-5)</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="rating"
+                        type="number"
+                        min="1"
+                        max="5"
+                        step="0.1"
+                        value={newAccommodation.rating}
+                        onChange={(e) => setNewAccommodation({ ...newAccommodation, rating: e.target.value })}
+                        placeholder="4.5"
+                        className="w-20"
                       />
-                    </PopoverContent>
-                  </Popover>
+                      <Star className="w-4 h-4 text-amber-500" />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <Label>Imagem do Hotel</Label>
-                <ImageUpload
-                  images={newAccommodation.hotel_image_url ? [newAccommodation.hotel_image_url] : []}
-                  onImagesChange={(images) => setNewAccommodation({ ...newAccommodation, hotel_image_url: images[0] || "" })}
-                  maxImages={1}
-                />
+              {/* Datas */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Período da Estadia</h3>
+                
+                {trip?.start_date && trip?.end_date && (
+                  <p className="text-xs text-muted-foreground">
+                    Período da viagem: {format(parseISO(trip.start_date), "dd/MM/yyyy")} - {format(parseISO(trip.end_date), "dd/MM/yyyy")}
+                  </p>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Data de Check-in *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !newAccommodation.check_in_date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newAccommodation.check_in_date ? format(newAccommodation.check_in_date, "dd/MM/yyyy") : "Selecione a data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={newAccommodation.check_in_date}
+                          onSelect={(date) => setNewAccommodation({ ...newAccommodation, check_in_date: date })}
+                          disabled={(date) => {
+                            if (!trip?.start_date || !trip?.end_date) return false;
+                            const startDate = parseISO(trip.start_date);
+                            const endDate = parseISO(trip.end_date);
+                            return date < startDate || date > endDate;
+                          }}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div>
+                    <Label>Data de Check-out *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !newAccommodation.check_out_date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newAccommodation.check_out_date ? format(newAccommodation.check_out_date, "dd/MM/yyyy") : "Selecione a data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={newAccommodation.check_out_date}
+                          onSelect={(date) => setNewAccommodation({ ...newAccommodation, check_out_date: date })}
+                          disabled={(date) => {
+                            if (!trip?.start_date || !trip?.end_date) return false;
+                            const startDate = parseISO(trip.start_date);
+                            const endDate = parseISO(trip.end_date);
+                            return date < startDate || date > endDate || (newAccommodation.check_in_date && date <= newAccommodation.check_in_date);
+                          }}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="voucher">Voucher</Label>
-                <div className="flex items-center gap-2">
+              {/* Localização */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Localização</h3>
+                
+                <div>
+                  <Label htmlFor="address">Endereço Completo</Label>
                   <Input
-                    id="voucher"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    onChange={handleVoucherUpload}
-                    className="cursor-pointer"
+                    id="address"
+                    value={newAccommodation.address}
+                    onChange={(e) => setNewAccommodation({ ...newAccommodation, address: e.target.value })}
+                    placeholder="Rua, número, bairro"
                   />
-                  {newAccommodation.voucher_file_name && (
-                    <span className="text-sm text-muted-foreground">{newAccommodation.voucher_file_name}</span>
-                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="city">Cidade</Label>
+                    <Input
+                      id="city"
+                      value={newAccommodation.city}
+                      onChange={(e) => setNewAccommodation({ ...newAccommodation, city: e.target.value })}
+                      placeholder="Nome da cidade"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="country">País</Label>
+                    <Input
+                      id="country"
+                      value={newAccommodation.country}
+                      onChange={(e) => setNewAccommodation({ ...newAccommodation, country: e.target.value })}
+                      placeholder="Brasil"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="hotel_link">Link do Hotel</Label>
-                <Input
-                  id="hotel_link"
-                  value={newAccommodation.hotel_link}
-                  onChange={(e) => setNewAccommodation({ ...newAccommodation, hotel_link: e.target.value })}
-                  placeholder="https://www.hotel.com"
-                />
+              {/* Detalhes da Acomodação */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Detalhes da Acomodação</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="room_type">Tipo de Quarto</Label>
+                    <Select 
+                      value={newAccommodation.room_type}
+                      onValueChange={(value) => setNewAccommodation({ ...newAccommodation, room_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="deluxe">Deluxe</SelectItem>
+                        <SelectItem value="suite">Suíte</SelectItem>
+                        <SelectItem value="presidencial">Presidencial</SelectItem>
+                        <SelectItem value="family">Familiar</SelectItem>
+                        <SelectItem value="single">Single</SelectItem>
+                        <SelectItem value="double">Double</SelectItem>
+                        <SelectItem value="twin">Twin</SelectItem>
+                        <SelectItem value="apartamento_completo">Apartamento Completo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="number_of_guests">Número de Hóspedes</Label>
+                    <Input
+                      id="number_of_guests"
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={newAccommodation.number_of_guests}
+                      onChange={(e) => setNewAccommodation({ ...newAccommodation, number_of_guests: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="number_of_rooms">Número de Quartos</Label>
+                    <Input
+                      id="number_of_rooms"
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={newAccommodation.number_of_rooms}
+                      onChange={(e) => setNewAccommodation({ ...newAccommodation, number_of_rooms: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Comodidades */}
+                <div>
+                  <Label>Comodidades Incluídas</Label>
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="includes_breakfast"
+                        checked={newAccommodation.includes_breakfast}
+                        onCheckedChange={(checked) => setNewAccommodation({ ...newAccommodation, includes_breakfast: !!checked })}
+                      />
+                      <Label htmlFor="includes_breakfast" className="text-sm">Café da manhã</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="wifi_available"
+                        checked={newAccommodation.wifi_available}
+                        onCheckedChange={(checked) => setNewAccommodation({ ...newAccommodation, wifi_available: !!checked })}
+                      />
+                      <Label htmlFor="wifi_available" className="text-sm">Wi-Fi gratuito</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="parking_available"
+                        checked={newAccommodation.parking_available}
+                        onCheckedChange={(checked) => setNewAccommodation({ ...newAccommodation, parking_available: !!checked })}
+                      />
+                      <Label htmlFor="parking_available" className="text-sm">Estacionamento</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="pet_friendly"
+                        checked={newAccommodation.pet_friendly}
+                        onCheckedChange={(checked) => setNewAccommodation({ ...newAccommodation, pet_friendly: !!checked })}
+                      />
+                      <Label htmlFor="pet_friendly" className="text-sm">Pet friendly</Label>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="reservation_amount">Valor da Reserva (R$)</Label>
-                <Input
-                  id="reservation_amount"
-                  type="number"
-                  step="0.01"
-                  value={newAccommodation.reservation_amount}
-                  onChange={(e) => setNewAccommodation({ ...newAccommodation, reservation_amount: e.target.value })}
-                  placeholder="0.00"
-                />
+              {/* Contato e Links */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Contato e Links</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone">Telefone</Label>
+                    <Input
+                      id="phone"
+                      value={newAccommodation.phone}
+                      onChange={(e) => setNewAccommodation({ ...newAccommodation, phone: e.target.value })}
+                      placeholder="+55 (11) 99999-9999"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={newAccommodation.email}
+                      onChange={(e) => setNewAccommodation({ ...newAccommodation, email: e.target.value })}
+                      placeholder="contato@hotel.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="hotel_link">Link do Hotel/Booking</Label>
+                  <Input
+                    id="hotel_link"
+                    value={newAccommodation.hotel_link}
+                    onChange={(e) => setNewAccommodation({ ...newAccommodation, hotel_link: e.target.value })}
+                    placeholder="https://www.hotel.com ou link do Booking.com"
+                  />
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="notes">Observações</Label>
-                <Textarea
-                  id="notes"
-                  value={newAccommodation.notes}
-                  onChange={(e) => setNewAccommodation({ ...newAccommodation, notes: e.target.value })}
-                  placeholder="Observações sobre a hospedagem"
-                />
+              {/* Financeiro */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Informações Financeiras</h3>
+                
+                <div>
+                  <Label htmlFor="reservation_amount">Valor Total da Reserva (R$)</Label>
+                  <Input
+                    id="reservation_amount"
+                    type="number"
+                    step="0.01"
+                    value={newAccommodation.reservation_amount}
+                    onChange={(e) => setNewAccommodation({ ...newAccommodation, reservation_amount: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="cancellation_policy">Política de Cancelamento</Label>
+                  <Textarea
+                    id="cancellation_policy"
+                    value={newAccommodation.cancellation_policy}
+                    onChange={(e) => setNewAccommodation({ ...newAccommodation, cancellation_policy: e.target.value })}
+                    placeholder="Cancelamento gratuito até 24h antes..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              {/* Arquivos */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Imagens e Documentos</h3>
+                
+                <div>
+                  <Label>Imagem do Hotel</Label>
+                  <ImageUpload
+                    images={newAccommodation.hotel_image_url ? [newAccommodation.hotel_image_url] : []}
+                    onImagesChange={(images) => setNewAccommodation({ ...newAccommodation, hotel_image_url: images[0] || "" })}
+                    maxImages={1}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="voucher">Voucher/Comprovante</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="voucher"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                      onChange={handleVoucherUpload}
+                      className="cursor-pointer"
+                    />
+                    {newAccommodation.voucher_file_name && (
+                      <span className="text-sm text-muted-foreground">{newAccommodation.voucher_file_name}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Observações */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Observações</h3>
+                
+                <div>
+                  <Label htmlFor="notes">Observações Gerais</Label>
+                  <Textarea
+                    id="notes"
+                    value={newAccommodation.notes}
+                    onChange={(e) => setNewAccommodation({ ...newAccommodation, notes: e.target.value })}
+                    placeholder="Informações adicionais sobre a hospedagem..."
+                    rows={3}
+                  />
+                </div>
               </div>
 
               <div className="flex justify-between gap-3 pt-6 border-t border-border mt-6">

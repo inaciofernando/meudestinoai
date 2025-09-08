@@ -1,0 +1,18 @@
+-- Adicionar novos campos para melhorar o sistema de hospedagem
+ALTER TABLE public.accommodations 
+ADD COLUMN IF NOT EXISTS accommodation_type TEXT DEFAULT 'hotel',
+ADD COLUMN IF NOT EXISTS address TEXT,
+ADD COLUMN IF NOT EXISTS city TEXT,
+ADD COLUMN IF NOT EXISTS country TEXT,
+ADD COLUMN IF NOT EXISTS phone TEXT,
+ADD COLUMN IF NOT EXISTS email TEXT,
+ADD COLUMN IF NOT EXISTS room_type TEXT,
+ADD COLUMN IF NOT EXISTS number_of_guests INTEGER DEFAULT 1,
+ADD COLUMN IF NOT EXISTS number_of_rooms INTEGER DEFAULT 1,
+ADD COLUMN IF NOT EXISTS confirmation_number TEXT,
+ADD COLUMN IF NOT EXISTS includes_breakfast BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS wifi_available BOOLEAN DEFAULT true,
+ADD COLUMN IF NOT EXISTS parking_available BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS pet_friendly BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS rating DECIMAL(2,1),
+ADD COLUMN IF NOT EXISTS cancellation_policy TEXT;

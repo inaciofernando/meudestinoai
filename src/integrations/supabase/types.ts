@@ -16,52 +16,100 @@ export type Database = {
     Tables: {
       accommodations: {
         Row: {
+          accommodation_type: string | null
+          address: string | null
+          cancellation_policy: string | null
           check_in_date: string
           check_out_date: string
+          city: string | null
+          confirmation_number: string | null
+          country: string | null
           created_at: string
+          email: string | null
           hotel_image_url: string | null
           hotel_link: string | null
           hotel_name: string
           id: string
+          includes_breakfast: boolean | null
           notes: string | null
+          number_of_guests: number | null
+          number_of_rooms: number | null
+          parking_available: boolean | null
+          pet_friendly: boolean | null
+          phone: string | null
+          rating: number | null
           reservation_amount: number | null
+          room_type: string | null
           trip_id: string
           updated_at: string
           user_id: string
           voucher_file_name: string | null
           voucher_file_url: string | null
+          wifi_available: boolean | null
         }
         Insert: {
+          accommodation_type?: string | null
+          address?: string | null
+          cancellation_policy?: string | null
           check_in_date: string
           check_out_date: string
+          city?: string | null
+          confirmation_number?: string | null
+          country?: string | null
           created_at?: string
+          email?: string | null
           hotel_image_url?: string | null
           hotel_link?: string | null
           hotel_name: string
           id?: string
+          includes_breakfast?: boolean | null
           notes?: string | null
+          number_of_guests?: number | null
+          number_of_rooms?: number | null
+          parking_available?: boolean | null
+          pet_friendly?: boolean | null
+          phone?: string | null
+          rating?: number | null
           reservation_amount?: number | null
+          room_type?: string | null
           trip_id: string
           updated_at?: string
           user_id: string
           voucher_file_name?: string | null
           voucher_file_url?: string | null
+          wifi_available?: boolean | null
         }
         Update: {
+          accommodation_type?: string | null
+          address?: string | null
+          cancellation_policy?: string | null
           check_in_date?: string
           check_out_date?: string
+          city?: string | null
+          confirmation_number?: string | null
+          country?: string | null
           created_at?: string
+          email?: string | null
           hotel_image_url?: string | null
           hotel_link?: string | null
           hotel_name?: string
           id?: string
+          includes_breakfast?: boolean | null
           notes?: string | null
+          number_of_guests?: number | null
+          number_of_rooms?: number | null
+          parking_available?: boolean | null
+          pet_friendly?: boolean | null
+          phone?: string | null
+          rating?: number | null
           reservation_amount?: number | null
+          room_type?: string | null
           trip_id?: string
           updated_at?: string
           user_id?: string
           voucher_file_name?: string | null
           voucher_file_url?: string | null
+          wifi_available?: boolean | null
         }
         Relationships: []
       }
