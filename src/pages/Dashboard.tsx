@@ -156,6 +156,7 @@ export default function Dashboard() {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   
+  // Separar viagens por status específico (sem sobreposição)
   const completedTrips = trips.filter(trip => trip.status === 'completed');
   const completedThisYear = completedTrips.filter(trip => {
     if (!trip.end_date) return false;
@@ -163,9 +164,7 @@ export default function Dashboard() {
     return tripYear === currentYear;
   });
   
-  const upcomingTrips = trips.filter(trip => 
-    trip.status === 'confirmed'
-  );
+  const upcomingTrips = trips.filter(trip => trip.status === 'confirmed');
   const upcomingThisMonth = upcomingTrips.filter(trip => {
     if (!trip.start_date) return false;
     const tripDate = new Date(trip.start_date);
