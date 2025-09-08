@@ -297,7 +297,9 @@ export default function Hospedagem() {
 
           <Button
             onClick={() => setShowAddForm(true)}
-            className="w-10 h-10 p-0 rounded-full bg-gradient-ocean hover:shadow-travel transition-all duration-300"
+            variant="outline"
+            size="icon"
+            className="text-primary border-primary hover:bg-primary hover:text-primary-foreground transition-smooth"
             aria-label="Adicionar hospedagem"
           >
             <Plus className="w-5 h-5" />
@@ -470,7 +472,11 @@ export default function Hospedagem() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-8">
                 <p className="text-muted-foreground mb-4">Nenhuma hospedagem cadastrada</p>
-                <Button onClick={() => setShowAddForm(true)}>
+                <Button 
+                  onClick={() => setShowAddForm(true)}
+                  variant="outline"
+                  className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+                >
                   Adicionar Primeira Hospedagem
                 </Button>
               </CardContent>
