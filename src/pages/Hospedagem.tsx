@@ -936,27 +936,6 @@ export default function Hospedagem() {
                        <p className="text-muted-foreground mt-1">{accommodation.notes}</p>
                      </div>
                    )}
-
-                   <div className="flex gap-2">
-                     <Button
-                       variant="outline"
-                       size="sm"
-                       onClick={() => handleEditAccommodation(accommodation)}
-                       className="flex items-center gap-2"
-                     >
-                       <Edit className="w-4 h-4" />
-                       Editar
-                     </Button>
-                     <Button
-                       variant="outline"
-                       size="sm"
-                       onClick={() => handleDeleteAccommodation(accommodation.id)}
-                       className="flex items-center gap-2 text-destructive hover:text-destructive"
-                     >
-                       <Trash2 className="w-4 h-4" />
-                       Excluir
-                     </Button>
-                   </div>
                  </CardContent>
                </Card>
               ))
