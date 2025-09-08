@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft, Navigation } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -911,6 +911,21 @@ export default function Hospedagem() {
                       >
                         <ExternalLink className="w-4 h-4" />
                         Acessar Site
+                      </Button>
+                    </div>
+                  )}
+
+                  {accommodation.waze_link && (
+                    <div className="flex items-center gap-2">
+                      <strong>Navegação:</strong>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(accommodation.waze_link, '_blank')}
+                        className="flex items-center gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+                      >
+                        <Navigation className="w-4 h-4" />
+                        Abrir no Waze
                       </Button>
                     </div>
                   )}
