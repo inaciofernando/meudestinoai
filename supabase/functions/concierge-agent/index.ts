@@ -335,8 +335,8 @@ async function getUserAIConfig(userId: string) {
      return `${base}\n\nTarefa: recomendar hospedagens (hotéis/pousadas).\n- Inclua dicas de localização e conveniências.\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo (esquema ampliado).\n\nExemplo:\n\n\`\`\`json\n{\n  "accommodation": {\n    "name": "",\n    "description": "",\n    "type": "hotel",\n    "address": "",\n    "city": "",\n    "country": "",\n    "phone": "",\n    "email": "",\n    "website": "",\n    "booking_link": "",\n    "tripadvisor": "",\n    "google_maps_link": "",\n    "waze_link": "",\n    "check_in": "",\n    "check_out": "",\n    "amenities": [],\n    "price_band": "$$",\n    "estimated_amount_per_night": "",\n    "total_estimated_amount": "",\n    "notes": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
    }
  
-   // General chat: no JSON, mas pode sugerir follow-up
-   return `${base}\n\nTarefa: conversa geral, dicas e sugestões sobre a viagem. RESPONDA sem incluir blocos JSON.\n\nSe você sugerir restaurantes, hospedagens ou atrações específicas, TERMINE sua resposta perguntando:\n"Quer que eu busque os detalhes de algum desses locais para adicionar à sua viagem?"\n\nSe precisar de mais contexto, faça perguntas objetivas.`;
+   // General chat: no JSON, resposta útil com 3–5 opções e convite para detalhes
+   return `${base}\n\nTarefa: conversa geral, dicas e sugestões sobre a viagem.\n\nRegras para esta resposta (sem JSON):\n- Traga 3 a 5 sugestões CONCRETAS alinhadas ao contexto (nome do lugar + 1 frase do porquê + melhor horário + link oficial se souber).\n- Use bullets curtas e claras.\n- Se o destino for amplo, pode incluir opções nas cidades próximas, indicando distância/tempo.\n- Termine com uma pergunta de continuação: \"Quer que eu traga os detalhes de algum desses para salvar na sua viagem? Diga, por exemplo: 'detalhes do <nome>'.\"`;
  }
  
 serve(async (req) => {
@@ -405,7 +405,7 @@ serve(async (req) => {
     // Token limits per intent (OpenAI only)
     const tokenLimits: Record<Intent, number> = {
       greeting: 0,
-      general: 800,
+      general: 1200,
       restaurant: 1400,
       accommodation: 1800,
       attraction: 1400,
@@ -558,9 +558,11 @@ serve(async (req) => {
       }
     }
 
-    // Se ainda não houver texto, garanta uma resposta mínima
+    // Se ainda não houver texto, garanta uma resposta mínima útil e conversacional
     if (!cleanText || cleanText.trim().length === 0) {
-      cleanText = 'Certo! Estou analisando sua pergunta e posso sugerir opções específicas. Pode detalhar preferências (horário, orçamento, estilo)?';
+      const destino = (tripContext?.destination || tripContext?.title || '').toString();
+      const onde = destino ? ` em ${destino}` : '';
+      cleanText = `Posso sugerir agora opções${onde}. Prefere começar por gastronomia, atrações ao ar livre, museus ou compras? Se quiser salvar algo, diga: 'detalhes do <nome>'.`;
     }
 
     // Retornar o texto limpo + JSON oculto para uso dos botões de ação + imagens geradas
