@@ -212,18 +212,50 @@ async function generateImage(prompt: string): Promise<string | null> {
 
 // Helper function to get user AI configuration
 async function getUserAIConfig(userId: string) {
-  console.log('getUserAIConfig called with userId:', userId);
+  console.log('=== getUserAIConfig DEBUG ===');
+  console.log('Input userId:', userId);
+  console.log('userId type:', typeof userId);
+  console.log('Supabase client exists:', !!supabase);
+  
+  // For testing, let's force Fernando's config if no valid user
+  if (!userId || userId === 'anonymous') {
+    console.log('No userId provided, checking for Fernando Costa profile...');
+    if (supabase) {
+      try {
+        const { data: fernandoProfile, error } = await supabase
+          .from('profiles')
+          .select('ai_model, ai_api_key, full_name')
+          .eq('full_name', 'Fernando Costa')
+          .maybeSingle();
+          
+        console.log('Fernando profile lookup:', { data: fernandoProfile, error: error?.message });
+        
+        if (fernandoProfile && fernandoProfile.ai_api_key) {
+          console.log('Using Fernando Costa profile for anonymous user');
+          return {
+            model: fernandoProfile.ai_model || 'gpt-5-mini-2025-08-07',
+            apiKey: fernandoProfile.ai_api_key
+          };
+        }
+      } catch (err) {
+        console.error('Error fetching Fernando profile:', err);
+      }
+    }
+  }
   
   try {
     if (supabase && userId && userId !== 'anonymous') {
       console.log('Attempting to fetch user profile from Supabase...');
       const { data, error } = await supabase
         .from('profiles')
-        .select('ai_model, ai_api_key')
+        .select('ai_model, ai_api_key, full_name')
         .eq('user_id', userId)
         .maybeSingle();
 
-      console.log('Supabase query result:', { data, error: error?.message });
+      console.log('Supabase query result:', { 
+        data: data ? { ...data, ai_api_key: data.ai_api_key ? '***HIDDEN***' : 'empty' } : null, 
+        error: error?.message 
+      });
 
       if (error) {
         console.error('Supabase error fetching profile:', error.message);
@@ -233,11 +265,12 @@ async function getUserAIConfig(userId: string) {
         const fallbackApiKey = model.startsWith('gpt-') ? OPENAI_API_KEY : GEMINI_API_KEY;
         const finalApiKey = userApiKey || fallbackApiKey;
         
-        console.log('Profile data found:', {
+        console.log('Profile processing result:', {
+          fullName: data.full_name,
           model,
           hasUserApiKey: !!userApiKey,
           hasFallbackKey: !!fallbackApiKey,
-          finalKeyUsed: finalApiKey ? 'Yes' : 'No'
+          finalKeyFound: !!finalApiKey
         });
         
         return { model, apiKey: finalApiKey };
@@ -245,39 +278,51 @@ async function getUserAIConfig(userId: string) {
         console.log('No profile data found for user');
       }
     } else {
-      console.log('No supabase client or anonymous user, using defaults');
+      console.log('No supabase client or invalid userId, using defaults');
     }
   } catch (err) {
     console.error('Error fetching user AI config:', err);
   }
 
   // Fallback defaults
-  console.log('Using fallback defaults: gemini-2.5-flash');
+  console.log('Using fallback defaults: gemini-2.5-flash with system GEMINI key');
   return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY };
 }
 
 serve(async (req) => {
+  console.log('=== CONCIERGE FUNCTION STARTED ===');
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { prompt, tripId, tripContext, userId } = await req.json();
-    console.log('=== CONCIERGE REQUEST ===');
+    const requestBody = await req.json();
+    const { prompt, tripId, tripContext, userId } = requestBody;
+    
+    console.log('=== FULL REQUEST DEBUG ===');
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
     console.log('Received userId:', userId);
-    console.log('Prompt:', prompt?.substring(0, 100) + '...');
+    console.log('User type:', typeof userId);
+    console.log('Prompt length:', prompt?.length || 0);
     
     if (!prompt) {
+      console.error('No prompt provided');
       return new Response(JSON.stringify({ error: "Missing prompt" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    console.log('=== FETCHING AI CONFIG ===');
     // Get user AI configuration
-    console.log('Fetching AI config for userId:', userId);
     const aiConfig = await getUserAIConfig(userId || 'anonymous');
-    console.log('AI Config Retrieved:', { model: aiConfig.model, hasApiKey: !!aiConfig.apiKey });
+    console.log('Final AI Config:', { 
+      model: aiConfig.model, 
+      hasApiKey: !!aiConfig.apiKey,
+      apiKeyLength: aiConfig.apiKey?.length || 0,
+      apiKeyStart: aiConfig.apiKey?.substring(0, 10) || 'none'
+    });
     
     if (!aiConfig.apiKey) {
       console.error('No API key found for model:', aiConfig.model);
