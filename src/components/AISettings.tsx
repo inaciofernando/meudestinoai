@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bot, Save, Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
 
 interface Profile {
   id: string;
@@ -34,29 +33,27 @@ const AI_MODELS = [
 export function AISettings({ profile, setProfile, onSave, saving }: AISettingsProps) {
   const [showApiKey, setShowApiKey] = useState(false);
 
+  if (!profile) return null;
+
   const handleModelChange = (newModel: string) => {
-    if (profile) {
-      setProfile({ ...profile, ai_model: newModel });
-    }
+    setProfile({ ...profile, ai_model: newModel });
   };
 
   const handleApiKeyChange = (newApiKey: string) => {
-    if (profile) {
-      setProfile({ ...profile, ai_api_key: newApiKey });
-    }
+    setProfile({ ...profile, ai_api_key: newApiKey });
   };
 
-  const selectedModel = AI_MODELS.find(model => model.value === profile?.ai_model);
+  const selectedModel = AI_MODELS.find(model => model.value === profile.ai_model);
 
   const getApiKeyPlaceholder = () => {
-    if (profile?.ai_model?.startsWith('gpt-')) {
+    if (profile.ai_model?.startsWith('gpt-')) {
       return 'Cole aqui sua chave da API OpenAI';
     }
     return 'Cole aqui sua chave da API Google Gemini';
   };
 
   const getApiKeyHelp = () => {
-    if (profile?.ai_model?.startsWith('gpt-')) {
+    if (profile.ai_model?.startsWith('gpt-')) {
       return 'Obtenha sua chave em: https://platform.openai.com/api-keys';
     }
     return 'Obtenha sua chave em: https://aistudio.google.com/app/apikey';
@@ -70,10 +67,10 @@ export function AISettings({ profile, setProfile, onSave, saving }: AISettingsPr
           Configurações de IA
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="ai-model">Modelo de IA</Label>
-          <Select value={profile?.ai_model || ''} onValueChange={handleModelChange}>
+          <Select value={profile.ai_model || ''} onValueChange={handleModelChange}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o modelo de IA" />
             </SelectTrigger>
@@ -90,7 +87,7 @@ export function AISettings({ profile, setProfile, onSave, saving }: AISettingsPr
           </Select>
           {selectedModel && (
             <p className="text-sm text-muted-foreground">
-              Modelo selecionado: {selectedModel.label} ({selectedModel.provider})
+              Modelo: {selectedModel.label} ({selectedModel.provider})
             </p>
           )}
         </div>
@@ -101,7 +98,7 @@ export function AISettings({ profile, setProfile, onSave, saving }: AISettingsPr
             <Input
               id="api-key"
               type={showApiKey ? "text" : "password"}
-              value={profile?.ai_api_key || ''}
+              value={profile.ai_api_key || ''}
               onChange={(e) => handleApiKeyChange(e.target.value)}
               placeholder={getApiKeyPlaceholder()}
               className="pr-10"
@@ -113,11 +110,7 @@ export function AISettings({ profile, setProfile, onSave, saving }: AISettingsPr
               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
               onClick={() => setShowApiKey(!showApiKey)}
             >
-              {showApiKey ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
+              {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
@@ -125,20 +118,18 @@ export function AISettings({ profile, setProfile, onSave, saving }: AISettingsPr
           </p>
         </div>
 
-        <div className="pt-4 border-t">
-          <Button onClick={onSave} disabled={saving} className="w-full">
-            <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Salvando...' : 'Salvar Configurações de IA'}
-          </Button>
-        </div>
+        <Button onClick={onSave} disabled={saving} className="w-full" size="lg">
+          <Save className="w-4 h-4 mr-2" />
+          {saving ? 'Salvando...' : 'Salvar Configurações de IA'}
+        </Button>
 
         <div className="text-xs text-muted-foreground bg-muted p-3 rounded-md">
-          <p className="font-medium mb-1">ℹ️ Como funciona:</p>
+          <p className="font-semibold mb-2">ℹ️ Como usar:</p>
           <ul className="space-y-1 list-disc list-inside">
-            <li>Escolha o modelo de IA que prefere usar no concierge</li>
-            <li>Cole sua chave de API pessoal para ter acesso ao modelo</li>
-            <li>Suas configurações são salvas de forma segura</li>
-            <li>Se não configurar, usará o modelo padrão do sistema</li>
+            <li>Escolha o modelo de IA</li>
+            <li>Cole sua chave de API</li>
+            <li>Clique em "Salvar" acima</li>
+            <li>Use no concierge de viagens</li>
           </ul>
         </div>
       </CardContent>
