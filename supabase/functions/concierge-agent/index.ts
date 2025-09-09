@@ -521,6 +521,42 @@ serve(async (req) => {
       }
     }
 
+    // Fallback: se só veio JSON (sem texto), criar uma resposta curta amigável
+    if ((!cleanText || cleanText.trim().length === 0) && structuredData) {
+      try {
+        if ((structuredData as any).restaurant) {
+          const r = (structuredData as any).restaurant;
+          cleanText = [
+            `Sugestão de restaurante: ${r.name || 'opção recomendada'}.`,
+            r.cuisine ? `Culinária: ${r.cuisine}.` : '',
+            r.address ? `Endereço: ${r.address}.` : '',
+            r.price_band ? `Faixa de preço: ${r.price_band}.` : '',
+          ].filter(Boolean).join(' ');
+        } else if ((structuredData as any).itinerary_item) {
+          const i = (structuredData as any).itinerary_item;
+          cleanText = [
+            `Sugestão de passeio: ${i.title || 'atração recomendada'}.`,
+            i.description ? i.description : '',
+            i.address ? `Endereço: ${i.address}.` : ''
+          ].filter(Boolean).join(' ');
+        } else if ((structuredData as any).accommodation) {
+          const a = (structuredData as any).accommodation;
+          cleanText = [
+            `Sugestão de hospedagem: ${a.name || 'opção recomendada'} (${a.type || 'hotel'}).`,
+            a.description ? a.description : '',
+            a.address ? `Endereço: ${a.address}.` : ''
+          ].filter(Boolean).join(' ');
+        }
+      } catch (_) {
+        cleanText = 'Encontrei uma boa opção para você (detalhes no cartão abaixo).';
+      }
+    }
+
+    // Se ainda não houver texto, garanta uma resposta mínima
+    if (!cleanText || cleanText.trim().length === 0) {
+      cleanText = 'Certo! Estou analisando sua pergunta e posso sugerir opções específicas. Pode detalhar preferências (horário, orçamento, estilo)?';
+    }
+
     // Retornar o texto limpo + JSON oculto para uso dos botões de ação + imagens geradas
     console.log('=== RESPONSE PREPARATION ===');
     console.log('Clean text length:', cleanText.length);
