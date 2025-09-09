@@ -324,73 +324,80 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
     r.tripadvisor || r.gmap || r.link || r.waze
   );
 
+  // Check if there's any structured data to show the "Salvar como" button
+  const hasStructuredData = extractedData.restaurants.length > 0 || 
+                           extractedData.attractions.length > 0 || 
+                           extractedData.accommodations.length > 0;
+
   return (
     <div className="mt-4 px-4">
       <div className="flex flex-wrap gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="sm" className="h-8 px-3 text-xs gap-1">
-              Salvar como
-              <MoreVertical className="w-3 h-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" sideOffset={8} className="w-56 z-50 bg-background border shadow-lg">
-            <DropdownMenuItem
-              onClick={() => {
-                if (extractedData.restaurants.length > 0) {
-                  handleAddRestaurant(extractedData.restaurants[0]);
-                } else {
-                  const params = new URLSearchParams({ fromConcierge: 'true' });
-                  navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
-                }
-              }}
-              className="cursor-pointer"
-            >
-              <UtensilsCrossed className="w-4 h-4 mr-2" />
-              {`Restaurante${
-                extractedData.restaurants.length > 0 && extractedData.restaurants[0].name
-                  ? ` – ${extractedData.restaurants[0].name}`
-                  : ''
-              }`}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                if (extractedData.accommodations.length > 0) {
-                  handleAddAccommodation(extractedData.accommodations[0]);
-                } else {
-                  const params = new URLSearchParams({ fromConcierge: 'true' });
-                  navigate(`/viagem/${tripId}/hospedagem?${params.toString()}`);
-                }
-              }}
-              className="cursor-pointer"
-            >
-              <Hotel className="w-4 h-4 mr-2" />
-              {`Hospedagem${
-                extractedData.accommodations.length > 0 && extractedData.accommodations[0].name
-                  ? ` – ${extractedData.accommodations[0].name}`
-                  : ''
-              }`}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                if (extractedData.attractions.length > 0) {
-                  handleAddAttraction(extractedData.attractions[0]);
-                } else {
-                  const params = new URLSearchParams({ fromConcierge: 'true' });
-                  navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
-                }
-              }}
-              className="cursor-pointer"
-            >
-              <MapPinPlus className="w-4 h-4 mr-2" />
-              {`Roteiro${
-                extractedData.attractions.length > 0 && extractedData.attractions[0].name
-                  ? ` – ${extractedData.attractions[0].name}`
-                  : ''
-              }`}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {hasStructuredData && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="sm" className="h-8 px-3 text-xs gap-1">
+                Salvar como
+                <MoreVertical className="w-3 h-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" sideOffset={8} className="w-56 z-50 bg-background border shadow-lg">
+              <DropdownMenuItem
+                onClick={() => {
+                  if (extractedData.restaurants.length > 0) {
+                    handleAddRestaurant(extractedData.restaurants[0]);
+                  } else {
+                    const params = new URLSearchParams({ fromConcierge: 'true' });
+                    navigate(`/viagem/${tripId}/restaurantes/novo?${params.toString()}`);
+                  }
+                }}
+                className="cursor-pointer"
+              >
+                <UtensilsCrossed className="w-4 h-4 mr-2" />
+                {`Restaurante${
+                  extractedData.restaurants.length > 0 && extractedData.restaurants[0].name
+                    ? ` – ${extractedData.restaurants[0].name}`
+                    : ''
+                }`}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (extractedData.accommodations.length > 0) {
+                    handleAddAccommodation(extractedData.accommodations[0]);
+                  } else {
+                    const params = new URLSearchParams({ fromConcierge: 'true' });
+                    navigate(`/viagem/${tripId}/hospedagem?${params.toString()}`);
+                  }
+                }}
+                className="cursor-pointer"
+              >
+                <Hotel className="w-4 h-4 mr-2" />
+                {`Hospedagem${
+                  extractedData.accommodations.length > 0 && extractedData.accommodations[0].name
+                    ? ` – ${extractedData.accommodations[0].name}`
+                    : ''
+                }`}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (extractedData.attractions.length > 0) {
+                    handleAddAttraction(extractedData.attractions[0]);
+                  } else {
+                    const params = new URLSearchParams({ fromConcierge: 'true' });
+                    navigate(`/viagem/${tripId}/roteiro?${params.toString()}`);
+                  }
+                }}
+                className="cursor-pointer"
+              >
+                <MapPinPlus className="w-4 h-4 mr-2" />
+                {`Roteiro${
+                  extractedData.attractions.length > 0 && extractedData.attractions[0].name
+                    ? ` – ${extractedData.attractions[0].name}`
+                    : ''
+                }`}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         {/* External Link Buttons */}
         {restaurantWithLinks && (
