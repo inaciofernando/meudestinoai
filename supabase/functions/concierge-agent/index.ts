@@ -212,29 +212,47 @@ async function generateImage(prompt: string): Promise<string | null> {
 
 // Helper function to get user AI configuration
 async function getUserAIConfig(userId: string) {
+  console.log('getUserAIConfig called with userId:', userId);
+  
   try {
-    if (supabase && userId) {
+    if (supabase && userId && userId !== 'anonymous') {
+      console.log('Attempting to fetch user profile from Supabase...');
       const { data, error } = await supabase
         .from('profiles')
         .select('ai_model, ai_api_key')
         .eq('user_id', userId)
         .maybeSingle();
 
+      console.log('Supabase query result:', { data, error: error?.message });
+
       if (error) {
         console.error('Supabase error fetching profile:', error.message);
       } else if (data) {
         const model = data.ai_model || 'gemini-2.5-flash';
-        const apiKey = (data.ai_api_key && data.ai_api_key.trim().length > 0)
-          ? data.ai_api_key
-          : (model.startsWith('gpt-') ? OPENAI_API_KEY : GEMINI_API_KEY);
-        return { model, apiKey };
+        const userApiKey = data.ai_api_key && data.ai_api_key.trim().length > 0 ? data.ai_api_key : null;
+        const fallbackApiKey = model.startsWith('gpt-') ? OPENAI_API_KEY : GEMINI_API_KEY;
+        const finalApiKey = userApiKey || fallbackApiKey;
+        
+        console.log('Profile data found:', {
+          model,
+          hasUserApiKey: !!userApiKey,
+          hasFallbackKey: !!fallbackApiKey,
+          finalKeyUsed: finalApiKey ? 'Yes' : 'No'
+        });
+        
+        return { model, apiKey: finalApiKey };
+      } else {
+        console.log('No profile data found for user');
       }
+    } else {
+      console.log('No supabase client or anonymous user, using defaults');
     }
   } catch (err) {
     console.error('Error fetching user AI config:', err);
   }
 
   // Fallback defaults
+  console.log('Using fallback defaults: gemini-2.5-flash');
   return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY };
 }
 
@@ -245,6 +263,10 @@ serve(async (req) => {
 
   try {
     const { prompt, tripId, tripContext, userId } = await req.json();
+    console.log('=== CONCIERGE REQUEST ===');
+    console.log('Received userId:', userId);
+    console.log('Prompt:', prompt?.substring(0, 100) + '...');
+    
     if (!prompt) {
       return new Response(JSON.stringify({ error: "Missing prompt" }), {
         status: 400,
@@ -253,9 +275,12 @@ serve(async (req) => {
     }
 
     // Get user AI configuration
+    console.log('Fetching AI config for userId:', userId);
     const aiConfig = await getUserAIConfig(userId || 'anonymous');
+    console.log('AI Config Retrieved:', { model: aiConfig.model, hasApiKey: !!aiConfig.apiKey });
     
     if (!aiConfig.apiKey) {
+      console.error('No API key found for model:', aiConfig.model);
       return new Response(
         JSON.stringify({ error: `API key not configured for model ${aiConfig.model}. Please configure it in your profile settings.` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -328,7 +353,12 @@ Regras adicionais importantes:
     let resp;
 
     // Choose API based on model
+    console.log('=== AI API CALL ===');
+    console.log('Using model:', aiConfig.model);
+    console.log('API Key starts with:', aiConfig.apiKey?.substring(0, 10) + '...');
+    
     if (aiConfig.model.startsWith('gpt-')) {
+      console.log('Making OpenAI API call...');
       // OpenAI/ChatGPT API
       const openAIBody = {
         model: aiConfig.model,
@@ -338,6 +368,8 @@ Regras adicionais importantes:
         ],
         max_completion_tokens: 4000
       };
+
+      console.log('OpenAI request body model:', openAIBody.model);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -353,15 +385,19 @@ Regras adicionais importantes:
       });
 
       clearTimeout(timeoutId);
+      console.log('OpenAI response status:', resp.status);
 
       if (!resp.ok) {
         const errTxt = await resp.text();
+        console.error('OpenAI API error:', resp.status, errTxt);
         throw new Error(`OpenAI API error ${resp.status}: ${errTxt}`);
       }
 
       const data = await resp.json();
       fullText = data?.choices?.[0]?.message?.content || "";
+      console.log('OpenAI response received, length:', fullText.length);
     } else {
+      console.log('Making Gemini API call...');
       // Gemini/Google API
       const body = {
         contents: [
@@ -370,6 +406,7 @@ Regras adicionais importantes:
       };
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${aiConfig.model}:generateContent?key=${aiConfig.apiKey}`;
+      console.log('Gemini URL:', url.replace(aiConfig.apiKey, 'HIDDEN_KEY'));
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -382,14 +419,17 @@ Regras adicionais importantes:
       });
 
       clearTimeout(timeoutId);
+      console.log('Gemini response status:', resp.status);
 
       if (!resp.ok) {
         const errTxt = await resp.text();
+        console.error('Gemini API error:', resp.status, errTxt);
         throw new Error(`Gemini API error ${resp.status}: ${errTxt}`);
       }
 
       const data = await resp.json();
       fullText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      console.log('Gemini response received, length:', fullText.length);
     }
 
     // Separar o texto da resposta do JSON interno
@@ -416,6 +456,11 @@ Regras adicionais importantes:
     }
 
     // Retornar o texto limpo + JSON oculto para uso dos botões de ação + imagens geradas
+    console.log('=== RESPONSE PREPARATION ===');
+    console.log('Clean text length:', cleanText.length);
+    console.log('Has structured data:', !!structuredData);
+    console.log('Generated images count:', generatedImages.length);
+    
     return new Response(JSON.stringify({ 
       generatedText: cleanText,
       fullResponse: fullText, // Inclui o JSON para os botões de ação
@@ -425,6 +470,8 @@ Regras adicionais importantes:
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
+    console.error('=== ERROR IN CONCIERGE ===');
+    console.error('Error details:', e);
     return new Response(JSON.stringify({ error: e.message || "Unexpected error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
