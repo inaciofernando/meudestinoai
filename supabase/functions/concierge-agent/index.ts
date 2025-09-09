@@ -298,14 +298,20 @@ async function getUserAIConfig(userId: string) {
      /\b(obrigado|valeu)\b/i.test(t) && t.length < 30;
    if (isGreeting) return 'greeting';
  
-   const accommodation = /(hotel|hospedagem|acomodação|acomodacao|pousada|resort|onde ficar|estadia|pernoite|accommodation)/i.test(t);
-   if (accommodation) return 'accommodation';
- 
-   const restaurant = /(restaurante|comida|gastronomia|culinária|culinaria|onde comer|jantar|almoço|almoco|café da manhã|cafe da manha|food|restaurant)/i.test(t);
-   if (restaurant) return 'restaurant';
- 
-   const attraction = /(atração|atracao|ponto turístico|ponto turistico|o que fazer|roteiro|passeio|museu|parque|praia|trilha|monumento|winery|vinícola|vinicola|attraction|things to do)/i.test(t);
-   if (attraction) return 'attraction';
+   // Detecção mais específica - só gera JSON quando há pedido explícito por detalhes/salvar
+   const wantsDetails = /detalhes|salvar|adicionar|incluir|guardar|informações completas/i.test(t);
+   const mentionsSpecific = /\b(nome do|endereço do|telefone do|site do|link do)\b/i.test(t);
+   
+   if (wantsDetails || mentionsSpecific) {
+     const accommodation = /(hotel|hospedagem|acomodação|acomodacao|pousada|resort|onde ficar|estadia|pernoite|accommodation)/i.test(t);
+     if (accommodation) return 'accommodation';
+   
+     const restaurant = /(restaurante|comida|gastronomia|culinária|culinaria|onde comer|jantar|almoço|almoco|café da manhã|cafe da manha|food|restaurant)/i.test(t);
+     if (restaurant) return 'restaurant';
+   
+     const attraction = /(atração|atracao|ponto turístico|ponto turistico|o que fazer|roteiro|passeio|museu|parque|praia|trilha|monumento|winery|vinícola|vinicola|attraction|things to do)/i.test(t);
+     if (attraction) return 'attraction';
+   }
  
    return 'general';
  }
@@ -329,8 +335,8 @@ async function getUserAIConfig(userId: string) {
      return `${base}\n\nTarefa: recomendar hospedagens (hotéis/pousadas).\n- Inclua dicas de localização e conveniências.\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo (esquema ampliado).\n\nExemplo:\n\n\`\`\`json\n{\n  "accommodation": {\n    "name": "",\n    "description": "",\n    "type": "hotel",\n    "address": "",\n    "city": "",\n    "country": "",\n    "phone": "",\n    "email": "",\n    "website": "",\n    "booking_link": "",\n    "tripadvisor": "",\n    "google_maps_link": "",\n    "waze_link": "",\n    "check_in": "",\n    "check_out": "",\n    "amenities": [],\n    "price_band": "$$",\n    "estimated_amount_per_night": "",\n    "total_estimated_amount": "",\n    "notes": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
    }
  
-   // General chat: no JSON
-   return `${base}\n\nTarefa: conversa geral e dicas rápidas. RESPONDA sem incluir blocos JSON. Se precisar de mais contexto, faça perguntas objetivas.`;
+   // General chat: no JSON, mas pode sugerir follow-up
+   return `${base}\n\nTarefa: conversa geral, dicas e sugestões sobre a viagem. RESPONDA sem incluir blocos JSON.\n\nSe você sugerir restaurantes, hospedagens ou atrações específicas, TERMINE sua resposta perguntando:\n"Quer que eu busque os detalhes de algum desses locais para adicionar à sua viagem?"\n\nSe precisar de mais contexto, faça perguntas objetivas.`;
  }
  
 serve(async (req) => {
