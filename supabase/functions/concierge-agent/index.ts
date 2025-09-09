@@ -504,6 +504,51 @@ serve(async (req) => {
       console.log('Gemini response received, length:', fullText.length);
     }
 
+    // Retry with fallback provider if response empty
+    if (!fullText || fullText.trim().length === 0) {
+      console.log('Empty model response, retrying with fallback provider...');
+      try {
+        if (aiConfig.model.startsWith('gpt-') && GEMINI_API_KEY) {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+          const body = { contents: [ { role: 'user', parts: [{ text: buildSystemForIntent('general' as Intent) + "\n\n" + userText }] } ] };
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 60000);
+          const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (r.ok) {
+            const d = await r.json();
+            fullText = d?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          }
+        } else if (OPENAI_API_KEY) {
+          const providerModel = 'gpt-5-mini-2025-08-07';
+          const openAIBody = {
+            model: providerModel,
+            messages: [
+              { role: 'system', content: buildSystemForIntent('general' as Intent) },
+              { role: 'user', content: userText }
+            ],
+            max_completion_tokens: tokenLimits['general']
+          };
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 60000);
+          const r2 = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(openAIBody),
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          if (r2.ok) {
+            const d2 = await r2.json();
+            fullText = d2?.choices?.[0]?.message?.content || '';
+          }
+        }
+        console.log('Fallback response length:', fullText ? fullText.length : 0);
+      } catch (fbErr) {
+        console.error('Fallback provider failed:', fbErr);
+      }
+    }
+
     // Separar o texto da resposta do JSON interno
     const jsonMatch = fullText.match(/```json\s*([\s\S]*?)\s*```/);
     let cleanText = fullText;
