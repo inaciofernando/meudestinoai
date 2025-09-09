@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Send, Plus, Clock, Trash2, MoreVertical, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,6 +41,7 @@ export default function Concierge() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [trip, setTrip] = useState<TripCtx | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationHistory, setConversationHistory] = useState<ConversationHistory[]>([]);
@@ -201,7 +203,7 @@ export default function Concierge() {
           }
         : (id ? { id } : {});
       
-      const reqBody = { prompt: finalPrompt, tripId: id ?? "", tripContext: minimalCtx };
+      const reqBody = { prompt: finalPrompt, tripId: id ?? "", tripContext: minimalCtx, userId: user?.id };
       const { data, error } = await supabase.functions.invoke("concierge-agent", { body: reqBody });
 
       if (error) {

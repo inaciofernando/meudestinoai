@@ -4,6 +4,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 const UNSPLASH_ACCESS_KEY = Deno.env.get("UNSPLASH_ACCESS_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,25 +205,60 @@ async function generateImage(prompt: string): Promise<string | null> {
   }
 }
 
+// Helper function to get user AI configuration
+async function getUserAIConfig(userId: string) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY };
+  }
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/profiles?user_id=eq.${userId}&select=ai_model,ai_api_key`, {
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'apikey': SUPABASE_SERVICE_ROLE_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.ok) {
+      const profiles = await response.json();
+      if (profiles && profiles.length > 0) {
+        const profile = profiles[0];
+        return {
+          model: profile.ai_model || 'gemini-2.5-flash',
+          apiKey: profile.ai_api_key || (profile.ai_model?.startsWith('gpt-') ? OPENAI_API_KEY : GEMINI_API_KEY)
+        };
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching user AI config:', error);
+  }
+
+  return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    if (!GEMINI_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "Gemini API key not configured. Set GEMINI_API_KEY in Supabase secrets." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const { prompt, tripId, tripContext } = await req.json();
+    const { prompt, tripId, tripContext, userId } = await req.json();
     if (!prompt) {
       return new Response(JSON.stringify({ error: "Missing prompt" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Get user AI configuration
+    const aiConfig = await getUserAIConfig(userId || 'anonymous');
+    
+    if (!aiConfig.apiKey) {
+      return new Response(
+        JSON.stringify({ error: `API key not configured for model ${aiConfig.model}. Please configure it in your profile settings.` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const system = `Você é um Concierge de viagens em português do Brasil. Responda SOMENTE no contexto da viagem informada.
@@ -286,33 +323,73 @@ Regras adicionais importantes:
 
     const userText = `Contexto da Viagem:\n${JSON.stringify(tripContext || { id: tripId }, null, 2)}\n\nPergunta do usuário:\n${prompt}`;
 
-    const body = {
-      contents: [
-        { role: "user", parts: [{ text: system + "\n\n" + userText }] },
-      ],
-    };
+    let fullText = "";
+    let resp;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // Choose API based on model
+    if (aiConfig.model.startsWith('gpt-')) {
+      // OpenAI/ChatGPT API
+      const openAIBody = {
+        model: aiConfig.model,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: userText }
+        ],
+        max_completion_tokens: 4000
+      };
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
+      resp = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${aiConfig.apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(openAIBody),
+        signal: controller.signal,
+      });
 
-    clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-    if (!resp.ok) {
-      const errTxt = await resp.text();
-      throw new Error(`Gemini API error ${resp.status}: ${errTxt}`);
+      if (!resp.ok) {
+        const errTxt = await resp.text();
+        throw new Error(`OpenAI API error ${resp.status}: ${errTxt}`);
+      }
+
+      const data = await resp.json();
+      fullText = data?.choices?.[0]?.message?.content || "";
+    } else {
+      // Gemini/Google API
+      const body = {
+        contents: [
+          { role: "user", parts: [{ text: system + "\n\n" + userText }] },
+        ],
+      };
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${aiConfig.model}:generateContent?key=${aiConfig.apiKey}`;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!resp.ok) {
+        const errTxt = await resp.text();
+        throw new Error(`Gemini API error ${resp.status}: ${errTxt}`);
+      }
+
+      const data = await resp.json();
+      fullText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     }
-
-    const data = await resp.json();
-    const fullText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     // Separar o texto da resposta do JSON interno
     const jsonMatch = fullText.match(/```json\s*([\s\S]*?)\s*```/);
