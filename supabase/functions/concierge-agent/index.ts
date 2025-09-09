@@ -403,10 +403,18 @@ Regras adicionais importantes:
     console.log('API Key starts with:', aiConfig.apiKey?.substring(0, 10) + '...');
     
     if (aiConfig.model.startsWith('gpt-')) {
-      console.log('Making OpenAI API call...');
+      const normalizedMap: Record<string, string> = {
+        'gpt-5': 'gpt-5-2025-08-07',
+        'gpt-5-mini': 'gpt-5-mini-2025-08-07',
+        'gpt-5-nano': 'gpt-5-nano-2025-08-07',
+        'gpt-4.1': 'gpt-4.1-2025-04-14',
+        'gpt-4.1-mini': 'gpt-4.1-mini-2025-04-14'
+      };
+      const providerModel = normalizedMap[aiConfig.model] || aiConfig.model;
+      console.log('Making OpenAI API call with model:', providerModel);
       // OpenAI/ChatGPT API
       const openAIBody = {
-        model: aiConfig.model,
+        model: providerModel,
         messages: [
           { role: "system", content: system },
           { role: "user", content: userText }
@@ -417,7 +425,7 @@ Regras adicionais importantes:
       console.log('OpenAI request body model:', openAIBody.model);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
       resp = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -454,7 +462,7 @@ Regras adicionais importantes:
       console.log('Gemini URL:', url.replace(aiConfig.apiKey, 'HIDDEN_KEY'));
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
       resp = await fetch(url, {
         method: "POST",
