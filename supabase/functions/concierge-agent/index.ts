@@ -289,6 +289,50 @@ async function getUserAIConfig(userId: string) {
   return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY };
 }
 
+// Intent detection for efficient routing and token use
+ type Intent = 'greeting' | 'general' | 'restaurant' | 'accommodation' | 'attraction';
+ 
+ function detectIntent(text: string): Intent {
+   const t = (text || '').toLowerCase();
+   const isGreeting = /^(oi|olá|ola|hello|hi|hey|bom dia|boa tarde|boa noite)[!.\s]*$/i.test(t) ||
+     /\b(obrigado|valeu)\b/i.test(t) && t.length < 30;
+   if (isGreeting) return 'greeting';
+ 
+   const accommodation = /(hotel|hospedagem|acomodação|acomodacao|pousada|resort|onde ficar|estadia|pernoite|accommodation)/i.test(t);
+   if (accommodation) return 'accommodation';
+ 
+   const restaurant = /(restaurante|comida|gastronomia|culinária|culinaria|onde comer|jantar|almoço|almoco|café da manhã|cafe da manha|food|restaurant)/i.test(t);
+   if (restaurant) return 'restaurant';
+ 
+   const attraction = /(atração|atracao|ponto turístico|ponto turistico|o que fazer|roteiro|passeio|museu|parque|praia|trilha|monumento|winery|vinícola|vinicola|attraction|things to do)/i.test(t);
+   if (attraction) return 'attraction';
+ 
+   return 'general';
+ }
+ 
+ function buildSystemForIntent(intent: Intent) {
+   const base = [
+     'Você é um concierge de viagens em português do Brasil.',
+     'Seja direto, prático e amigável. Use bullets quando útil.',
+     'Adapte-se ao contexto da viagem (datas, destino e região próxima).'
+   ].join('\n');
+ 
+   if (intent === 'restaurant') {
+     return `${base}\n\nTarefa: recomendar restaurantes relevantes para o contexto.\n- Inclua dicas práticas (reservas, faixa de preço, quando ir).\n- No final, inclua APENAS um bloco de código JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "restaurant": {\n    "name": "",\n    "description": "",\n    "cuisine": "",\n    "address": "",\n    "link": "",\n    "tripadvisor": "",\n    "gmap": "",\n    "waze": "",\n    "phone": "",\n    "estimated_amount": "",\n    "price_band": "$$"\n  }\n}\n\`\`\`\n\nRegras: URLs completas (https://...), Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
+   }
+ 
+   if (intent === 'attraction') {
+     return `${base}\n\nTarefa: sugerir atrações/atividades.\n- Inclua dicas de logística (horários, deslocamento).\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "itinerary_item": {\n    "title": "",\n    "description": "",\n    "category": "attraction",\n    "location": "",\n    "address": "",\n    "link": "",\n    "tripadvisor_link": "",\n    "google_maps_link": "",\n    "waze_link": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, nada além do bloco JSON após o texto.`;
+   }
+ 
+   if (intent === 'accommodation') {
+     return `${base}\n\nTarefa: recomendar hospedagens (hotéis/pousadas).\n- Inclua dicas de localização e conveniências.\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo (esquema ampliado).\n\nExemplo:\n\n\`\`\`json\n{\n  "accommodation": {\n    "name": "",\n    "description": "",\n    "type": "hotel",\n    "address": "",\n    "city": "",\n    "country": "",\n    "phone": "",\n    "email": "",\n    "website": "",\n    "booking_link": "",\n    "tripadvisor": "",\n    "google_maps_link": "",\n    "waze_link": "",\n    "check_in": "",\n    "check_out": "",\n    "amenities": [],\n    "price_band": "$$",\n    "estimated_amount_per_night": "",\n    "total_estimated_amount": "",\n    "notes": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
+   }
+ 
+   // General chat: no JSON
+   return `${base}\n\nTarefa: conversa geral e dicas rápidas. RESPONDA sem incluir blocos JSON. Se precisar de mais contexto, faça perguntas objetivas.`;
+ }
+ 
 serve(async (req) => {
   console.log('=== CONCIERGE FUNCTION STARTED ===');
   
