@@ -24,10 +24,11 @@ interface AISettingsProps {
 
 const AI_MODELS = [
   { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', provider: 'Google' },
-  { value: 'gpt-5-nano-2025-08-07', label: 'GPT-5 Nano', provider: 'OpenAI' },
+  { value: 'gpt-5-2025-08-07', label: 'GPT-5', provider: 'OpenAI' },
   { value: 'gpt-5-mini-2025-08-07', label: 'GPT-5 Mini', provider: 'OpenAI' },
-  { value: 'gpt-4.1-nano-2025-04-14', label: 'GPT-4.1 Nano', provider: 'OpenAI' },
-  { value: 'gpt-4.1-2025-04-14', label: 'GPT-4.1', provider: 'OpenAI' }
+  { value: 'gpt-5-nano-2025-08-07', label: 'GPT-5 Nano', provider: 'OpenAI' },
+  { value: 'gpt-4.1-2025-04-14', label: 'GPT-4.1', provider: 'OpenAI' },
+  { value: 'gpt-4.1-mini-2025-04-14', label: 'GPT-4.1 Mini', provider: 'OpenAI' }
 ];
 
 export function AISettings({ profile, setProfile, onSave, saving }: AISettingsProps) {
