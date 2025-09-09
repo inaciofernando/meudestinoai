@@ -236,8 +236,8 @@ export default function Concierge() {
       // Remove mensagem de digitando e volta para as mensagens originais
       setMessages(newMessages);
       const msg = (e && (e.message || e.error?.message)) || "Falha na requisição.";
-      const humanMsg = /non-2xx|GEMINI|unauthorized|apikey/i.test(String(msg))
-        ? "O Concierge não está configurado. Adicione a chave GEMINI nas Funções do Supabase."
+      const humanMsg = /unauthorized|apikey|OPENAI|GEMINI|configuration/i.test(String(msg))
+        ? "O Concierge não está configurado. Defina sua chave da API nas Configurações de IA (OpenAI ou Gemini) ou configure a chave padrão nas Funções do Supabase."
         : msg;
       toast({ title: "Erro", description: humanMsg, variant: "destructive" });
     } finally {

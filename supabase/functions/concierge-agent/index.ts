@@ -1,11 +1,16 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.53.0";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 const UNSPLASH_ACCESS_KEY = Deno.env.get("UNSPLASH_ACCESS_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+const supabase = (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY)
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  : null as any;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -207,33 +212,29 @@ async function generateImage(prompt: string): Promise<string | null> {
 
 // Helper function to get user AI configuration
 async function getUserAIConfig(userId: string) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY };
-  }
-
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/profiles?user_id=eq.${userId}&select=ai_model,ai_api_key`, {
-      headers: {
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        'apikey': SUPABASE_SERVICE_ROLE_KEY,
-        'Content-Type': 'application/json'
-      }
-    });
+    if (supabase && userId) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('ai_model, ai_api_key')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-    if (response.ok) {
-      const profiles = await response.json();
-      if (profiles && profiles.length > 0) {
-        const profile = profiles[0];
-        return {
-          model: profile.ai_model || 'gemini-2.5-flash',
-          apiKey: profile.ai_api_key || (profile.ai_model?.startsWith('gpt-') ? OPENAI_API_KEY : GEMINI_API_KEY)
-        };
+      if (error) {
+        console.error('Supabase error fetching profile:', error.message);
+      } else if (data) {
+        const model = data.ai_model || 'gemini-2.5-flash';
+        const apiKey = (data.ai_api_key && data.ai_api_key.trim().length > 0)
+          ? data.ai_api_key
+          : (model.startsWith('gpt-') ? OPENAI_API_KEY : GEMINI_API_KEY);
+        return { model, apiKey };
       }
     }
-  } catch (error) {
-    console.error('Error fetching user AI config:', error);
+  } catch (err) {
+    console.error('Error fetching user AI config:', err);
   }
 
+  // Fallback defaults
   return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY };
 }
 
