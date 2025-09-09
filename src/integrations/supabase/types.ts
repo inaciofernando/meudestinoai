@@ -601,6 +601,8 @@ export type Database = {
           end_date: string | null
           id: string
           images: string[] | null
+          is_public: boolean
+          public_slug: string | null
           start_date: string | null
           status: string | null
           title: string
@@ -616,6 +618,8 @@ export type Database = {
           end_date?: string | null
           id?: string
           images?: string[] | null
+          is_public?: boolean
+          public_slug?: string | null
           start_date?: string | null
           status?: string | null
           title: string
@@ -631,6 +635,8 @@ export type Database = {
           end_date?: string | null
           id?: string
           images?: string[] | null
+          is_public?: boolean
+          public_slug?: string | null
           start_date?: string | null
           status?: string | null
           title?: string
@@ -705,6 +711,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_trip_slug: {
+        Args: { trip_title: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -45,9 +45,11 @@ import {
   Route,
   Bot,
   FileText,
-  Image
+  Image,
+  Share2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ShareTripDialog } from "@/components/ShareTripDialog";
 import { ImageUpload } from "@/components/ImageUpload";
 import { TripLocations, TripLocation } from "@/components/TripLocations";
 
@@ -64,6 +66,8 @@ interface Trip {
   updated_at: string;
   user_id: string;
   images: string[] | null;
+  is_public: boolean;
+  public_slug: string | null;
 }
 
 const formSchema = z.object({
@@ -99,6 +103,7 @@ export default function DetalhesViagem() {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -577,8 +582,15 @@ export default function DetalhesViagem() {
                     <Save className="w-4 h-4" />
                   </Button>
                 </>
-              ) : (
+                ) : (
                 <>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShareDialogOpen(true)}
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -1259,6 +1271,21 @@ export default function DetalhesViagem() {
           )}
           </div>
         </div>
+
+        {/* Share Trip Dialog */}
+        <ShareTripDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          tripId={trip?.id || ""}
+          tripTitle={trip?.title || ""}
+          isPublic={trip?.is_public || false}
+          publicSlug={trip?.public_slug || null}
+          onUpdate={(isPublic, publicSlug) => {
+            if (trip) {
+              setTrip({ ...trip, is_public: isPublic, public_slug: publicSlug });
+            }
+          }}
+        />
       </PWALayout>
     </ProtectedRoute>
   );

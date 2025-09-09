@@ -29,6 +29,7 @@ import AdicionarRestaurante from "./pages/AdicionarRestaurante";
 import Transporte from "./pages/Transporte";
 import DetalhesTransporte from "./pages/DetalhesTransporte";
 import Documentos from "./pages/Documentos";
+import ViagemPublica from "./pages/ViagemPublica";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App: React.FC = () => (
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/configuracoes" element={<Perfil />} />
           <Route path="/viagem/:id/concierge" element={<Concierge />} />
+          <Route path="/share/:slug" element={<ViagemPublica />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
