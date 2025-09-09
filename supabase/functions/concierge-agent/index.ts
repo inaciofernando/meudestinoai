@@ -376,67 +376,36 @@ serve(async (req) => {
       );
     }
 
-    const system = `Você é um Concierge de viagens em português do Brasil. Responda SOMENTE no contexto da viagem informada.
+    // Intent detection and dynamic system + token limits
+    const intent = detectIntent(prompt);
+    console.log('Detected intent:', intent);
 
-CONSCIÊNCIA REGIONAL:
-- Entenda o destino da viagem como REGIÃO, não apenas cidade específica. Ex: Los Angeles = Califórnia (inclui Camarillo, Malibu, Santa Barbara, etc.)
-- Aceite pedidos para locais na mesma região/estado/país, mesmo fora da cidade exata da viagem
-- Quando sugerir locais fora da cidade base, SEMPRE indique: distância aproximada, tempo de deslocamento e meio de transporte recomendado
-- Para EUA: considere todo o estado. Para Brasil: considere estado ou região metropolitana
-- Contextualize geograficamente: "Em Camarillo (45 min de carro de Los Angeles)..." ou "Na região da Grande SP..."
+    // Lightweight greeting: skip AI call entirely
+    if (intent === 'greeting') {
+      const destination = tripContext?.destination || tripContext?.title || '';
+      const greeting = `Olá${destination ? `! Preparado(a) para ${destination}?` : '!'} Como posso ajudar na sua viagem? Posso sugerir restaurantes, hospedagens ou atrações. Diga, por exemplo: "restaurante italiano perto do hotel" ou "hospedagem em bairro central".`;
+      return new Response(JSON.stringify({
+        generatedText: greeting,
+        fullResponse: greeting,
+        generatedImages: [],
+        structuredData: null
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
-DIRETRIZES:
-- Use tom claro, objetivo e amigável
-- Se o pedido extrapolar completamente a região, explique brevemente e traga alternativas relacionadas
-- Quando for útil, sugira roteiro com bullets, links oficiais e dicas práticas (horários, reservas, deslocamento, custos)
-- Inclua justificativa de por que a sugestão combina com o contexto da viagem e região
-- No texto amigável (PARTE 1), SEMPRE termine com seção "**📍 Endereços:**" após linha em branco, listando endereços completos
-
-SAÍDA PADRONIZADA (OBRIGATÓRIA):
-- Sempre responda em DUAS PARTES:
-  1) Texto amigável para o usuário (em português)
-  2) Um ÚNICO bloco de código JSON válido (sem comentários), delimitado por \`\`\`json ... \`\`\`, exatamente com os campos abaixo. Se algum campo não existir, use string vazia "".
-
-Exemplo de estrutura do JSON a ser SEMPRE incluído no final:
-\`\`\`json
-{
-  "restaurant": {
-    "name": "",
-    "description": "",
-    "cuisine": "",
-    "address": "",
-    "link": "",
-    "tripadvisor": "",
-    "gmap": "",
-    "waze": "",
-    "phone": "",
-    "estimated_amount": "",
-    "price_band": "$$"
-  },
-  "itinerary_item": {
-    "title": "",
-    "description": "",
-    "category": "attraction",
-    "location": "",
-    "address": "",
-    "link": "",
-    "tripadvisor_link": "",
-    "google_maps_link": "",
-    "waze_link": ""
-  }
-}
-\`\`\`
-
-Regras adicionais importantes:
-- Retorne URLs completas (https://...)
-- Para Google Maps, use o formato https://www.google.com/maps/place/... ou https://www.google.com/maps/search/?api=1&query=... (evite links encurtados como maps.app.goo.gl ou goo.gl/maps)
-- price_band deve ser um dentre: $, $$, $$$, $$$$
-- Para restaurantes, preencha o máximo possível: endereço, tipo de culinária, site, TripAdvisor, Google Maps e Waze
-- Para itinerários, inclua: endereço completo, site oficial, links do TripAdvisor, Google Maps e Waze quando relevante
-- Não inclua nada além do bloco JSON após a parte textual (para facilitar a leitura automática)
-`;
+    const system = buildSystemForIntent(intent);
 
     const userText = `Contexto da Viagem:\n${JSON.stringify(tripContext || { id: tripId }, null, 2)}\n\nPergunta do usuário:\n${prompt}`;
+
+    // Token limits per intent (OpenAI only)
+    const tokenLimits: Record<Intent, number> = {
+      greeting: 0,
+      general: 800,
+      restaurant: 1400,
+      accommodation: 1800,
+      attraction: 1400,
+    };
+    const maxTokens = tokenLimits[intent];
+    console.log('Token limit for intent:', { intent, maxTokens });
 
     let fullText = "";
     let resp;
@@ -463,7 +432,7 @@ Regras adicionais importantes:
           { role: "system", content: system },
           { role: "user", content: userText }
         ],
-        max_completion_tokens: 4000
+        max_completion_tokens: maxTokens
       };
 
       console.log('OpenAI request body model:', openAIBody.model);
@@ -535,7 +504,7 @@ Regras adicionais importantes:
     let structuredData = null;
     let generatedImages = [];
 
-    if (jsonMatch) {
+    if (jsonMatch && (intent === 'restaurant' || intent === 'accommodation' || intent === 'attraction')) {
       // Remove o bloco JSON da resposta do usuário
       cleanText = fullText.replace(/```json\s*[\s\S]*?\s*```/g, '').trim();
       
