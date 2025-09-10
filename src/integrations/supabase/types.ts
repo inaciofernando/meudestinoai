@@ -210,6 +210,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          ai_agent_instructions: string | null
           ai_api_key: string | null
           ai_model: string | null
           created_at: string
@@ -221,6 +222,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_agent_instructions?: string | null
           ai_api_key?: string | null
           ai_model?: string | null
           created_at?: string
@@ -232,6 +234,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_agent_instructions?: string | null
           ai_api_key?: string | null
           ai_model?: string | null
           created_at?: string

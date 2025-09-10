@@ -234,7 +234,8 @@ async function getUserAIConfig(userId: string) {
           console.log('Using Fernando Costa profile for anonymous user');
           return {
             model: fernandoProfile.ai_model || 'gpt-5-mini-2025-08-07',
-            apiKey: fernandoProfile.ai_api_key
+            apiKey: fernandoProfile.ai_api_key,
+            instructions: fernandoProfile.ai_agent_instructions || ''
           };
         }
       } catch (err) {
@@ -248,7 +249,7 @@ async function getUserAIConfig(userId: string) {
       console.log('Attempting to fetch user profile from Supabase...');
       const { data, error } = await supabase
         .from('profiles')
-        .select('ai_model, ai_api_key, full_name')
+        .select('ai_model, ai_api_key, ai_agent_instructions, full_name')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -273,7 +274,7 @@ async function getUserAIConfig(userId: string) {
           finalKeyFound: !!finalApiKey
         });
         
-        return { model, apiKey: finalApiKey };
+        return { model, apiKey: finalApiKey, instructions: data.ai_agent_instructions || '' };
       } else {
         console.log('No profile data found for user');
       }
@@ -286,7 +287,7 @@ async function getUserAIConfig(userId: string) {
 
   // Fallback defaults
   console.log('Using fallback defaults: gemini-2.5-flash with system GEMINI key');
-  return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY };
+  return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY, instructions: '' };
 }
 
 // Intent detection for efficient routing and token use
@@ -316,11 +317,12 @@ async function getUserAIConfig(userId: string) {
    return 'general';
  }
  
- function buildSystemForIntent(intent: Intent) {
-   const base = [
+ function buildSystemForIntent(intent: Intent, customInstructions?: string) {
+   const base = customInstructions || [
      'Você é um concierge de viagens em português do Brasil.',
      'Seja direto, prático e amigável. Use bullets quando útil.',
-     'Adapte-se ao contexto da viagem (datas, destino e região próxima).'
+     'Adapte-se ao contexto da viagem (datas, destino e região próxima).',
+     'Foque apenas em assuntos relacionados à viagem atual.'
    ].join('\n');
  
    if (intent === 'restaurant') {
@@ -398,7 +400,7 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const system = buildSystemForIntent(intent);
+    const system = buildSystemForIntent(intent, aiConfig.instructions);
 
     const userText = `Contexto da Viagem:\n${JSON.stringify(tripContext || { id: tripId }, null, 2)}\n\nPergunta do usuário:\n${prompt}`;
 
@@ -510,7 +512,7 @@ serve(async (req) => {
       try {
         if (aiConfig.model.startsWith('gpt-') && GEMINI_API_KEY) {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-          const body = { contents: [ { role: 'user', parts: [{ text: buildSystemForIntent('general' as Intent) + "\n\n" + userText }] } ] };
+          const body = { contents: [ { role: 'user', parts: [{ text: buildSystemForIntent('general' as Intent, aiConfig.instructions) + "\n\n" + userText }] } ] };
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 60000);
           const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal });
@@ -524,7 +526,7 @@ serve(async (req) => {
           const openAIBody = {
             model: providerModel,
             messages: [
-              { role: 'system', content: buildSystemForIntent('general' as Intent) },
+              { role: 'system', content: buildSystemForIntent('general' as Intent, aiConfig.instructions) },
               { role: 'user', content: userText }
             ],
             max_completion_tokens: tokenLimits['general']
