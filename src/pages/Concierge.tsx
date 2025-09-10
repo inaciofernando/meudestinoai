@@ -471,7 +471,7 @@ export default function Concierge() {
                   <ConciergeChatMessage key={index} message={message} index={index} />
                   {message.role === "assistant" && message.content !== "..." && (
                     <ConciergeActionButtons 
-                      message={fullResponses.get(index) || message.content} 
+                      message={message.content} 
                       messageData={{
                         images: message.images,
                         structuredData: message.structuredData
