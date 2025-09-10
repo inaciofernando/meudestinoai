@@ -317,7 +317,7 @@ async function getUserAIConfig(userId: string) {
    return 'general';
  }
  
- function buildSystemForIntent(intent: Intent, customInstructions?: string, style?: { tone?: 'casual' | 'neutro' | 'formal'; emojis?: boolean }) {
+ function buildSystemForIntent(intent: Intent, customInstructions?: string, style?: { tone?: 'casual' | 'neutro' | 'formal'; emojis?: boolean }, category?: string) {
    const userInstr = (customInstructions || '').trim();
    const fallback = 'Você é um concierge de viagens em português do Brasil.';
 
@@ -333,23 +333,31 @@ async function getUserAIConfig(userId: string) {
      '- Reconheça incertezas quando necessário e termine com uma pergunta empática de continuação.'
    ].join('\n');
  
-   const base = [userInstr || fallback, guardrails, styleInstr].join('\n');
+  const base = [userInstr || fallback, guardrails, styleInstr].join('\n');
+  
+  // Usar categoria se fornecida, senão usar intent
+  const context = category || intent;
+
+  if (context === 'restaurante' || context === 'restaurant') {
+    return `${base}\n\nTarefa: recomendar restaurantes relevantes para o contexto.\n- Inclua dicas práticas (reservas, faixa de preço, quando ir).\n- No final, inclua APENAS um bloco de código JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "restaurant": {\n    "name": "",\n    "description": "",\n    "cuisine": "",\n    "address": "",\n    "link": "",\n    "tripadvisor": "",\n    "gmap": "",\n    "waze": "",\n    "phone": "",\n    "estimated_amount": "",\n    "price_band": "$$"\n  }\n}\n\`\`\`\n\nRegras: URLs completas (https://...), Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
+  }
+
+  if (context === 'roteiro' || context === 'attraction') {
+    return `${base}\n\nTarefa: sugerir atrações/atividades.\n- Inclua dicas de logística (horários, deslocamento).\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "itinerary_item": {\n    "title": "",\n    "description": "",\n    "category": "attraction",\n    "location": "",\n    "address": "",\n    "link": "",\n    "tripadvisor_link": "",\n    "google_maps_link": "",\n    "waze_link": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, nada além do bloco JSON após o texto.`;
+  }
+
+  if (context === 'hospedagem' || context === 'accommodation') {
+    return `${base}\n\nTarefa: recomendar hospedagens (hotéis/pousadas).\n- Inclua dicas de localização e conveniências.\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo (esquema ampliado).\n\nExemplo:\n\n\`\`\`json\n{\n  "accommodation": {\n    "name": "",\n    "description": "",\n    "type": "hotel",\n    "address": "",\n    "city": "",\n    "country": "",\n    "phone": "",\n    "email": "",\n    "website": "",\n    "booking_link": "",\n    "tripadvisor": "",\n    "google_maps_link": "",\n    "waze_link": "",\n    "check_in": "",\n    "check_out": "",\n    "amenities": [],\n    "price_band": "$$",\n    "estimated_amount_per_night": "",\n    "total_estimated_amount": "",\n    "notes": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
+  }
+
+  if (context === 'diversos') {
+    // Conversa geral: sem JSON, resposta natural e útil
+    return `${base}\n\nTarefa: converse naturalmente sobre a viagem, oferecendo sugestões objetivas quando fizer sentido.\n\nRegras para esta resposta:\n- Não gere JSON nesta resposta.\n- Foque no contexto atual e seja claro e útil.\n- Forneça informações práticas, links úteis (Google Maps, Waze), dicas gerais.\n- Esta é uma conversa geral - não ofereça opções de salvamento no sistema.`;
+  }
  
-   if (intent === 'restaurant') {
-     return `${base}\n\nTarefa: recomendar restaurantes relevantes para o contexto.\n- Inclua dicas práticas (reservas, faixa de preço, quando ir).\n- No final, inclua APENAS um bloco de código JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "restaurant": {\n    "name": "",\n    "description": "",\n    "cuisine": "",\n    "address": "",\n    "link": "",\n    "tripadvisor": "",\n    "gmap": "",\n    "waze": "",\n    "phone": "",\n    "estimated_amount": "",\n    "price_band": "$$"\n  }\n}\n\`\`\`\n\nRegras: URLs completas (https://...), Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
-   }
- 
-   if (intent === 'attraction') {
-     return `${base}\n\nTarefa: sugerir atrações/atividades.\n- Inclua dicas de logística (horários, deslocamento).\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "itinerary_item": {\n    "title": "",\n    "description": "",\n    "category": "attraction",\n    "location": "",\n    "address": "",\n    "link": "",\n    "tripadvisor_link": "",\n    "google_maps_link": "",\n    "waze_link": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, nada além do bloco JSON após o texto.`;
-   }
- 
-   if (intent === 'accommodation') {
-     return `${base}\n\nTarefa: recomendar hospedagens (hotéis/pousadas).\n- Inclua dicas de localização e conveniências.\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo (esquema ampliado).\n\nExemplo:\n\n\`\`\`json\n{\n  "accommodation": {\n    "name": "",\n    "description": "",\n    "type": "hotel",\n    "address": "",\n    "city": "",\n    "country": "",\n    "phone": "",\n    "email": "",\n    "website": "",\n    "booking_link": "",\n    "tripadvisor": "",\n    "google_maps_link": "",\n    "waze_link": "",\n    "check_in": "",\n    "check_out": "",\n    "amenities": [],\n    "price_band": "$$",\n    "estimated_amount_per_night": "",\n    "total_estimated_amount": "",\n    "notes": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
-   }
- 
-   // Conversa geral: sem JSON, resposta natural e útil
-   return `${base}\n\nTarefa: converse naturalmente sobre a viagem, oferecendo sugestões objetivas quando fizer sentido.\n\nRegras para esta resposta:\n- Não gere JSON nesta resposta.\n- Foque no contexto atual e seja claro e útil.\n- Se o usuário quiser salvar/ter detalhes, oriente-o a pedir: "detalhes de <nome>" ou "salvar <nome>".`;
- }
+  // Fallback para conversa geral quando nenhuma categoria específica for identificada
+  return `${base}\n\nTarefa: converse naturalmente sobre a viagem, oferecendo sugestões objetivas quando fizer sentido.\n\nRegras para esta resposta:\n- Não gere JSON nesta resposta.\n- Foque no contexto atual e seja claro e útil.\n- Se o usuário quiser salvar/ter detalhes, oriente-o a pedir: "detalhes de <nome>" ou "salvar <nome>".`;
+}
  
 serve(async (req) => {
   console.log('=== CONCIERGE FUNCTION STARTED ===');
@@ -360,7 +368,7 @@ serve(async (req) => {
 
   try {
       const requestBody = await req.json();
-      const { prompt, tripId, tripContext, userId, style, conversationHistory } = requestBody;
+      const { prompt, tripId, tripContext, userId, style, conversationHistory, category } = requestBody;
      
      console.log('=== FULL REQUEST DEBUG ===');
      console.log('Request body:', JSON.stringify(requestBody, null, 2));
@@ -410,7 +418,7 @@ serve(async (req) => {
        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
      }
  
-      const system = buildSystemForIntent(intent, aiConfig.instructions, style);
+      const system = buildSystemForIntent(intent, aiConfig.instructions, style, category);
 
       // Construir mensagens incluindo histórico da conversa
       const messages: any[] = [

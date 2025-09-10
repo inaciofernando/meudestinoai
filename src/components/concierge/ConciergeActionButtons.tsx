@@ -8,9 +8,10 @@ interface QuickActionButtonsProps {
   message: string;
   messageData?: { images?: Array<{ type: string; image: string }>; structuredData?: any };
   tripId: string;
+  category?: string;
 }
 
-const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActionButtonsProps) => {
+const ConciergeActionButtons = memo(({ message, messageData, tripId, category }: QuickActionButtonsProps) => {
   const navigate = useNavigate();
 
   const extractedData = useMemo(() => {
@@ -329,10 +330,13 @@ const ConciergeActionButtons = memo(({ message, messageData, tripId }: QuickActi
                            extractedData.attractions.length > 0 || 
                            extractedData.accommodations.length > 0;
 
+  // Só mostra botões de salvamento se não for categoria "diversos"
+  const canSave = category !== "diversos" && hasStructuredData;
+
   return (
     <div className="mt-4 px-4">
       <div className="flex flex-wrap gap-2">
-        {hasStructuredData && (
+        {canSave && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="secondary" size="sm" className="h-8 px-3 text-xs gap-1">

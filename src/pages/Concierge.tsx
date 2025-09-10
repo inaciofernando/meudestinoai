@@ -29,6 +29,8 @@ interface Message {
   structuredData?: any;
 }
 
+type ConciergeCategory = "roteiro" | "restaurante" | "hospedagem" | "diversos";
+
 interface ConversationHistory {
   id: string;
   title: string;
@@ -51,6 +53,7 @@ export default function Concierge() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [fullResponses, setFullResponses] = useState<Map<number, string>>(new Map());
+  const [selectedCategory, setSelectedCategory] = useState<ConciergeCategory | null>(null);
 
   // SEO basics
   useEffect(() => {
@@ -210,7 +213,8 @@ export default function Concierge() {
         userId: user?.id,
         style: { tone: 'casual', emojis: true },
         streaming: true,
-        conversationHistory: messages // Adicionar histórico da conversa
+        conversationHistory: messages,
+        category: selectedCategory // Adicionar categoria selecionada
       };
       const { data, error } = await supabase.functions.invoke("concierge-agent", { body: reqBody });
 
@@ -400,14 +404,65 @@ export default function Concierge() {
             <div className="flex-1 pb-24">
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center min-h-[50vh]">
-                  <div className="text-center max-w-md">
+                  <div className="text-center max-w-md space-y-6">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
                       <Send className="w-8 h-8 text-primary" />
                     </div>
                     <h2 className="text-lg font-semibold mb-2">Como posso ajudar?</h2>
-                    <p className="text-muted-foreground text-sm">
-                      Faça uma pergunta sobre sua viagem e receba recomendações personalizadas.
+                    <p className="text-muted-foreground text-sm mb-4">
+                      Escolha uma categoria para começar ou faça uma pergunta geral sobre sua viagem.
                     </p>
+                    
+                    {/* Botões de categoria */}
+                    <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedCategory("roteiro");
+                          setMessages([{ role: "assistant", content: "Olá! 🗺️ Estou aqui para te ajudar com o roteiro da sua viagem. Posso sugerir pontos turísticos, atividades e criar um planejamento personalizado. O que você gostaria de saber?" }]);
+                        }}
+                        className="h-20 flex flex-col gap-1"
+                      >
+                        <span className="text-2xl">🗺️</span>
+                        <span className="text-sm">Roteiro</span>
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedCategory("restaurante");
+                          setMessages([{ role: "assistant", content: "Olá! 🍽️ Estou aqui para te ajudar com restaurantes na sua viagem. Posso sugerir lugares para comer, tipos de culinária e até salvar suas escolhas no planejamento. Que tipo de comida você está procurando?" }]);
+                        }}
+                        className="h-20 flex flex-col gap-1"
+                      >
+                        <span className="text-2xl">🍽️</span>
+                        <span className="text-sm">Restaurante</span>
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedCategory("hospedagem");
+                          setMessages([{ role: "assistant", content: "Olá! 🏨 Estou aqui para te ajudar com hospedagem na sua viagem. Posso sugerir hotéis, pousadas e outras opções de acomodação. Onde você está pensando em se hospedar?" }]);
+                        }}
+                        className="h-20 flex flex-col gap-1"
+                      >
+                        <span className="text-2xl">🏨</span>
+                        <span className="text-sm">Hospedagem</span>
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedCategory("diversos");
+                          setMessages([{ role: "assistant", content: "Olá! ✨ Estou aqui para te ajudar com informações gerais sobre sua viagem. Posso dar dicas, informações úteis, links e muito mais. Em que posso te ajudar?" }]);
+                        }}
+                        className="h-20 flex flex-col gap-1"
+                      >
+                        <span className="text-2xl">✨</span>
+                        <span className="text-sm">Diversos</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
             ) : (
@@ -421,7 +476,8 @@ export default function Concierge() {
                         images: message.images,
                         structuredData: message.structuredData
                       }}
-                      tripId={id!} 
+                      tripId={id!}
+                      category={selectedCategory}
                     />
                   )}
                 </div>
