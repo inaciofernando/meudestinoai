@@ -290,73 +290,38 @@ async function getUserAIConfig(userId: string) {
   return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY, instructions: '' };
 }
 
-// Intent detection for efficient routing and token use
- type Intent = 'greeting' | 'general' | 'restaurant' | 'accommodation' | 'attraction';
- 
- function detectIntent(text: string): Intent {
-   const t = (text || '').toLowerCase();
-   const isGreeting = /^(oi|olá|ola|hello|hi|hey|bom dia|boa tarde|boa noite)[!.\s]*$/i.test(t) ||
-     /\b(obrigado|valeu)\b/i.test(t) && t.length < 30;
-   if (isGreeting) return 'greeting';
- 
-   // Detecção mais específica - só gera JSON quando há pedido explícito por detalhes/salvar
-   const wantsDetails = /detalhes|salvar|adicionar|incluir|guardar|informações completas/i.test(t);
-   const mentionsSpecific = /\b(nome do|endereço do|telefone do|site do|link do)\b/i.test(t);
-   
-   if (wantsDetails || mentionsSpecific) {
-     const accommodation = /(hotel|hospedagem|acomodação|acomodacao|pousada|resort|onde ficar|estadia|pernoite|accommodation)/i.test(t);
-     if (accommodation) return 'accommodation';
-   
-     const restaurant = /(restaurante|comida|gastronomia|culinária|culinaria|onde comer|jantar|almoço|almoco|café da manhã|cafe da manha|food|restaurant)/i.test(t);
-     if (restaurant) return 'restaurant';
-   
-     const attraction = /(atração|atracao|ponto turístico|ponto turistico|o que fazer|roteiro|passeio|museu|parque|praia|trilha|monumento|winery|vinícola|vinicola|attraction|things to do)/i.test(t);
-     if (attraction) return 'attraction';
-   }
- 
-   return 'general';
- }
- 
- function buildSystemForIntent(intent: Intent, customInstructions?: string, style?: { tone?: 'casual' | 'neutro' | 'formal'; emojis?: boolean }, category?: string) {
-   const userInstr = (customInstructions || '').trim();
-   const fallback = 'Você é um concierge de viagens em português do Brasil.';
+// Função simplificada para construir system prompt baseado na categoria
+function buildSystemForCategory(category: string, customInstructions?: string, style?: { tone?: 'casual' | 'neutro' | 'formal'; emojis?: boolean }) {
+  const userInstr = (customInstructions || '').trim();
+  const fallback = 'Você é um concierge de viagens em português do Brasil.';
 
-   const guardrails = [
-     '- Limite-se estritamente à viagem atual com base no contexto fornecido (destino, datas, região).',
-     "- Só gere JSON quando o usuário pedir explicitamente para 'salvar' ou 'trazer detalhes'; caso contrário, responda naturalmente em texto.",
-   ].join('\n');
- 
-   const styleInstr = [
-     `TOM: ${style?.tone || 'casual'};`,
-     style?.emojis ? '- Use emojis de forma moderada e contextual (no máximo 1 por parágrafo).' : '- Não use emojis.',
-     '- Frases e parágrafos curtos. Evite listas formais; prefira texto natural.',
-     '- Reconheça incertezas quando necessário e termine com uma pergunta empática de continuação.'
-   ].join('\n');
- 
-  const base = [userInstr || fallback, guardrails, styleInstr].join('\n');
-  
-  // Usar categoria se fornecida, senão usar intent
-  const context = category || intent;
+  const styleInstr = [
+    `TOM: ${style?.tone || 'casual'};`,
+    style?.emojis ? '- Use emojis de forma moderada e contextual (no máximo 1 por parágrafo).' : '- Não use emojis.',
+    '- Frases e parágrafos curtos. Evite listas formais; prefira texto natural.',
+    '- Seja direto e focado na categoria escolhida pelo usuário.'
+  ].join('\n');
 
-  if (context === 'restaurante' || context === 'restaurant') {
-    return `${base}\n\nTarefa: recomendar restaurantes relevantes para o contexto.\n- Inclua dicas práticas (reservas, faixa de preço, quando ir).\n- No final, inclua APENAS um bloco de código JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "restaurant": {\n    "name": "",\n    "description": "",\n    "cuisine": "",\n    "address": "",\n    "link": "",\n    "tripadvisor": "",\n    "gmap": "",\n    "waze": "",\n    "phone": "",\n    "estimated_amount": "",\n    "price_band": "$$"\n  }\n}\n\`\`\`\n\nRegras: URLs completas (https://...), Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
+  const base = [userInstr || fallback, styleInstr].join('\n');
+
+  if (category === 'roteiro') {
+    return `${base}\n\nVocê está no modo ROTEIRO. Foque APENAS em atrações, pontos turísticos, atividades e vinícolas.\n\nSEMPRE que sugerir um local específico, inclua um bloco JSON ao final:\n\n\`\`\`json\n{\n  "itinerary_item": {\n    "title": "Nome do Local",\n    "description": "Descrição detalhada",\n    "category": "attraction",\n    "location": "Cidade, Estado",\n    "address": "Endereço completo",\n    "link": "https://site-oficial.com",\n    "tripadvisor_link": "https://tripadvisor.com/link",\n    "google_maps_link": "https://maps.google.com/place/search",\n    "waze_link": "https://waze.com/link"\n  }\n}\n\`\`\``;
   }
 
-  if (context === 'roteiro' || context === 'attraction') {
-    return `${base}\n\nTarefa: sugerir atrações/atividades.\n- Inclua dicas de logística (horários, deslocamento).\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "itinerary_item": {\n    "title": "",\n    "description": "",\n    "category": "attraction",\n    "location": "",\n    "address": "",\n    "link": "",\n    "tripadvisor_link": "",\n    "google_maps_link": "",\n    "waze_link": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, nada além do bloco JSON após o texto.`;
+  if (category === 'restaurante') {
+    return `${base}\n\nVocê está no modo RESTAURANTE. Foque APENAS em restaurantes, gastronomia e culinária.\n\nSEMPRE que sugerir um restaurante específico, inclua um bloco JSON ao final:\n\n\`\`\`json\n{\n  "restaurant": {\n    "name": "Nome do Restaurante",\n    "description": "Descrição do restaurante",\n    "cuisine": "Tipo de culinária",\n    "address": "Endereço completo",\n    "link": "https://site-restaurante.com",\n    "tripadvisor": "https://tripadvisor.com/link",\n    "gmap": "https://maps.google.com/place/search",\n    "waze": "https://waze.com/link",\n    "phone": "Telefone",\n    "estimated_amount": "Valor estimado",\n    "price_band": "$$"\n  }\n}\n\`\`\``;
   }
 
-  if (context === 'hospedagem' || context === 'accommodation') {
-    return `${base}\n\nTarefa: recomendar hospedagens (hotéis/pousadas).\n- Inclua dicas de localização e conveniências.\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo (esquema ampliado).\n\nExemplo:\n\n\`\`\`json\n{\n  "accommodation": {\n    "name": "",\n    "description": "",\n    "type": "hotel",\n    "address": "",\n    "city": "",\n    "country": "",\n    "phone": "",\n    "email": "",\n    "website": "",\n    "booking_link": "",\n    "tripadvisor": "",\n    "google_maps_link": "",\n    "waze_link": "",\n    "check_in": "",\n    "check_out": "",\n    "amenities": [],\n    "price_band": "$$",\n    "estimated_amount_per_night": "",\n    "total_estimated_amount": "",\n    "notes": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
+  if (category === 'hospedagem') {
+    return `${base}\n\nVocê está no modo HOSPEDAGEM. Foque APENAS em hotéis, pousadas e acomodações.\n\nSEMPRE que sugerir uma hospedagem específica, inclua um bloco JSON ao final:\n\n\`\`\`json\n{\n  "accommodation": {\n    "name": "Nome do Hotel",\n    "description": "Descrição da hospedagem",\n    "type": "hotel",\n    "address": "Endereço completo",\n    "city": "Cidade",\n    "country": "País",\n    "phone": "Telefone",\n    "email": "Email",\n    "website": "https://site-hotel.com",\n    "booking_link": "https://booking.com/link",\n    "tripadvisor": "https://tripadvisor.com/link",\n    "google_maps_link": "https://maps.google.com/place/search",\n    "waze_link": "https://waze.com/link",\n    "price_band": "$$",\n    "estimated_amount_per_night": "Valor por noite"\n  }\n}\n\`\`\``;
   }
 
-  if (context === 'diversos') {
-    // Conversa geral: sem JSON, resposta natural e útil
-    return `${base}\n\nTarefa: converse naturalmente sobre a viagem, oferecendo sugestões objetivas quando fizer sentido.\n\nRegras para esta resposta:\n- Não gere JSON nesta resposta.\n- Foque no contexto atual e seja claro e útil.\n- Forneça informações práticas, links úteis (Google Maps, Waze), dicas gerais.\n- Esta é uma conversa geral - não ofereça opções de salvamento no sistema.`;
+  if (category === 'diversos') {
+    return `${base}\n\nVocê está no modo DIVERSOS. Converse naturalmente sobre a viagem, dê dicas gerais, mas NÃO gere JSON.\nForneça informações práticas, links úteis (Google Maps, Waze), endereços quando solicitado, mas esta é uma conversa geral.`;
   }
- 
-  // Fallback para conversa geral quando nenhuma categoria específica for identificada
-  return `${base}\n\nTarefa: converse naturalmente sobre a viagem, oferecendo sugestões objetivas quando fizer sentido.\n\nRegras para esta resposta:\n- Não gere JSON nesta resposta.\n- Foque no contexto atual e seja claro e útil.\n- Se o usuário quiser salvar/ter detalhes, oriente-o a pedir: "detalhes de <nome>" ou "salvar <nome>".`;
+
+  // Fallback
+  return `${base}\n\nConverse naturalmente sobre a viagem. Se o usuário quiser salvar algo específico, sugira que escolha uma categoria (Roteiro, Restaurante ou Hospedagem).`;
 }
  
 serve(async (req) => {
@@ -402,12 +367,13 @@ serve(async (req) => {
        );
      }
  
-     // Intent detection and dynamic system + token limits
-     const intent = detectIntent(prompt);
-     console.log('Detected intent:', intent);
+     // Detectar saudação simples
+     const prompt_lower = prompt.toLowerCase().trim();
+     const isGreeting = /^(oi|olá|ola|hello|hi|hey|bom dia|boa tarde|boa noite)[!.\s]*$/i.test(prompt_lower) ||
+       (/\b(obrigado|valeu)\b/i.test(prompt_lower) && prompt.length < 30);
  
      // Lightweight greeting: skip AI call entirely
-     if (intent === 'greeting') {
+     if (isGreeting) {
        const destination = tripContext?.destination || tripContext?.title || '';
        const greeting = `Olá${destination ? `! Preparado(a) para ${destination}?` : '!'} Como posso ajudar na sua viagem? Posso sugerir restaurantes, hospedagens ou atrações. Diga, por exemplo: "restaurante italiano perto do hotel" ou "hospedagem em bairro central".${style?.emojis ? ' 😊' : ''}`;
        return new Response(JSON.stringify({
@@ -418,7 +384,11 @@ serve(async (req) => {
        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
      }
  
-      const system = buildSystemForIntent(intent, aiConfig.instructions, style, category);
+     // Usar categoria diretamente se fornecida, senão usar categoria 'diversos'
+     const activeCategory = category || 'diversos';
+     console.log('Active category:', activeCategory);
+ 
+     const system = buildSystemForCategory(activeCategory, aiConfig.instructions, style);
 
       // Construir mensagens incluindo histórico da conversa
       const messages: any[] = [
@@ -441,16 +411,15 @@ serve(async (req) => {
       const userText = `Contexto da Viagem:\n${JSON.stringify(tripContext || { id: tripId }, null, 2)}\n\nPergunta atual:\n${prompt}`;
       messages.push({ role: "user", content: userText });
 
-    // Token limits per intent (OpenAI only)
-    const tokenLimits: Record<Intent, number> = {
-      greeting: 0,
-      general: 1200,
-      restaurant: 1400,
-      accommodation: 1800,
-      attraction: 1400,
-    };
-    const maxTokens = tokenLimits[intent];
-    console.log('Token limit for intent:', { intent, maxTokens });
+     // Token limits baseado na categoria
+     const categoryTokenLimits: Record<string, number> = {
+       roteiro: 1400,
+       restaurante: 1400, 
+       hospedagem: 1800,
+       diversos: 1200,
+     };
+     const maxTokens = categoryTokenLimits[activeCategory] || 1200;
+     console.log('Token limit for category:', { activeCategory, maxTokens });
 
     let fullText = "";
     let resp;
@@ -550,7 +519,7 @@ serve(async (req) => {
       try {
         if (aiConfig.model.startsWith('gpt-') && GEMINI_API_KEY) {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-          const body = { contents: [ { role: 'user', parts: [{ text: buildSystemForIntent('general' as Intent, aiConfig.instructions, style) + "\n\n" + userText }] } ] };
+          const body = { contents: [ { role: 'user', parts: [{ text: buildSystemForCategory('diversos', aiConfig.instructions, style) + "\n\n" + userText }] } ] };
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 60000);
           const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal });
@@ -564,10 +533,10 @@ serve(async (req) => {
           const openAIBody = {
             model: providerModel,
             messages: [
-              { role: 'system', content: buildSystemForIntent('general' as Intent, aiConfig.instructions, style) },
+              { role: 'system', content: buildSystemForCategory('diversos', aiConfig.instructions, style) },
               { role: 'user', content: userText }
             ],
-            max_completion_tokens: tokenLimits['general']
+            max_completion_tokens: 1200
           };
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 60000);
@@ -595,14 +564,15 @@ serve(async (req) => {
     let structuredData = null;
     let generatedImages = [];
 
-    if (jsonMatch && (intent === 'restaurant' || intent === 'accommodation' || intent === 'attraction')) {
+    // Para categorias específicas (exceto diversos), extrair JSON se existir
+    if (jsonMatch && (activeCategory === 'restaurante' || activeCategory === 'hospedagem' || activeCategory === 'roteiro')) {
       // Remove o bloco JSON da resposta do usuário
       cleanText = fullText.replace(/```json\s*[\s\S]*?\s*```/g, '').trim();
       
-      // Tentar parsear o JSON para uso interno (opcional)
+      // Tentar parsear o JSON para uso interno
       try {
         structuredData = JSON.parse(jsonMatch[1]);
-        console.log('Extracted structured data:', structuredData);
+        console.log('Extracted structured data for category:', activeCategory, structuredData);
         
         // Imagens desativadas por configuração
         console.log('Image lookup/generation disabled; skipping image search');
