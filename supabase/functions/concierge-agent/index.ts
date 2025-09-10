@@ -234,8 +234,7 @@ async function getUserAIConfig(userId: string) {
           console.log('Using Fernando Costa profile for anonymous user');
           return {
             model: fernandoProfile.ai_model || 'gpt-5-mini-2025-08-07',
-            apiKey: fernandoProfile.ai_api_key,
-            instructions: fernandoProfile.ai_agent_instructions || ''
+            apiKey: fernandoProfile.ai_api_key
           };
         }
       } catch (err) {
@@ -249,7 +248,7 @@ async function getUserAIConfig(userId: string) {
       console.log('Attempting to fetch user profile from Supabase...');
       const { data, error } = await supabase
         .from('profiles')
-        .select('ai_model, ai_api_key, ai_agent_instructions, full_name')
+        .select('ai_model, ai_api_key, full_name')
         .eq('user_id', userId)
         .maybeSingle();
 
@@ -274,7 +273,7 @@ async function getUserAIConfig(userId: string) {
           finalKeyFound: !!finalApiKey
         });
         
-        return { model, apiKey: finalApiKey, instructions: data.ai_agent_instructions || '' };
+        return { model, apiKey: finalApiKey };
       } else {
         console.log('No profile data found for user');
       }
@@ -287,13 +286,12 @@ async function getUserAIConfig(userId: string) {
 
   // Fallback defaults
   console.log('Using fallback defaults: gemini-2.5-flash with system GEMINI key');
-  return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY, instructions: '' };
+  return { model: 'gemini-2.5-flash', apiKey: GEMINI_API_KEY };
 }
 
 // Função simplificada para construir system prompt baseado na categoria
-function buildSystemForCategory(category: string, customInstructions?: string, style?: { tone?: 'casual' | 'neutro' | 'formal'; emojis?: boolean }) {
-  const userInstr = (customInstructions || '').trim();
-  const fallback = 'Você é um concierge de viagens em português do Brasil.';
+function buildSystemForCategory(category: string, style?: { tone?: 'casual' | 'neutro' | 'formal'; emojis?: boolean }) {
+  const basePrompt = 'Você é um concierge de viagens em português do Brasil.';
 
   const styleInstr = [
     `TOM: ${style?.tone || 'casual'};`,
@@ -302,7 +300,7 @@ function buildSystemForCategory(category: string, customInstructions?: string, s
     '- Seja direto e focado na categoria escolhida pelo usuário.'
   ].join('\n');
 
-  const base = [userInstr || fallback, styleInstr].join('\n');
+  const base = [basePrompt, styleInstr].join('\n');
 
   if (category === 'roteiro') {
     return `${base}\n\nVocê está no modo ROTEIRO. Foque APENAS em atrações, pontos turísticos, atividades e vinícolas.\n\nSEMPRE que sugerir um local específico, inclua um bloco JSON ao final:\n\n\`\`\`json\n{\n  "itinerary_item": {\n    "title": "Nome do Local",\n    "description": "Descrição detalhada",\n    "category": "attraction",\n    "location": "Cidade, Estado",\n    "address": "Endereço completo",\n    "link": "https://site-oficial.com",\n    "tripadvisor_link": "https://tripadvisor.com/link",\n    "google_maps_link": "https://maps.google.com/place/search",\n    "waze_link": "https://waze.com/link"\n  }\n}\n\`\`\``;
@@ -388,7 +386,7 @@ serve(async (req) => {
      const activeCategory = category || 'diversos';
      console.log('Active category:', activeCategory);
  
-     const system = buildSystemForCategory(activeCategory, aiConfig.instructions, style);
+     const system = buildSystemForCategory(activeCategory, style);
 
       // Construir mensagens incluindo histórico da conversa
       const messages: any[] = [

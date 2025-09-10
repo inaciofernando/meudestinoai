@@ -13,7 +13,6 @@ interface Profile {
   theme_mode: 'light' | 'dark';
   ai_model: string;
   ai_api_key: string;
-  ai_agent_instructions: string;
 }
 
 interface AISettingsProps {
@@ -45,9 +44,6 @@ export function AISettings({ profile, setProfile, onSave, saving }: AISettingsPr
     setProfile({ ...profile, ai_api_key: newApiKey });
   };
 
-  const handleInstructionsChange = (newInstructions: string) => {
-    setProfile({ ...profile, ai_agent_instructions: newInstructions });
-  };
 
   const selectedModel = AI_MODELS.find(model => model.value === profile.ai_model);
 
@@ -124,20 +120,6 @@ export function AISettings({ profile, setProfile, onSave, saving }: AISettingsPr
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="agent-instructions">Instruções do Agente</Label>
-          <textarea
-            id="agent-instructions"
-            value={profile.ai_agent_instructions || ''}
-            onChange={(e) => handleInstructionsChange(e.target.value)}
-            placeholder="Defina como o agente deve se comportar, ex: Seja sempre amigável e sugira apenas opções de custo-benefício. Foque em atrações históricas e gastronômicas."
-            className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-            rows={4}
-          />
-          <p className="text-xs text-muted-foreground">
-            Personalize como o concierge irá interagir com você durante suas viagens
-          </p>
-        </div>
 
         <Button onClick={onSave} disabled={saving} className="w-full" size="lg">
           <Save className="w-4 h-4 mr-2" />

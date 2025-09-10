@@ -23,7 +23,6 @@ interface Profile {
   theme_mode: 'light' | 'dark';
   ai_model: string;
   ai_api_key: string;
-  ai_agent_instructions: string;
 }
 
 export default function Perfil() {
@@ -76,7 +75,6 @@ export default function Perfil() {
         theme_mode: 'light' as const,
         ai_model: 'gemini-2.5-flash',
         ai_api_key: '',
-        ai_agent_instructions: ''
       };
 
       const { data, error } = await supabase
@@ -107,7 +105,6 @@ export default function Perfil() {
           theme_mode: profile.theme_mode,
           ai_model: profile.ai_model,
           ai_api_key: profile.ai_api_key,
-          ai_agent_instructions: profile.ai_agent_instructions,
         })
         .eq('user_id', user.id);
 
