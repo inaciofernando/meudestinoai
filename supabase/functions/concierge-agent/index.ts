@@ -318,12 +318,15 @@ async function getUserAIConfig(userId: string) {
  }
  
  function buildSystemForIntent(intent: Intent, customInstructions?: string) {
-   const base = customInstructions || [
-     'Você é um concierge de viagens em português do Brasil.',
-     'Seja direto, prático e amigável. Use bullets quando útil.',
-     'Adapte-se ao contexto da viagem (datas, destino e região próxima).',
-     'Foque apenas em assuntos relacionados à viagem atual.'
+   const userInstr = (customInstructions || '').trim();
+   const fallback = 'Você é um concierge de viagens em português do Brasil.';
+
+   const guardrails = [
+     '- Limite-se estritamente à viagem atual com base no contexto fornecido (destino, datas, região).',
+     "- Só gere JSON quando o usuário pedir explicitamente para 'salvar' ou 'trazer detalhes'; caso contrário, responda naturalmente em texto."
    ].join('\n');
+
+   const base = [userInstr || fallback, guardrails].join('\n');
  
    if (intent === 'restaurant') {
      return `${base}\n\nTarefa: recomendar restaurantes relevantes para o contexto.\n- Inclua dicas práticas (reservas, faixa de preço, quando ir).\n- No final, inclua APENAS um bloco de código JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "restaurant": {\n    "name": "",\n    "description": "",\n    "cuisine": "",\n    "address": "",\n    "link": "",\n    "tripadvisor": "",\n    "gmap": "",\n    "waze": "",\n    "phone": "",\n    "estimated_amount": "",\n    "price_band": "$$"\n  }\n}\n\`\`\`\n\nRegras: URLs completas (https://...), Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
@@ -337,8 +340,8 @@ async function getUserAIConfig(userId: string) {
      return `${base}\n\nTarefa: recomendar hospedagens (hotéis/pousadas).\n- Inclua dicas de localização e conveniências.\n- No final, inclua APENAS um bloco JSON válido com os campos abaixo (esquema ampliado).\n\nExemplo:\n\n\`\`\`json\n{\n  "accommodation": {\n    "name": "",\n    "description": "",\n    "type": "hotel",\n    "address": "",\n    "city": "",\n    "country": "",\n    "phone": "",\n    "email": "",\n    "website": "",\n    "booking_link": "",\n    "tripadvisor": "",\n    "google_maps_link": "",\n    "waze_link": "",\n    "check_in": "",\n    "check_out": "",\n    "amenities": [],\n    "price_band": "$$",\n    "estimated_amount_per_night": "",\n    "total_estimated_amount": "",\n    "notes": ""\n  }\n}\n\`\`\`\n\nRegras: URLs completas, Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
    }
  
-   // General chat: no JSON, resposta útil com 3–5 opções e convite para detalhes
-   return `${base}\n\nTarefa: conversa geral, dicas e sugestões sobre a viagem.\n\nRegras para esta resposta (sem JSON):\n- Traga 3 a 5 sugestões CONCRETAS alinhadas ao contexto (nome do lugar + 1 frase do porquê + melhor horário + link oficial se souber).\n- Use bullets curtas e claras.\n- Se o destino for amplo, pode incluir opções nas cidades próximas, indicando distância/tempo.\n- Termine com uma pergunta de continuação: \"Quer que eu traga os detalhes de algum desses para salvar na sua viagem? Diga, por exemplo: 'detalhes do <nome>'.\"`;
+   // Conversa geral: sem JSON, resposta natural e útil
+   return `${base}\n\nTarefa: converse naturalmente sobre a viagem, oferecendo sugestões objetivas quando fizer sentido.\n\nRegras para esta resposta:\n- Não gere JSON nesta resposta.\n- Foque no contexto atual e seja claro e útil.\n- Se o usuário quiser salvar/ter detalhes, oriente-o a pedir: "detalhes de <nome>" ou "salvar <nome>".`;
  }
  
 serve(async (req) => {
