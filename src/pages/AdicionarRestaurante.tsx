@@ -63,7 +63,7 @@ export default function AdicionarRestaurante() {
 
   // SEO basics for the page
   useEffect(() => {
-    document.title = "Adicionar Restaurante | TravelManager";
+    document.title = "Adicionar Restaurante | Meu Destino AI";
     const desc = "Adicionar restaurante à viagem - formulário dedicado.";
     let meta = document.querySelector('meta[name="description"]');
     if (!meta) {

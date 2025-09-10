@@ -83,7 +83,7 @@ serve(async (req) => {
     }
 
     const resend = new Resend(RESEND_API_KEY);
-    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Travel Manager <onboarding@resend.dev>";
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "Meu Destino AI <onboarding@resend.dev>";
 
     const subject = "Redefinição de senha";
     const html = `
@@ -95,7 +95,7 @@ serve(async (req) => {
           <a href="${actionLink}" style="background:#2563eb;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;display:inline-block">Definir nova senha</a>
         </p>
         <p>Se você não solicitou, pode ignorar este email.</p>
-        <p style="color:#64748b;font-size:12px;margin-top:24px;">Travel Manager</p>
+        <p style="color:#64748b;font-size:12px;margin-top:24px;">Meu Destino AI</p>
       </div>
     `;
 

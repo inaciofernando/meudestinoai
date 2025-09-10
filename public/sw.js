@@ -1,4 +1,4 @@
-const CACHE_NAME = 'travelverse-v1';
+const CACHE_NAME = 'meu-destino-ai-v1';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',

@@ -614,7 +614,7 @@ export default function Auth() {
             </div>
           </div>
           <CardTitle className="text-3xl font-bold text-foreground mb-2">
-            Travel Manager
+            Meu Destino AI
           </CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
             Sua próxima aventura começa aqui ✈️

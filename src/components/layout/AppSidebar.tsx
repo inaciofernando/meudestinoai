@@ -71,7 +71,7 @@ export function AppSidebar() {
               <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center">
                 <Plane className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold text-lg">TravelVerse</span>
+              <span className="font-semibold text-lg">Meu Destino AI</span>
             </div>
           ) : (
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center mx-auto">

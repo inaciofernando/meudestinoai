@@ -54,7 +54,7 @@ export default function Concierge() {
 
   // SEO basics
   useEffect(() => {
-    const title = "Concierge da Viagem | TravelManager";
+    const title = "Concierge da Viagem | Meu Destino AI";
     document.title = title;
     const desc = "Concierge inteligente para sua viagem: recomendações e planejamento personalizados.";
     let meta = document.querySelector('meta[name="description"]');
