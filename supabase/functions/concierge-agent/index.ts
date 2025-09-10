@@ -359,8 +359,8 @@ serve(async (req) => {
   }
 
   try {
-     const requestBody = await req.json();
-     const { prompt, tripId, tripContext, userId, style } = requestBody;
+      const requestBody = await req.json();
+      const { prompt, tripId, tripContext, userId, style, conversationHistory } = requestBody;
      
      console.log('=== FULL REQUEST DEBUG ===');
      console.log('Request body:', JSON.stringify(requestBody, null, 2));
@@ -410,9 +410,28 @@ serve(async (req) => {
        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
      }
  
-     const system = buildSystemForIntent(intent, aiConfig.instructions, style);
- 
-     const userText = `Contexto da Viagem:\n${JSON.stringify(tripContext || { id: tripId }, null, 2)}\n\nPergunta do usuário:\n${prompt}`;
+      const system = buildSystemForIntent(intent, aiConfig.instructions, style);
+
+      // Construir mensagens incluindo histórico da conversa
+      const messages: any[] = [
+        { role: "system", content: system }
+      ];
+
+      // Adicionar histórico da conversa se existir
+      if (conversationHistory && Array.isArray(conversationHistory)) {
+        conversationHistory.forEach(msg => {
+          if (msg.role && msg.content) {
+            messages.push({
+              role: msg.role,
+              content: msg.content
+            });
+          }
+        });
+      }
+
+      // Adicionar contexto da viagem e pergunta atual
+      const userText = `Contexto da Viagem:\n${JSON.stringify(tripContext || { id: tripId }, null, 2)}\n\nPergunta atual:\n${prompt}`;
+      messages.push({ role: "user", content: userText });
 
     // Token limits per intent (OpenAI only)
     const tokenLimits: Record<Intent, number> = {
@@ -446,10 +465,7 @@ serve(async (req) => {
       // OpenAI/ChatGPT API
       const openAIBody = {
         model: providerModel,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: userText }
-        ],
+        messages: messages,
         max_completion_tokens: maxTokens
       };
 
@@ -483,10 +499,14 @@ serve(async (req) => {
     } else {
       console.log('Making Gemini API call...');
       // Gemini/Google API
+      const geminiMessages = messages.filter(msg => msg.role !== 'system'); // Gemini não usa system role
+      const systemPrompt = messages.find(msg => msg.role === 'system')?.content || '';
+      
       const body = {
-        contents: [
-          { role: "user", parts: [{ text: system + "\n\n" + userText }] },
-        ],
+        contents: geminiMessages.map(msg => ({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.role === 'user' && systemPrompt ? `${systemPrompt}\n\n${msg.content}` : msg.content }]
+        }))
       };
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${aiConfig.model}:generateContent?key=${aiConfig.apiKey}`;

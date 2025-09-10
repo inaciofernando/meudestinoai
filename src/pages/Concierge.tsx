@@ -209,7 +209,8 @@ export default function Concierge() {
         tripContext: minimalCtx, 
         userId: user?.id,
         style: { tone: 'casual', emojis: true },
-        streaming: true
+        streaming: true,
+        conversationHistory: messages // Adicionar histórico da conversa
       };
       const { data, error } = await supabase.functions.invoke("concierge-agent", { body: reqBody });
 
