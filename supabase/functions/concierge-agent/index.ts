@@ -519,7 +519,7 @@ serve(async (req) => {
       try {
         if (aiConfig.model.startsWith('gpt-') && GEMINI_API_KEY) {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-          const body = { contents: [ { role: 'user', parts: [{ text: buildSystemForCategory('diversos', aiConfig.instructions, style) + "\n\n" + userText }] } ] };
+          const body = { contents: [ { role: 'user', parts: [{ text: buildSystemForCategory(activeCategory, aiConfig.instructions, style) + "\n\n" + userText }] } ] };
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 60000);
           const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal });
@@ -533,7 +533,7 @@ serve(async (req) => {
           const openAIBody = {
             model: providerModel,
             messages: [
-              { role: 'system', content: buildSystemForCategory('diversos', aiConfig.instructions, style) },
+              { role: 'system', content: buildSystemForCategory(activeCategory, aiConfig.instructions, style) },
               { role: 'user', content: userText }
             ],
             max_completion_tokens: 1200
