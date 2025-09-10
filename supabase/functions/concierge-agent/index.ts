@@ -317,16 +317,23 @@ async function getUserAIConfig(userId: string) {
    return 'general';
  }
  
- function buildSystemForIntent(intent: Intent, customInstructions?: string) {
+ function buildSystemForIntent(intent: Intent, customInstructions?: string, style?: { tone?: 'casual' | 'neutro' | 'formal'; emojis?: boolean }) {
    const userInstr = (customInstructions || '').trim();
    const fallback = 'Você é um concierge de viagens em português do Brasil.';
 
    const guardrails = [
      '- Limite-se estritamente à viagem atual com base no contexto fornecido (destino, datas, região).',
-     "- Só gere JSON quando o usuário pedir explicitamente para 'salvar' ou 'trazer detalhes'; caso contrário, responda naturalmente em texto."
+     "- Só gere JSON quando o usuário pedir explicitamente para 'salvar' ou 'trazer detalhes'; caso contrário, responda naturalmente em texto.",
    ].join('\n');
-
-   const base = [userInstr || fallback, guardrails].join('\n');
+ 
+   const styleInstr = [
+     `TOM: ${style?.tone || 'casual'};`,
+     style?.emojis ? '- Use emojis de forma moderada e contextual (no máximo 1 por parágrafo).' : '- Não use emojis.',
+     '- Frases e parágrafos curtos. Evite listas formais; prefira texto natural.',
+     '- Reconheça incertezas quando necessário e termine com uma pergunta empática de continuação.'
+   ].join('\n');
+ 
+   const base = [userInstr || fallback, guardrails, styleInstr].join('\n');
  
    if (intent === 'restaurant') {
      return `${base}\n\nTarefa: recomendar restaurantes relevantes para o contexto.\n- Inclua dicas práticas (reservas, faixa de preço, quando ir).\n- No final, inclua APENAS um bloco de código JSON válido com os campos abaixo.\n\nExemplo:\n\n\`\`\`json\n{\n  "restaurant": {\n    "name": "",\n    "description": "",\n    "cuisine": "",\n    "address": "",\n    "link": "",\n    "tripadvisor": "",\n    "gmap": "",\n    "waze": "",\n    "phone": "",\n    "estimated_amount": "",\n    "price_band": "$$"\n  }\n}\n\`\`\`\n\nRegras: URLs completas (https://...), Google Maps no formato place/search. Nada além do bloco JSON após o texto.`;
@@ -352,60 +359,60 @@ serve(async (req) => {
   }
 
   try {
-    const requestBody = await req.json();
-    const { prompt, tripId, tripContext, userId } = requestBody;
-    
-    console.log('=== FULL REQUEST DEBUG ===');
-    console.log('Request body:', JSON.stringify(requestBody, null, 2));
-    console.log('Received userId:', userId);
-    console.log('User type:', typeof userId);
-    console.log('Prompt length:', prompt?.length || 0);
-    
-    if (!prompt) {
-      console.error('No prompt provided');
-      return new Response(JSON.stringify({ error: "Missing prompt" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    console.log('=== FETCHING AI CONFIG ===');
-    // Get user AI configuration
-    const aiConfig = await getUserAIConfig(userId || 'anonymous');
-    console.log('Final AI Config:', { 
-      model: aiConfig.model, 
-      hasApiKey: !!aiConfig.apiKey,
-      apiKeyLength: aiConfig.apiKey?.length || 0,
-      apiKeyStart: aiConfig.apiKey?.substring(0, 10) || 'none'
-    });
-    
-    if (!aiConfig.apiKey) {
-      console.error('No API key found for model:', aiConfig.model);
-      return new Response(
-        JSON.stringify({ error: `API key not configured for model ${aiConfig.model}. Please configure it in your profile settings.` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Intent detection and dynamic system + token limits
-    const intent = detectIntent(prompt);
-    console.log('Detected intent:', intent);
-
-    // Lightweight greeting: skip AI call entirely
-    if (intent === 'greeting') {
-      const destination = tripContext?.destination || tripContext?.title || '';
-      const greeting = `Olá${destination ? `! Preparado(a) para ${destination}?` : '!'} Como posso ajudar na sua viagem? Posso sugerir restaurantes, hospedagens ou atrações. Diga, por exemplo: "restaurante italiano perto do hotel" ou "hospedagem em bairro central".`;
-      return new Response(JSON.stringify({
-        generatedText: greeting,
-        fullResponse: greeting,
-        generatedImages: [],
-        structuredData: null
-      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    const system = buildSystemForIntent(intent, aiConfig.instructions);
-
-    const userText = `Contexto da Viagem:\n${JSON.stringify(tripContext || { id: tripId }, null, 2)}\n\nPergunta do usuário:\n${prompt}`;
+     const requestBody = await req.json();
+     const { prompt, tripId, tripContext, userId, style } = requestBody;
+     
+     console.log('=== FULL REQUEST DEBUG ===');
+     console.log('Request body:', JSON.stringify(requestBody, null, 2));
+     console.log('Received userId:', userId);
+     console.log('User type:', typeof userId);
+     console.log('Prompt length:', prompt?.length || 0);
+     
+     if (!prompt) {
+       console.error('No prompt provided');
+       return new Response(JSON.stringify({ error: "Missing prompt" }), {
+         status: 400,
+         headers: { ...corsHeaders, "Content-Type": "application/json" },
+       });
+     }
+ 
+     console.log('=== FETCHING AI CONFIG ===');
+     // Get user AI configuration
+     const aiConfig = await getUserAIConfig(userId || 'anonymous');
+     console.log('Final AI Config:', { 
+       model: aiConfig.model, 
+       hasApiKey: !!aiConfig.apiKey,
+       apiKeyLength: aiConfig.apiKey?.length || 0,
+       apiKeyStart: aiConfig.apiKey?.substring(0, 10) || 'none'
+     });
+     
+     if (!aiConfig.apiKey) {
+       console.error('No API key found for model:', aiConfig.model);
+       return new Response(
+         JSON.stringify({ error: `API key not configured for model ${aiConfig.model}. Please configure it in your profile settings.` }),
+         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+       );
+     }
+ 
+     // Intent detection and dynamic system + token limits
+     const intent = detectIntent(prompt);
+     console.log('Detected intent:', intent);
+ 
+     // Lightweight greeting: skip AI call entirely
+     if (intent === 'greeting') {
+       const destination = tripContext?.destination || tripContext?.title || '';
+       const greeting = `Olá${destination ? `! Preparado(a) para ${destination}?` : '!'} Como posso ajudar na sua viagem? Posso sugerir restaurantes, hospedagens ou atrações. Diga, por exemplo: "restaurante italiano perto do hotel" ou "hospedagem em bairro central".${style?.emojis ? ' 😊' : ''}`;
+       return new Response(JSON.stringify({
+         generatedText: greeting,
+         fullResponse: greeting,
+         generatedImages: [],
+         structuredData: null
+       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+     }
+ 
+     const system = buildSystemForIntent(intent, aiConfig.instructions, style);
+ 
+     const userText = `Contexto da Viagem:\n${JSON.stringify(tripContext || { id: tripId }, null, 2)}\n\nPergunta do usuário:\n${prompt}`;
 
     // Token limits per intent (OpenAI only)
     const tokenLimits: Record<Intent, number> = {
@@ -515,7 +522,7 @@ serve(async (req) => {
       try {
         if (aiConfig.model.startsWith('gpt-') && GEMINI_API_KEY) {
           const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-          const body = { contents: [ { role: 'user', parts: [{ text: buildSystemForIntent('general' as Intent, aiConfig.instructions) + "\n\n" + userText }] } ] };
+          const body = { contents: [ { role: 'user', parts: [{ text: buildSystemForIntent('general' as Intent, aiConfig.instructions, style) + "\n\n" + userText }] } ] };
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 60000);
           const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: controller.signal });
@@ -529,7 +536,7 @@ serve(async (req) => {
           const openAIBody = {
             model: providerModel,
             messages: [
-              { role: 'system', content: buildSystemForIntent('general' as Intent, aiConfig.instructions) },
+              { role: 'system', content: buildSystemForIntent('general' as Intent, aiConfig.instructions, style) },
               { role: 'user', content: userText }
             ],
             max_completion_tokens: tokenLimits['general']

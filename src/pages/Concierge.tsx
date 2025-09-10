@@ -203,7 +203,14 @@ export default function Concierge() {
           }
         : (id ? { id } : {});
       
-      const reqBody = { prompt: finalPrompt, tripId: id ?? "", tripContext: minimalCtx, userId: user?.id };
+      const reqBody = { 
+        prompt: finalPrompt, 
+        tripId: id ?? "", 
+        tripContext: minimalCtx, 
+        userId: user?.id,
+        style: { tone: 'casual', emojis: true },
+        streaming: true
+      };
       const { data, error } = await supabase.functions.invoke("concierge-agent", { body: reqBody });
 
       if (error) {
@@ -216,22 +223,63 @@ export default function Concierge() {
       const generatedImages: Array<{ type: string; image: string }> = payload.generatedImages || [];
       const structuredData = payload.structuredData || null;
       
+      // Remover o placeholder de digitação e iniciar "streaming" do texto
+      const baseMessages: Message[] = [...newMessages];
+
+      // Mensagem do assistente vazia para ir preenchendo
       const assistantMessage: Message = { 
         role: "assistant" as const, 
-        content: reply,
+        content: "",
         images: generatedImages.length > 0 ? generatedImages : undefined,
         structuredData: structuredData
       };
-      
-      const finalMessages: Message[] = [...newMessages, assistantMessage];
-      setMessages(finalMessages);
-      
-      // Armazenar resposta completa para os botões de ação
-      const responseIndex = finalMessages.length - 1;
-      setFullResponses(prev => new Map(prev).set(responseIndex, fullResponse));
-      
-      // Salvar a versão normal para histórico
-      await saveConversation(finalMessages);
+
+      // Inserir mensagem vazia
+      setMessages([...baseMessages, assistantMessage]);
+      const responseIndex = baseMessages.length; // índice da nova mensagem
+
+      const streamEnabled = true; // habilitado por padrão conforme preferência
+      if (streamEnabled) {
+        const tokens = reply.split(/(\s+)/); // mantém espaços
+        let acc = "";
+
+        await new Promise<void>((resolve) => {
+          let i = 0;
+          const tick = () => {
+            // adicionar 2-3 "tokens" por tick para efeito natural
+            const step = 3;
+            const chunk = tokens.slice(i, i + step).join("");
+            i += step;
+            acc += chunk;
+            setMessages((prev) => {
+              const arr = [...prev];
+              const m = { ...(arr[responseIndex] as Message), content: acc } as Message;
+              arr[responseIndex] = m;
+              return arr;
+            });
+            if (i >= tokens.length) {
+              resolve();
+            } else {
+              setTimeout(tick, 25); // 25ms por tick
+            }
+          };
+          setTimeout(tick, 80);
+        });
+
+        // Salvar conversa e mapear fullResponse ao final
+        const finalMessages = (prev => {
+          const arr = [...baseMessages, { ...assistantMessage, content: acc }];
+          return arr;
+        })();
+
+        setFullResponses(prev => new Map(prev).set(responseIndex, fullResponse));
+        await saveConversation(finalMessages);
+      } else {
+        const finalMessages: Message[] = [...baseMessages, { ...assistantMessage, content: reply }];
+        setMessages(finalMessages);
+        setFullResponses(prev => new Map(prev).set(responseIndex, fullResponse));
+        await saveConversation(finalMessages);
+      }
     } catch (e: any) {
       // Remove mensagem de digitando e volta para as mensagens originais
       setMessages(newMessages);
