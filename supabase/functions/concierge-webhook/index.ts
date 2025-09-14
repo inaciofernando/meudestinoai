@@ -63,11 +63,31 @@ serve(async (req) => {
     const n8nResult = await n8nResponse.json();
     console.log('Resposta do N8N:', n8nResult);
 
-    // Retornar resposta do N8N ou uma resposta padrão
+    // Traduzir mensagens em inglês para português
+    let responseMessage = n8nResult.message || 'Mensagem processada com sucesso!';
+    
+    // Mapear mensagens comuns em inglês para português
+    const translations: { [key: string]: string } = {
+      'Workflow was started': 'Processando sua solicitação...',
+      'Workflow started': 'Processando sua solicitação...',
+      'Processing': 'Processando...',
+      'Success': 'Sucesso',
+      'Error': 'Erro',
+      'Failed': 'Falhou'
+    };
+    
+    // Aplicar tradução se encontrada
+    Object.keys(translations).forEach(englishText => {
+      if (responseMessage.includes(englishText)) {
+        responseMessage = responseMessage.replace(englishText, translations[englishText]);
+      }
+    });
+
+    // Retornar resposta traduzida
     return new Response(
       JSON.stringify({
         success: true,
-        message: n8nResult.message || 'Mensagem processada com sucesso!',
+        message: responseMessage,
         saveOptions: n8nResult.saveOptions || null
       }),
       {
