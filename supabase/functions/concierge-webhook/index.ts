@@ -60,11 +60,17 @@ serve(async (req) => {
       );
     }
 
-    const n8nResult = await n8nResponse.json();
-    console.log('Resposta do N8N:', n8nResult);
+    const rawText = await n8nResponse.text();
+    let n8nResult: any;
+    try {
+      n8nResult = rawText ? JSON.parse(rawText) : {};
+    } catch (_e) {
+      n8nResult = { message: rawText };
+    }
+    console.log('Resposta do N8N (normalizada):', n8nResult);
 
     // Normalizar mensagem do N8N (pode vir como string ou objeto)
-    const rawMessage = n8nResult?.message ?? n8nResult?.status ?? 'Mensagem processada com sucesso!';
+    const rawMessage = n8nResult?.message ?? n8nResult?.status ?? (typeof rawText === 'string' && rawText.trim() ? rawText : 'Mensagem processada com sucesso!');
     let responseMessage: string;
     if (typeof rawMessage === 'string') {
       responseMessage = rawMessage;
