@@ -316,27 +316,7 @@ export default function DetalhesHospedagem() {
           </div>
 
           {/* Content */}
-          <div className="p-4 pb-24">
-
-            {/* Check-in/Check-out Section */}
-            <div className="mb-6">
-              <div className="bg-card border rounded-xl p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <CalendarIcon className="w-5 h-5 text-primary" />
-                  <h2 className="text-lg font-semibold">Estadia</h2>
-                </div>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">CHECK-IN</p>
-                    <p className="text-xl font-bold">{format(parseISO(accommodation.check_in_date), "dd MMM yyyy")}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">CHECK-OUT</p>
-                    <p className="text-xl font-bold">{format(parseISO(accommodation.check_out_date), "dd MMM yyyy")}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="p-4 pb-8">
 
             {/* Info Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -668,26 +648,24 @@ export default function DetalhesHospedagem() {
               </div>
             )}
 
-            {/* Action Buttons at Bottom */}
-            <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-10">
-              <div className="max-w-md mx-auto flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleEdit}
-                  className="flex-1 h-12"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Editar
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => setShowDeleteDialog(true)}
-                  className="flex-1 h-12"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Excluir
-                </Button>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-8">
+              <Button
+                variant="outline"
+                onClick={handleEdit}
+                className="flex-1 h-12"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Editar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                className="flex-1 h-12"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Excluir
+              </Button>
             </div>
           </div>
 
