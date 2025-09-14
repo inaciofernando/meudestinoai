@@ -307,12 +307,21 @@ export default function Restaurantes() {
   }
 
   return (
-    <PWALayout 
-      showFooter={false}
-      title="Restaurantes"
-      subtitle="Descubra e salve os melhores lugares para comer"
-      onBack={() => navigate(`/viagem/${tripId}`)}
-    >
+      <PWALayout 
+        showFooter={false}
+        title="Restaurantes"
+        subtitle="Descubra e salve os melhores lugares para comer"
+        onBack={() => navigate(`/viagem/${tripId}`)}
+        actions={
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-2"
+            aria-label="Adicionar restaurante"
+          >
+            <Plus className="w-5 h-5" />
+          </Button>
+        }
+      >
       <div className="space-y-6">
         {/* Botão adicionar restaurante */}
         <div className="flex justify-end mb-6">

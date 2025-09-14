@@ -9,6 +9,7 @@ interface PWALayoutProps {
   title?: string;
   subtitle?: string;
   onBack?: () => void;
+  actions?: ReactNode;
 }
 
 export const PWALayout = ({ 
@@ -17,14 +18,15 @@ export const PWALayout = ({
   showFooter = true,
   title,
   subtitle,
-  onBack
+  onBack,
+  actions
 }: PWALayoutProps) => {
   return (
     <div className="min-h-screen-mobile w-full flex flex-col bg-gradient-sky">
       {/* Header fixo no topo */}
       {showHeader && (
         <header className="flex-shrink-0 sticky top-0 z-50">
-          <PWAHeader title={title} subtitle={subtitle} onBack={onBack} />
+          <PWAHeader title={title} subtitle={subtitle} onBack={onBack} actions={actions} />
         </header>
       )}
       

@@ -802,19 +802,19 @@ export default function GastosViagem() {
         title="Gastos de Viagem"
         subtitle={trip.destination}
         onBack={() => navigate("/viagens")}
+        actions={
+          <Button 
+            onClick={() => setIsAddingExpense(true)}
+            size="sm"
+            className="bg-primary hover:bg-primary/90 h-9 w-9 p-0 rounded-full"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        }
       >
         <div className="pb-20">
           <div className="bg-background border-b">
             <div className="px-4 py-6">
-              <Button 
-                onClick={() => setIsAddingExpense(true)}
-                size="sm"
-                className="bg-primary hover:bg-primary/90 h-9 w-9 p-0 rounded-full"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-              </div>
-
               {/* Current Balance - Hero Section */}
               <div className="text-center space-y-3">
                 <div>

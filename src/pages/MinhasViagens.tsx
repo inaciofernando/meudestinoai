@@ -139,16 +139,6 @@ export default function MinhasViagens() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="icon">
-            <Filter className="w-4 h-4" />
-          </Button>
-          <Button variant="travel" size="sm" className="gap-2" onClick={handleNewTrip}>
-            <Plus className="w-4 h-4" />
-            Nova
-          </Button>
-        </div>
-
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
@@ -174,17 +164,6 @@ export default function MinhasViagens() {
 
   return (
     <div className="space-y-4">
-          {/* Botões de ação no topo */}
-          <div className="flex justify-end gap-2">
-            <Button variant="ghost" size="icon">
-              <Filter className="w-4 h-4" />
-            </Button>
-            <Button variant="travel" size="sm" className="gap-2" onClick={handleNewTrip}>
-              <Plus className="w-4 h-4" />
-              Nova
-            </Button>
-          </div>
-
           {/* Lista de Viagens */}
           {trips.length === 0 ? (
             <Card className="p-8 text-center">

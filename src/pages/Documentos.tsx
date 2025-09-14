@@ -196,6 +196,15 @@ export default function Documentos() {
         title="Documentos"
         subtitle="Gerencie seus documentos de viagem"
         onBack={() => navigate(`/viagem/${id}`)}
+        actions={
+          <Button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Adicionar
+          </Button>
+        }
       >
         <div className="container mx-auto p-4 space-y-6">
           {/* Botão de adicionar no topo */}

@@ -273,16 +273,18 @@ export default function Hotel() {
   }
 
   return (
-    <PWALayout showFooter={false}>
+    <PWALayout 
+      showFooter={false}
+      title="Hotel"
+      subtitle="Gerencie suas hospedagens"
+      actions={
+        <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Adicionar Hotel
+        </Button>
+      }
+    >
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Hotel</h1>
-          <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Adicionar Hotel
-          </Button>
-        </div>
-
         {/* Formulário para adicionar novo hotel */}
         {showAddForm && (
           <Card>

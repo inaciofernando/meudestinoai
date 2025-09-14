@@ -615,6 +615,15 @@ export default function RoteiroSimples() {
         title="Roteiro de Viagem"
         subtitle="Organize seu itinerário por dias"
         onBack={() => navigate(`/viagem/${currentId}`)}
+        actions={
+          <Button
+            onClick={() => setIsAddingPonto(true)}
+            className="w-10 h-10 p-0 rounded-full bg-gradient-ocean hover:shadow-travel transition-all duration-300"
+            aria-label="Adicionar ponto"
+          >
+            <Plus className="w-5 h-5" />
+          </Button>
+        }
       >
         <div className="space-y-6">
           {/* Botão adicionar no topo */}

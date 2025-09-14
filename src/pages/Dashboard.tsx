@@ -286,16 +286,6 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
           {/* Header Actions */}
-          <div className="flex justify-end">
-            <Button 
-              variant="outline" 
-              size="icon"
-              className="text-primary border-primary hover:bg-primary hover:text-primary-foreground transition-smooth"
-              onClick={() => navigate("/nova-viagem")}
-            >
-              <Plus className="w-5 h-5" />
-            </Button>
-          </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-3 md:gap-4">

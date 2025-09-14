@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { 
   ArrowLeft
 } from "lucide-react";
@@ -7,9 +8,10 @@ interface PWAHeaderProps {
   title?: string;
   subtitle?: string;
   onBack?: () => void;
+  actions?: ReactNode;
 }
 
-export const PWAHeader = ({ title, subtitle, onBack }: PWAHeaderProps) => {
+export const PWAHeader = ({ title, subtitle, onBack, actions }: PWAHeaderProps) => {
   return (
     <header className="w-full border-b border-border bg-background" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <div className="container flex h-16 items-center justify-between px-4">
@@ -40,8 +42,10 @@ export const PWAHeader = ({ title, subtitle, onBack }: PWAHeaderProps) => {
           )}
         </div>
 
-        {/* Right side - Empty */}
-        <div></div>
+        {/* Right side - Actions */}
+        <div className="flex items-center gap-2">
+          {actions}
+        </div>
       </div>
     </header>
   );
