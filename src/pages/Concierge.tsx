@@ -4,9 +4,8 @@ import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ConciergeChat } from "@/components/concierge/ConciergeChat";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TripData, UserData, ConciergeCategory } from "@/types/concierge";
-import { Bot, MapPin, Clock, Users, ArrowLeft } from "lucide-react";
+import { Bot, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,7 +16,6 @@ export default function Concierge() {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const [showChat, setShowChat] = useState(true);
   const [tripData, setTripData] = useState<TripData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -80,36 +78,6 @@ export default function Concierge() {
     }
   };
 
-  const categories = [
-    { 
-      id: 'roteiro', 
-      name: 'Roteiro', 
-      icon: MapPin, 
-      color: 'from-blue-500 to-blue-600',
-      description: 'Pontos turísticos e atividades'
-    },
-    { 
-      id: 'restaurante', 
-      name: 'Restaurante', 
-      icon: '🍽️', 
-      color: 'from-orange-500 to-red-500',
-      description: 'Gastronomia e experiências culinárias'
-    },
-    { 
-      id: 'hospedagem', 
-      name: 'Hospedagem', 
-      icon: '🏨', 
-      color: 'from-purple-500 to-purple-600',
-      description: 'Hotéis e acomodações'
-    },
-    { 
-      id: 'diversos', 
-      name: 'Diversos', 
-      icon: '✨', 
-      color: 'from-green-500 to-green-600',
-      description: 'Outros serviços e informações'
-    }
-  ];
 
   const handleSaveToTrip = (data: any) => {
     console.log('Item salvo na programação:', data);
@@ -158,60 +126,17 @@ export default function Concierge() {
     );
   }
 
-  if (showChat) {
-    return (
-      <ProtectedRoute>
-        <PWALayout>
-          <div className="p-4">
-            <ConciergeChat
-              category={'diversos'} // Default category, o AI identificará automaticamente o tipo
-              tripData={tripData}
-              userData={userData}
-              onClose={() => setShowChat(false)}
-              onSaveToTrip={handleSaveToTrip}
-            />
-          </div>
-        </PWALayout>
-      </ProtectedRoute>
-    );
-  }
-
   return (
     <ProtectedRoute>
       <PWALayout>
-        <div className="space-y-6">
-          {/* Header com navegação */}
-          <div className="flex items-center justify-between">
-            <Link to={`/viagem/${tripId}`}>
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar para viagem
-              </Button>
-            </Link>
-          </div>
-
-          {/* Interface do Concierge */}
-          <div className="text-center space-y-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-full shadow-lg">
-              <Bot className="w-8 h-8 text-white" />
-            </div>
-            
-            <div>
-              <h1 className="text-2xl font-bold mb-2">Concierge AI</h1>
-              <p className="text-muted-foreground">
-                Seu assistente de viagem inteligente
-              </p>
-            </div>
-            
-            <Button 
-              size="lg" 
-              onClick={() => setShowChat(true)}
-              className="px-8 py-3"
-            >
-              <Bot className="w-5 h-5 mr-2" />
-              Iniciar Conversa
-            </Button>
-          </div>
+        <div className="p-4">
+          <ConciergeChat
+            category={'diversos'} // Default category, o AI identificará automaticamente o tipo
+            tripData={tripData}
+            userData={userData}
+            onClose={() => window.history.back()}
+            onSaveToTrip={handleSaveToTrip}
+          />
         </div>
       </PWALayout>
     </ProtectedRoute>
