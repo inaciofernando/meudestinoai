@@ -12,6 +12,7 @@ import { format, parseISO } from "date-fns";
 import { Download, ExternalLink, ArrowLeft, Edit, Trash2, Calendar as CalendarIcon, Save, Upload, MapPin, Phone, Mail, Wifi, Car, Coffee, Heart, Navigation } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PWALayout } from "@/components/layout/PWALayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -251,33 +252,38 @@ export default function DetalhesHospedagem() {
 
   if (loading) {
     return (
-      <PWALayout showFooter={false}>
-        <div className="flex items-center justify-center h-64">
-          <p>Carregando...</p>
-        </div>
-      </PWALayout>
+      <ProtectedRoute>
+        <PWALayout showFooter={false}>
+          <div className="flex items-center justify-center h-64">
+            <p>Carregando...</p>
+          </div>
+        </PWALayout>
+      </ProtectedRoute>
     );
   }
 
   if (!accommodation) {
     return (
-      <PWALayout showFooter={false}>
-        <div className="flex items-center justify-center h-64">
-          <p>Hospedagem não encontrada</p>
-        </div>
-      </PWALayout>
+      <ProtectedRoute>
+        <PWALayout showFooter={false}>
+          <div className="flex items-center justify-center h-64">
+            <p>Hospedagem não encontrada</p>
+          </div>
+        </PWALayout>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <PWALayout 
-      showFooter={false}
-      title="Detalhes da Hospedagem"
-      subtitle={accommodation.name}
-      onBack={() => navigate(`/viagem/${tripId}/hospedagem`)}
-    >
-      <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
-      <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
+    <ProtectedRoute>
+      <PWALayout 
+        showFooter={false}
+        title="Detalhes da Hospedagem"
+        subtitle={accommodation.name}
+        onBack={() => navigate(`/viagem/${tripId}/hospedagem`)}
+      >
+        <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
+          <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
         {/* Seção de ações */}
         <div className="space-y-3">
           {/* Botões de ação */}
@@ -807,7 +813,9 @@ export default function DetalhesHospedagem() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
-    </PWALayout>
+          </div>
+        </div>
+      </PWALayout>
+    </ProtectedRoute>
   );
 }
