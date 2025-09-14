@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { 
-  Menu, 
   Search, 
   User,
   MoreHorizontal,
@@ -14,7 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -58,29 +56,8 @@ export const PWAHeader = ({ title, subtitle, onBack }: PWAHeaderProps) => {
   return (
     <header className="w-full border-b border-border bg-background" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <div className="container flex h-16 items-center justify-between px-4">
-        {/* Left side - Mobile menu and logo */}
+        {/* Left side - Logo ou Navegação */}
         <div className="flex items-center gap-4">
-          {/* Mobile Menu */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80">
-               <div className="mt-6 space-y-4">
-                 <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/perfil")}>
-                   Configurações
-                 </Button>
-                 <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/perfil")}>
-                   Ajuda
-                 </Button>
-                 <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/")}>
-                   Sobre
-                 </Button>
-               </div>
-            </SheetContent>
-          </Sheet>
 
           {/* Logo ou Navegação */}
            {title && onBack ? (
