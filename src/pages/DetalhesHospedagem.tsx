@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { formatCurrency, cn } from "@/lib/utils";
+import { ImageUpload } from "@/components/ImageUpload";
 
 interface Accommodation {
   id: string;
@@ -696,209 +697,407 @@ export default function DetalhesHospedagem() {
             <DialogHeader>
               <DialogTitle>Editar Hospedagem</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="edit-hotel-name">Nome do Hotel</Label>
-                <Input
-                  id="edit-hotel-name"
-                  value={editForm.hotel_name}
-                  onChange={(e) => setEditForm({ ...editForm, hotel_name: e.target.value })}
-                  placeholder="Nome do hotel"
-                />
-              </div>
+            <div className="space-y-6 py-4">
+              {/* Informações Básicas */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Informações Básicas</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="hotel_name">Nome do Hotel *</Label>
+                    <Input
+                      id="hotel_name"
+                      value={editForm.hotel_name}
+                      onChange={(e) => setEditForm({ ...editForm, hotel_name: e.target.value })}
+                      placeholder="Digite o nome do hotel"
+                    />
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Data de Check-in</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !editForm.check_in_date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {editForm.check_in_date ? format(editForm.check_in_date, "dd/MM/yyyy") : "Selecione a data"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={editForm.check_in_date}
-                        onSelect={(date) => setEditForm({ ...editForm, check_in_date: date })}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <div>
+                    <Label htmlFor="accommodation_type">Tipo de Hospedagem</Label>
+                    <Select 
+                      value={editForm.accommodation_type}
+                      onValueChange={(value) => setEditForm({ ...editForm, accommodation_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hotel">Hotel</SelectItem>
+                        <SelectItem value="airbnb">Airbnb</SelectItem>
+                        <SelectItem value="pousada">Pousada</SelectItem>
+                        <SelectItem value="resort">Resort</SelectItem>
+                        <SelectItem value="hostel">Hostel</SelectItem>
+                        <SelectItem value="apartamento">Apartamento</SelectItem>
+                        <SelectItem value="casa">Casa</SelectItem>
+                        <SelectItem value="outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                <div>
-                  <Label>Data de Check-out</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !editForm.check_out_date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {editForm.check_out_date ? format(editForm.check_out_date, "dd/MM/yyyy") : "Selecione a data"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={editForm.check_out_date}
-                        onSelect={(date) => setEditForm({ ...editForm, check_out_date: date })}
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="edit-reservation-amount">Valor da Reserva (R$)</Label>
-                <Input
-                  id="edit-reservation-amount"
-                  type="number"
-                  value={editForm.reservation_amount}
-                  onChange={(e) => setEditForm({ ...editForm, reservation_amount: e.target.value })}
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="edit-hotel-link">Link do Hotel</Label>
-                <Input
-                  id="edit-hotel-link"
-                  value={editForm.hotel_link}
-                  onChange={(e) => setEditForm({ ...editForm, hotel_link: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="edit-notes">Observações</Label>
-                <Textarea
-                  id="edit-notes"
-                  value={editForm.notes}
-                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                  placeholder="Observações sobre a hospedagem..."
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="edit-image">Imagem do Hotel</Label>
-                <div className="mt-2">
-                  <div className="flex items-center justify-center w-full">
-                    <label htmlFor="edit-image" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/10 hover:bg-muted/20 transition-colors">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        {imageFile ? (
-                          <>
-                            <Upload className="w-8 h-8 mb-2 text-green-600" />
-                            <p className="text-sm text-green-600 font-medium">{imageFile.name}</p>
-                            <p className="text-xs text-muted-foreground">Clique para alterar</p>
-                          </>
-                        ) : editForm.hotel_image_url ? (
-                          <>
-                            <Upload className="w-8 h-8 mb-2 text-blue-600" />
-                            <p className="text-sm text-blue-600 font-medium">Imagem atual anexada</p>
-                            <p className="text-xs text-muted-foreground">Clique para substituir</p>
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">
-                              <span className="font-semibold">Clique para anexar</span> uma imagem
-                            </p>
-                            <p className="text-xs text-muted-foreground">PNG, JPG até 10MB</p>
-                          </>
-                        )}
-                      </div>
-                      <Input
-                        id="edit-image"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setImageFile(file);
-                          }
-                        }}
-                        className="hidden"
-                      />
-                    </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="confirmation_number">Número da Reserva</Label>
+                    <Input
+                      id="confirmation_number"
+                      value={editForm.confirmation_number}
+                      onChange={(e) => setEditForm({ ...editForm, confirmation_number: e.target.value })}
+                      placeholder="Ex: ABC123456"
+                    />
                   </div>
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="edit-voucher">Voucher (PDF ou Imagem)</Label>
-                <div className="mt-2">
-                  <div className="flex items-center justify-center w-full">
-                    <label htmlFor="edit-voucher" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer bg-muted/10 hover:bg-muted/20 transition-colors">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                        {voucherFile ? (
-                          <>
-                            <Upload className="w-8 h-8 mb-2 text-green-600" />
-                            <p className="text-sm text-green-600 font-medium">{voucherFile.name}</p>
-                            <p className="text-xs text-muted-foreground">Clique para alterar</p>
-                          </>
-                        ) : editForm.voucher_file_name ? (
-                          <>
-                            <Upload className="w-8 h-8 mb-2 text-blue-600" />
-                            <p className="text-sm text-blue-600 font-medium">Voucher atual: {editForm.voucher_file_name}</p>
-                            <p className="text-xs text-muted-foreground">Clique para substituir</p>
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">
-                              <span className="font-semibold">Clique para anexar</span> o voucher
-                            </p>
-                            <p className="text-xs text-muted-foreground">PDF, PNG, JPG até 10MB</p>
-                          </>
-                        )}
-                      </div>
-                      <Input
-                        id="edit-voucher"
-                        type="file"
-                        accept=".pdf,.png,.jpg,.jpeg"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setVoucherFile(file);
-                          }
-                        }}
-                        className="hidden"
-                      />
-                    </label>
+              {/* Período da Estadia */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Período da Estadia</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Data de Check-in *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !editForm.check_in_date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {editForm.check_in_date ? format(editForm.check_in_date, "dd/MM/yyyy") : "Selecione a data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={editForm.check_in_date}
+                          onSelect={(date) => setEditForm({ ...editForm, check_in_date: date })}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div>
+                    <Label>Data de Check-out *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !editForm.check_out_date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {editForm.check_out_date ? format(editForm.check_out_date, "dd/MM/yyyy") : "Selecione a data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={editForm.check_out_date}
+                          onSelect={(date) => setEditForm({ ...editForm, check_out_date: date })}
+                          disabled={(date) => {
+                            return editForm.check_in_date && date <= editForm.check_in_date;
+                          }}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button
-                  variant="outline"
+              {/* Localização */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Localização</h3>
+                
+                <div>
+                  <Label htmlFor="address">Endereço Completo</Label>
+                  <Input
+                    id="address"
+                    value={editForm.address}
+                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                    placeholder="Rua, número, bairro"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="city">Cidade</Label>
+                    <Input
+                      id="city"
+                      value={editForm.city}
+                      onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                      placeholder="Nome da cidade"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="country">País</Label>
+                    <Input
+                      id="country"
+                      value={editForm.country}
+                      onChange={(e) => setEditForm({ ...editForm, country: e.target.value })}
+                      placeholder="Brasil"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Detalhes da Acomodação */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Detalhes da Acomodação</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="room_type">Tipo de Quarto</Label>
+                    <Select 
+                      value={editForm.room_type}
+                      onValueChange={(value) => setEditForm({ ...editForm, room_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="deluxe">Deluxe</SelectItem>
+                        <SelectItem value="suite">Suíte</SelectItem>
+                        <SelectItem value="presidencial">Presidencial</SelectItem>
+                        <SelectItem value="family">Familiar</SelectItem>
+                        <SelectItem value="single">Single</SelectItem>
+                        <SelectItem value="double">Double</SelectItem>
+                        <SelectItem value="twin">Twin</SelectItem>
+                        <SelectItem value="apartamento_completo">Apartamento Completo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Comodidades */}
+                <div>
+                  <Label>Comodidades Incluídas</Label>
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="includes_breakfast"
+                        checked={editForm.includes_breakfast}
+                        onCheckedChange={(checked) => setEditForm({ ...editForm, includes_breakfast: !!checked })}
+                      />
+                      <Label htmlFor="includes_breakfast" className="text-sm">Café da manhã</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="wifi_available"
+                        checked={editForm.wifi_available}
+                        onCheckedChange={(checked) => setEditForm({ ...editForm, wifi_available: !!checked })}
+                      />
+                      <Label htmlFor="wifi_available" className="text-sm">Wi-Fi gratuito</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="parking_available"
+                        checked={editForm.parking_available}
+                        onCheckedChange={(checked) => setEditForm({ ...editForm, parking_available: !!checked })}
+                      />
+                      <Label htmlFor="parking_available" className="text-sm">Estacionamento</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="pet_friendly"
+                        checked={editForm.pet_friendly}
+                        onCheckedChange={(checked) => setEditForm({ ...editForm, pet_friendly: !!checked })}
+                      />
+                      <Label htmlFor="pet_friendly" className="text-sm">Pet friendly</Label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contato e Links */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Contato e Links</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone">Telefone</Label>
+                    <Input
+                      id="phone"
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                      placeholder="+55 (11) 99999-9999"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      placeholder="contato@hotel.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="hotel_link">Link do Hotel/Booking</Label>
+                  <Input
+                    id="hotel_link"
+                    value={editForm.hotel_link}
+                    onChange={(e) => setEditForm({ ...editForm, hotel_link: e.target.value })}
+                    placeholder="https://www.hotel.com ou link do Booking.com"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="waze_link">Link do Waze</Label>
+                  <Input
+                    id="waze_link"
+                    value={editForm.waze_link}
+                    onChange={(e) => setEditForm({ ...editForm, waze_link: e.target.value })}
+                    placeholder="https://waze.com/ul?q=Nome+do+Hotel"
+                  />
+                </div>
+              </div>
+
+              {/* Informações Financeiras */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Informações Financeiras</h3>
+                
+                <div>
+                  <Label htmlFor="reservation_amount">Valor Total da Reserva (R$)</Label>
+                  <Input
+                    id="reservation_amount"
+                    type="number"
+                    step="0.01"
+                    value={editForm.reservation_amount}
+                    onChange={(e) => setEditForm({ ...editForm, reservation_amount: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              {/* Imagens e Documentos */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Imagens e Documentos</h3>
+                
+                <div>
+                  <Label>Imagem do Hotel</Label>
+                  <ImageUpload
+                    images={editForm.hotel_image_url ? [editForm.hotel_image_url] : []}
+                    onImagesChange={(images) => setEditForm({ ...editForm, hotel_image_url: images[0] || "" })}
+                    maxImages={1}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="voucher" className="text-base font-medium">Voucher/Comprovante</Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Faça upload do voucher da reserva, confirmação ou comprovante de pagamento
+                  </p>
+                  
+                  <div className="space-y-3">
+                    {/* Upload Area */}
+                    <div className="relative border-2 border-dashed border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+                      <div className="flex flex-col items-center justify-center text-center">
+                        <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-foreground">
+                            Clique para selecionar ou arraste o arquivo
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            PDF, JPG, PNG, DOC ou DOCX (máx. 10MB)
+                          </p>
+                        </div>
+                        <Input
+                          id="voucher"
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setVoucherFile(file);
+                            }
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                      </div>
+                    </div>
+
+                    {/* File Status */}
+                    {(voucherFile || editForm.voucher_file_name) && (
+                      <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                        <div className="flex-shrink-0">
+                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {voucherFile ? voucherFile.name : editForm.voucher_file_name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {voucherFile ? "Novo arquivo selecionado" : "Arquivo atual"}
+                          </p>
+                        </div>
+                        {editForm.voucher_file_url && !voucherFile && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDownloadVoucher(editForm.voucher_file_url, editForm.voucher_file_name)}
+                            className="flex-shrink-0"
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Observações */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground border-b pb-2">Observações</h3>
+                
+                <div>
+                  <Label htmlFor="notes">Observações Gerais</Label>
+                  <Textarea
+                    id="notes"
+                    value={editForm.notes}
+                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                    placeholder="Informações adicionais sobre a hospedagem..."
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-between gap-3 pt-6 border-t border-border mt-6">
+                <Button 
+                  variant="outline" 
                   onClick={() => setIsEditing(false)}
-                  className="flex-1"
+                  className="flex-1 sm:flex-none sm:px-6"
                 >
                   Cancelar
                 </Button>
-                <Button
-                  onClick={handleUpdateAccommodation}
-                  className="flex-1"
+                <Button 
+                  onClick={handleUpdateAccommodation} 
+                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground flex-1 sm:flex-none sm:px-6"
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  Salvar Alterações
+                  <Save className="w-4 h-4" />
+                  Atualizar
                 </Button>
               </div>
             </div>
