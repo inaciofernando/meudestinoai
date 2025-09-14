@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft, Navigation } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft, Navigation, Hotel } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -388,21 +388,17 @@ export default function Hospedagem() {
       title="Hospedagem"
       subtitle="Encontre e gerencie suas acomodações"
       onBack={() => navigate(`/viagem/${tripId}`)}
+      actions={
+        <Button
+          onClick={() => setShowAddForm(true)}
+          className="bg-primary hover:bg-primary/90 text-white gap-2 px-4"
+        >
+          <Hotel className="w-4 h-4" />
+          Adicionar
+        </Button>
+      }
     >
       <div className="space-y-6">
-        {/* Botão adicionar hospedagem */}
-        <div className="flex justify-end mb-6">
-          <Button
-            onClick={() => setShowAddForm(true)}
-            variant="outline"
-            size="icon"
-            className="text-primary border-primary hover:bg-primary hover:text-primary-foreground transition-smooth"
-            aria-label="Adicionar hospedagem"
-          >
-            <Plus className="w-5 h-5" />
-          </Button>
-        </div>
-
         {/* Formulário para adicionar nova hospedagem */}
         <Dialog open={showAddForm} onOpenChange={(open) => {
           if (!open) {
