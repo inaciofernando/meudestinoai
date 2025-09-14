@@ -444,7 +444,6 @@ export default function DetalhesTransporte() {
               booking={booking}
             />
           )}
-        </div>
       </PWALayout>
     </ProtectedRoute>
   );

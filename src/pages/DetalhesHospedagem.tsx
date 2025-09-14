@@ -813,8 +813,6 @@ export default function DetalhesHospedagem() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-          </div>
-        </div>
       </PWALayout>
     </ProtectedRoute>
   );
