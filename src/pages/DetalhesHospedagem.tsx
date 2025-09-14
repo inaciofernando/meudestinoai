@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO } from "date-fns";
 import { Download, ExternalLink, ArrowLeft, Edit, Trash2, Calendar as CalendarIcon, Save, Upload, MapPin, Phone, Mail, Wifi, Car, Coffee, Heart, Navigation } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -59,8 +61,21 @@ export default function DetalhesHospedagem() {
     voucher_file_url: "",
     voucher_file_name: "",
     hotel_link: "",
+    waze_link: "",
     reservation_amount: "",
-    notes: ""
+    notes: "",
+    accommodation_type: "hotel",
+    address: "",
+    city: "",
+    country: "Brasil",
+    phone: "",
+    email: "",
+    room_type: "",
+    confirmation_number: "",
+    includes_breakfast: false,
+    wifi_available: true,
+    parking_available: false,
+    pet_friendly: false
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [voucherFile, setVoucherFile] = useState<File | null>(null);
@@ -162,8 +177,21 @@ export default function DetalhesHospedagem() {
         voucher_file_url: voucherUrl,
         voucher_file_name: voucherFileName,
         hotel_link: editForm.hotel_link,
+        waze_link: editForm.waze_link,
         reservation_amount: editForm.reservation_amount ? parseFloat(editForm.reservation_amount) : null,
-        notes: editForm.notes
+        notes: editForm.notes,
+        accommodation_type: editForm.accommodation_type,
+        address: editForm.address,
+        city: editForm.city,
+        country: editForm.country,
+        phone: editForm.phone,
+        email: editForm.email,
+        room_type: editForm.room_type,
+        confirmation_number: editForm.confirmation_number,
+        includes_breakfast: editForm.includes_breakfast,
+        wifi_available: editForm.wifi_available,
+        parking_available: editForm.parking_available,
+        pet_friendly: editForm.pet_friendly
       };
 
       const { error } = await supabase
@@ -218,8 +246,21 @@ export default function DetalhesHospedagem() {
       voucher_file_url: accommodation.voucher_file_url || "",
       voucher_file_name: accommodation.voucher_file_name || "",
       hotel_link: accommodation.hotel_link || "",
+      waze_link: accommodation.waze_link || "",
       reservation_amount: accommodation.reservation_amount?.toString() || "",
-      notes: accommodation.notes || ""
+      notes: accommodation.notes || "",
+      accommodation_type: accommodation.accommodation_type || "hotel",
+      address: accommodation.address || "",
+      city: accommodation.city || "",
+      country: accommodation.country || "Brasil",
+      phone: accommodation.phone || "",
+      email: accommodation.email || "",
+      room_type: accommodation.room_type || "",
+      confirmation_number: accommodation.confirmation_number || "",
+      includes_breakfast: accommodation.includes_breakfast || false,
+      wifi_available: accommodation.wifi_available !== undefined ? accommodation.wifi_available : true,
+      parking_available: accommodation.parking_available || false,
+      pet_friendly: accommodation.pet_friendly || false
     });
     setIsEditing(true);
   };
