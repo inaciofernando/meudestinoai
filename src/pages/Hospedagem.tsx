@@ -843,35 +843,15 @@ export default function Hospedagem() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>{accommodation.hotel_name}</CardTitle>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/viagem/${tripId}/hospedagem/${accommodation.id}`)}
-                        className="text-muted-foreground hover:text-foreground"
-                        title="Ver detalhes da hospedagem"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditAccommodation(accommodation)}
-                        className="text-muted-foreground hover:text-foreground"
-                        title="Editar hospedagem"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteAccommodation(accommodation.id)}
-                        className="text-muted-foreground hover:text-destructive"
-                        title="Excluir hospedagem"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(`/viagem/${tripId}/hospedagem/${accommodation.id}`)}
+                      className="text-muted-foreground hover:text-foreground"
+                      title="Ver detalhes da hospedagem"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
