@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Message, ConciergeCategory, TripData, UserData, ChatPayload } from '@/types/concierge';
 import { 
   generateId, 
@@ -6,6 +6,7 @@ import {
   getRandomProcessingMessage, 
   getAuthToken 
 } from '@/utils/conciergeHelpers';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useConciergeChat = (
   category: ConciergeCategory, 
@@ -16,6 +17,35 @@ export const useConciergeChat = (
   const [isLoading, setIsLoading] = useState(false);
   const [processingMessage, setProcessingMessage] = useState('');
   const [conversationId] = useState(() => generateId());
+  const [tripLocations, setTripLocations] = useState<any[]>([]);
+
+  // Buscar roteiro de destinos da viagem
+  const fetchTripLocations = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('trip_locations')
+        .select('*')
+        .eq('trip_id', tripData.id)
+        .eq('user_id', userData.id)
+        .order('order_index');
+
+      if (error) {
+        console.error('Erro ao buscar roteiro:', error);
+        return;
+      }
+
+      setTripLocations(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar roteiro:', error);
+    }
+  }, [tripData.id, userData.id]);
+
+  // Buscar roteiro quando o hook é inicializado
+  useEffect(() => {
+    if (tripData.id && userData.id) {
+      fetchTripLocations();
+    }
+  }, [fetchTripLocations, tripData.id, userData.id]);
 
   const setInitialMessages = useCallback((initialMessages: Message[]) => {
     setMessages(initialMessages);
@@ -69,7 +99,13 @@ export const useConciergeChat = (
       destinations: tripData.destinations,
       budget_range: tripData.budgetRange,
       traveler_count: tripData.travelerCount,
-      status: tripData.status
+      status: tripData.status,
+      roteiro_destinos: tripLocations.map(location => ({
+        location_name: location.location_name,
+        location_type: location.location_type,
+        order_index: location.order_index,
+        notes: location.notes
+      }))
     },
     request_data: {
       category,
@@ -78,15 +114,13 @@ export const useConciergeChat = (
       timestamp: new Date().toISOString(),
       language: 'pt-BR'
     }
-  }), [category, tripData, userData, conversationId]);
+  }), [category, tripData, userData, conversationId, tripLocations]);
 
   const sendToWebhook = useCallback(async (payload: ChatPayload) => {
-    const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
-    if (!webhookUrl) {
-      throw new Error('URL do webhook N8N não configurada');
-    }
+    // URL específica do webhook fornecida pelo usuário
+    const webhookUrl = 'https://n8n-n8n-start.43ir9u.easypanel.host/webhook-test/109fc0fc-06dc-4758-aab0-3c3bdb695d69';
 
-    const response = await fetch(`${webhookUrl}/concierge-chat`, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

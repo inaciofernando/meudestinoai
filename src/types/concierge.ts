@@ -62,6 +62,12 @@ export interface ChatPayload {
     budget_range: string;
     traveler_count: number;
     status: string;
+    roteiro_destinos: Array<{
+      location_name: string;
+      location_type: string;
+      order_index: number;
+      notes?: string;
+    }>;
   };
   request_data: {
     category: ConciergeCategory;
