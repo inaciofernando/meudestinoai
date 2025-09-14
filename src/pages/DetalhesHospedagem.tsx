@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO } from "date-fns";
-import { Download, ExternalLink, ArrowLeft, Edit, Trash2, Calendar as CalendarIcon, Save, Upload, MapPin, Phone, Mail, Wifi, Car, Coffee, Heart, Navigation } from "lucide-react";
+import { Download, ExternalLink, ArrowLeft, Edit, Trash2, Calendar as CalendarIcon, Save, Upload, MapPin, Phone, Mail, Wifi, Car, Coffee, Heart, Navigation, X } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -993,11 +993,77 @@ export default function DetalhesHospedagem() {
                 
                 <div>
                   <Label>Imagem do Hotel</Label>
-                  <ImageUpload
-                    images={editForm.hotel_image_url ? [editForm.hotel_image_url] : []}
-                    onImagesChange={(images) => setEditForm({ ...editForm, hotel_image_url: images[0] || "" })}
-                    maxImages={1}
-                  />
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                    <input
+                      type="file"
+                      id="hotel-image-upload"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // Upload logic similar to VoucherUpload
+                          const uploadImage = async () => {
+                            try {
+                              const fileExt = file.name.split('.').pop();
+                              const fileName = `hotel_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                              const { data: { user } } = await supabase.auth.getUser();
+                              if (!user) throw new Error('Usuário não autenticado');
+                              
+                              const filePath = `${user.id}/${fileName}`;
+                              const { error: uploadError } = await supabase.storage
+                                .from('trip-images')
+                                .upload(filePath, file);
+
+                              if (uploadError) throw uploadError;
+
+                              const { data } = supabase.storage.from('trip-images').getPublicUrl(filePath);
+                              setEditForm({ ...editForm, hotel_image_url: data.publicUrl });
+                              toast.success('Imagem do hotel adicionada com sucesso!');
+                            } catch (error) {
+                              console.error('Erro no upload:', error);
+                              toast.error('Erro ao fazer upload da imagem');
+                            }
+                          };
+                          uploadImage();
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="hotel-image-upload"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <Upload className="w-8 h-8 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          Adicionar Imagens
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          0/1
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                  {editForm.hotel_image_url && (
+                    <div className="mt-3">
+                      <div className="relative group">
+                        <img
+                          src={editForm.hotel_image_url}
+                          alt="Imagem do Hotel"
+                          className="w-full h-32 object-cover rounded-lg border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 p-0"
+                          onClick={() => setEditForm({ ...editForm, hotel_image_url: "" })}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
