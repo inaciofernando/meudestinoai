@@ -1039,7 +1039,7 @@ export default function DetalhesHospedagem() {
                           Adicionar Imagens
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          0/1
+                          {editForm.hotel_image_url ? "1/1" : "0/1"}
                         </p>
                       </div>
                     </label>
