@@ -197,15 +197,19 @@ export default function Concierge() {
               onDeleteConversation={handleDeleteConversation}
               loading={conversationsLoading}
             />
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleNewConversation}
-              className="gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Nova
-            </Button>
+            {/* Só mostra o botão + se tem mensagens na conversa atual */}
+            {currentConversation && Array.isArray(currentConversation.messages) && 
+             (currentConversation.messages as any[]).length > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleNewConversation}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Nova
+              </Button>
+            )}
           </div>
         }
       >
