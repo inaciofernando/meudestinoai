@@ -21,6 +21,29 @@ import { toast } from "sonner";
 import { formatCurrency, cn } from "@/lib/utils";
 import { ImageUploadArea } from "@/components/ImageUploadArea";
 
+// Função para melhorar a exibição do nome do arquivo
+const formatFileName = (fileName: string | null | undefined, maxLength: number = 30): string => {
+  if (!fileName) return "Documento";
+  
+  // Remove "Baixar Voucher" e outros textos desnecessários
+  let cleanName = fileName
+    .replace(/^Baixar Voucher \(/i, "")
+    .replace(/\)$/, "")
+    .replace(/^\(/, "")
+    .trim();
+  
+  // Se ainda for muito longo, trunca mantendo a extensão
+  if (cleanName.length > maxLength) {
+    const parts = cleanName.split(".");
+    const extension = parts.length > 1 ? "." + parts.pop() : "";
+    const nameWithoutExt = parts.join(".");
+    const truncatedName = nameWithoutExt.substring(0, maxLength - extension.length - 3) + "...";
+    return truncatedName + extension;
+  }
+  
+  return cleanName;
+};
+
 interface Accommodation {
   id: string;
   hotel_name: string;
@@ -571,7 +594,7 @@ export default function DetalhesHospedagem() {
                     onClick={() => handleDownloadVoucher(accommodation.voucher_file_url!, accommodation.voucher_file_name!)}
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    {accommodation.voucher_file_name || 'Baixar Voucher'}
+                    {formatFileName(accommodation.voucher_file_name)}
                   </Button>
                 </CardContent>
               </Card>
@@ -588,7 +611,7 @@ export default function DetalhesHospedagem() {
                     className="w-full justify-start h-12"
                   >
                     <Download className="w-4 h-4 mr-3" />
-                    Baixar Voucher ({accommodation.voucher_file_name || "arquivo"})
+                    {formatFileName(accommodation.voucher_file_name)}
                   </Button>
                 </div>
               </div>
@@ -1111,7 +1134,7 @@ export default function DetalhesHospedagem() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">
-                            {voucherFile ? voucherFile.name : editForm.voucher_file_name}
+                            {voucherFile ? formatFileName(voucherFile.name) : formatFileName(editForm.voucher_file_name)}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {voucherFile ? "Novo arquivo selecionado" : "Arquivo atual"}
