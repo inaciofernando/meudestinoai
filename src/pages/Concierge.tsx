@@ -17,7 +17,7 @@ export default function Concierge() {
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const [showChat, setShowChat] = useState(false);
+  const [showChat, setShowChat] = useState(true);
   const [tripData, setTripData] = useState<TripData | null>(null);
   const [loading, setLoading] = useState(true);
 
