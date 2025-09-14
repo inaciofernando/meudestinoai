@@ -123,41 +123,20 @@ export const useConciergeChat = (
   }, [category, tripData, userData, conversationId, tripLocations]);
 
   const sendToWebhook = useCallback(async (payload: ChatPayload) => {
-    // URL de teste fornecida
-    const testUrl = 'https://n8n-n8n-start.43ir9u.easypanel.host/webhook-test/109fc0fc-06dc-4758-aab0-3c3bdb695d69';
+    console.log('Enviando payload para webhook:', JSON.stringify(payload, null, 2));
 
-    const postTo = async (url: string) => {
-      console.log('Postando no webhook:', url);
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`,
-        },
-        body: JSON.stringify(payload)
-      });
-      return response;
-    };
+    // Usar nossa Edge Function interna
+    const { data, error } = await supabase.functions.invoke('concierge-webhook', {
+      body: payload
+    });
 
-    // 1) Tenta a URL de teste
-    let response = await postTo(testUrl);
-
-    // 2) Se 404, tenta automaticamente a URL permanente
-    if (response.status === 404) {
-      const prodUrl = testUrl.replace('/webhook-test/', '/webhook/');
-      console.warn('Webhook de teste retornou 404. Tentando URL permanente:', prodUrl);
-      response = await postTo(prodUrl);
-    }
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Erro na resposta do webhook:', response.status, response.statusText, errorText);
-      throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+    if (error) {
+      console.error('Erro na Edge Function:', error);
+      throw new Error(`Erro na comunicação: ${error.message}`);
     }
 
-    const result = await response.json();
-    console.log('Resposta do webhook:', result);
-    return result;
+    console.log('Resposta da Edge Function:', data);
+    return data;
   }, []);
 
   const sendMessage = useCallback(async (userMessage: string) => {
