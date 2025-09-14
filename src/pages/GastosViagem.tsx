@@ -804,17 +804,15 @@ export default function GastosViagem() {
         onBack={() => navigate("/viagens")}
       >
         <div className="pb-20">
-          {/* Seção de orçamento e estatísticas rápidas */}
           <div className="bg-background border-b">
             <div className="px-4 py-6">
-
-                <Button 
-                  onClick={() => setIsAddingExpense(true)}
-                  size="sm"
-                  className="bg-primary hover:bg-primary/90 h-9 w-9 p-0 rounded-full"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+              <Button 
+                onClick={() => setIsAddingExpense(true)}
+                size="sm"
+                className="bg-primary hover:bg-primary/90 h-9 w-9 p-0 rounded-full"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
               </div>
 
               {/* Current Balance - Hero Section */}
