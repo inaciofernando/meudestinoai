@@ -1656,6 +1656,8 @@ export default function GastosViagem() {
           currencySymbol={selectedCurrency.symbol}
         />
 
+        </div>
+
         {/* Receipt Viewer Dialog */}
         <Dialog open={isViewingReceipt} onOpenChange={setIsViewingReceipt}>
           <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto z-[60]">
