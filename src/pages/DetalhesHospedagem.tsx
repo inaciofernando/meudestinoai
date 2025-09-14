@@ -106,24 +106,19 @@ export default function DetalhesHospedagem() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
-    console.log("DetalhesHospedagem - useEffect", { tripId, hospedagemId, user });
     if (!tripId || !hospedagemId) {
-      console.log("Missing tripId or hospedagemId");
       return;
     }
     fetchAccommodation();
   }, [tripId, hospedagemId, user]);
 
   const fetchAccommodation = async () => {
-    console.log("fetchAccommodation called", { user, tripId, hospedagemId });
     if (!user || !tripId || !hospedagemId) {
-      console.log("Missing user, tripId, or hospedagemId", { user: !!user, tripId, hospedagemId });
       setLoading(false);
       return;
     }
 
     try {
-      console.log("Fetching accommodation data...");
       const { data, error } = await supabase
         .from("accommodations")
         .select("*")
@@ -131,8 +126,6 @@ export default function DetalhesHospedagem() {
         .eq("trip_id", tripId)
         .eq("user_id", user.id)
         .maybeSingle();
-
-      console.log("Supabase response:", { data, error });
 
       if (error) {
         console.error("Erro ao buscar hospedagem:", error);
