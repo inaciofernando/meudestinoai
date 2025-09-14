@@ -6,10 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, User, Settings, LogOut, Moon, Sun, ChevronRight, Bell, Edit } from "lucide-react";
-import { AISettings } from "@/components/AISettings";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/theme-provider";
@@ -217,122 +215,135 @@ export default function Perfil() {
     <ProtectedRoute>
       <PWALayout 
         showHeader={true}
-        title="Perfil"
+        title="Minha Conta"
         onBack={() => navigate("/viagens")}
       >
-        <div className="space-y-6">
-          {/* Botão de notificações no topo */}
-          <div className="flex justify-end p-4 md:p-6 border-b">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Bell className="h-4 w-4" />
-            </Button>
+        <div className="space-y-0">
+          {/* Profile Header with Avatar */}
+          <div className="p-6 pb-4">
+            <div className="flex items-center gap-4">
+              <Avatar className="w-16 h-16">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xl font-semibold">
+                  {getInitials(profile?.full_name || 'Usuario')}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="text-xl font-semibold">{profile?.full_name || 'Fernando'}</h2>
+                <p className="text-muted-foreground text-sm">{user?.email}</p>
+              </div>
+            </div>
           </div>
 
-          <div className="p-4 md:p-6 space-y-6">
-            {/* User Profile Card */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <Avatar className="w-16 h-16">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xl font-semibold">
-                      {getInitials(profile?.full_name || 'Usuario')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h2 className="text-xl font-semibold">{profile?.full_name || 'Nome não informado'}</h2>
-                    <p className="text-muted-foreground">{user?.email}</p>
-                    <p className="text-muted-foreground">{profile?.phone || 'Telefone não informado'}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Account Settings */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Configurações da Conta</h3>
-              
-              <Card>
+          {/* Main Action Cards Grid */}
+          <div className="px-6 pb-6">
+            <div className="grid grid-cols-3 gap-3">
+              <Card 
+                className="p-4 text-center cursor-pointer hover:bg-muted/50"
+                onClick={() => setIsEditing(true)}
+              >
                 <CardContent className="p-0">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-between h-14 px-4 rounded-none"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Edit className="w-5 h-5" />
-                      <span>Editar Perfil</span>
-                    </div>
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
+                  <Edit className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+                  <span className="text-sm font-medium">Meu Perfil</span>
+                </CardContent>
+              </Card>
+              
+              <Card 
+                className="p-4 text-center cursor-pointer hover:bg-muted/50" 
+                onClick={() => navigate("/minhas-viagens")}
+              >
+                <CardContent className="p-0">
+                  <Settings className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+                  <span className="text-sm font-medium">Minhas Viagens</span>
                 </CardContent>
               </Card>
 
-              {/* Preferences */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="w-5 h-5" />
-                    Preferências
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {theme === 'dark' ? (
-                        <Moon className="w-5 h-5" />
-                      ) : (
-                        <Sun className="w-5 h-5" />
-                      )}
-                      <div>
-                        <p className="font-medium">Modo Escuro</p>
-                        <p className="text-sm text-muted-foreground">
-                          Alterne entre modo claro e escuro
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={theme === 'dark'}
-                      onCheckedChange={toggleTheme}
-                    />
-                  </div>
+              <Card className="p-4 text-center cursor-pointer hover:bg-muted/50">
+                <CardContent className="p-0">
+                  <Bell className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+                  <span className="text-sm font-medium">Notificações</span>
                 </CardContent>
               </Card>
+            </div>
+          </div>
 
+          {/* Menu Items List */}
+          <div className="bg-background">
+            <div className="space-y-0">
               {/* AI Settings */}
-              <AISettings 
-                profile={profile}
-                setProfile={setProfile}
-                onSave={handleSaveProfile}
-                saving={saving}
-              />
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">Configurações de IA</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </div>
 
-              {/* Support Section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Suporte</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">
-                      Precisa de ajuda? Entre em contato conosco
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Theme Toggle */}
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {theme === 'dark' ? (
+                    <Moon className="w-5 h-5 text-muted-foreground" />
+                  ) : (
+                    <Sun className="w-5 h-5 text-muted-foreground" />
+                  )}
+                  <span className="font-medium">Modo Escuro</span>
+                </div>
+                <Switch
+                  checked={theme === 'dark'}
+                  onCheckedChange={toggleTheme}
+                />
+              </div>
+
+              {/* Edit Profile */}
+              <div 
+                className="px-6 py-4 border-b border-border flex items-center justify-between cursor-pointer"
+                onClick={() => setIsEditing(true)}
+              >
+                <div className="flex items-center gap-3">
+                  <User className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">Editar Perfil</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </div>
+
+              {/* Support */}
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">Suporte</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </div>
+
+              {/* Privacy */}
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">Privacidade</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </div>
+
+              {/* About */}
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">Sobre o App</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </div>
 
               {/* Sign Out */}
-              <Card>
-                <CardContent className="pt-6">
-                  <Button
-                    variant="destructive"
-                    onClick={handleSignOut}
-                    className="w-full"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sair da Conta
-                  </Button>
-                </CardContent>
-              </Card>
+              <div 
+                className="px-6 py-4 border-b border-border flex items-center justify-between cursor-pointer"
+                onClick={handleSignOut}
+              >
+                <div className="flex items-center gap-3">
+                  <LogOut className="w-5 h-5 text-destructive" />
+                  <span className="font-medium text-destructive">Sair da Conta</span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </div>
             </div>
           </div>
         </div>
