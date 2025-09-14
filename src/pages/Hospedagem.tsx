@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format, parseISO } from "date-fns";
-import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft, Navigation, Hotel } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, Download, Trash2, ExternalLink, Save, Plus, Edit, ArrowLeft, Navigation, Hotel, Eye } from "lucide-react";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -841,7 +841,38 @@ export default function Hospedagem() {
             accommodations.map((accommodation) => (
               <Card key={accommodation.id} className="hover:shadow-card transition-smooth">
                 <CardHeader>
-                  <CardTitle>{accommodation.hotel_name}</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>{accommodation.hotel_name}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/viagem/${tripId}/hospedagem/${accommodation.id}`)}
+                        className="text-muted-foreground hover:text-foreground"
+                        title="Ver detalhes da hospedagem"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditAccommodation(accommodation)}
+                        className="text-muted-foreground hover:text-foreground"
+                        title="Editar hospedagem"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteAccommodation(accommodation.id)}
+                        className="text-muted-foreground hover:text-destructive"
+                        title="Excluir hospedagem"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -853,17 +884,16 @@ export default function Hospedagem() {
                     </div>
                   </div>
 
-                  {accommodation.hotel_image_url && (
-                    <div>
-                      <strong>Imagem do Hotel:</strong>
-                      <img
-                        src={accommodation.hotel_image_url}
-                        alt="Hotel"
-                        className="w-full h-48 object-cover rounded-lg mt-2 cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => navigate(`/viagem/${tripId}/hospedagem/${accommodation.id}`)}
-                      />
-                    </div>
-                  )}
+                   {accommodation.hotel_image_url && (
+                     <div>
+                       <strong>Imagem do Hotel:</strong>
+                       <img
+                         src={accommodation.hotel_image_url}
+                         alt="Hotel"
+                         className="w-full h-48 object-cover rounded-lg mt-2 cursor-pointer hover:opacity-80 transition-opacity"
+                       />
+                     </div>
+                   )}
 
                   {accommodation.voucher_file_url && (
                     <div className="flex items-center gap-2">
