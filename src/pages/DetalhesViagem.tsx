@@ -1259,7 +1259,6 @@ export default function DetalhesViagem() {
             </div>
           )}
           </div>
-        </div>
 
         {/* Share Trip Dialog */}
         <ShareTripDialog

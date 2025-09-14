@@ -1004,6 +1004,7 @@ export default function GastosViagem() {
             )}
           </div>
         </div>
+      </PWALayout>
 
         {/* Add Expense Dialog - Melhorado */}
         <Dialog open={isAddingExpense} onOpenChange={setIsAddingExpense}>
@@ -1706,7 +1707,7 @@ export default function GastosViagem() {
             </div>
           </DialogContent>
         </Dialog>
-      </PWALayout>
+      </>
     </ProtectedRoute>
   );
 }
