@@ -284,13 +284,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <ProtectedRoute>
-      <PWALayout 
-        showHeader={true}
-        title="Dashboard"
-        subtitle="Bem-vindo de volta! Aqui está o resumo das suas viagens"
-      >
-        <div className="space-y-6">
+    <div className="space-y-6">
           {/* Header Actions */}
           <div className="flex justify-end">
             <Button 
@@ -646,8 +640,6 @@ export default function Dashboard() {
           </div>
         </DialogContent>
       </Dialog>
-        </div>
-      </PWALayout>
-    </ProtectedRoute>
+    </div>
   );
 }
