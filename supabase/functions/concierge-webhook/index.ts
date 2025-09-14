@@ -104,7 +104,13 @@ serve(async (req) => {
         saveData.accommodation_data || 
         saveData.restaurant_data || 
         saveData.itinerary_data ||
-        saveData.category // Para outros tipos de dados estruturados
+        (saveData.category && (
+          saveData.accommodation_data || 
+          saveData.restaurant_data || 
+          saveData.itinerary_data ||
+          saveData.recommendations ||
+          saveData.structured_data
+        ))
       );
       
       if (hasValidSaveData) {
