@@ -400,12 +400,7 @@ export default function Hospedagem() {
     >
       <div className="space-y-6">
         {/* Formulário para adicionar nova hospedagem */}
-        <Dialog open={showAddForm} onOpenChange={(open) => {
-          if (!open) {
-            handleCancelEdit();
-          }
-          setShowAddForm(open);
-        }}>
+        <Dialog open={showAddForm} onOpenChange={handleCancelEdit}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingAccommodation ? 'Editar Hospedagem' : 'Nova Hospedagem'}</DialogTitle>
