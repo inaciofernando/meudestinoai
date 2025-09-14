@@ -44,7 +44,6 @@ export const ConciergeChat = ({
       {/* Header fixo no topo */}
       <ChatHeader 
         category={category}
-        tripData={tripData}
         onClose={onClose}
       />
       
