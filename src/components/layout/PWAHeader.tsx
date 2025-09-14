@@ -13,7 +13,7 @@ interface PWAHeaderProps {
 
 export const PWAHeader = ({ title, subtitle, onBack, actions }: PWAHeaderProps) => {
   return (
-    <header className="w-full border-b border-border bg-background" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <header className="w-full border-b border-border bg-background/95 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Left side - Navegação */}
         <div className="flex items-center gap-4">
