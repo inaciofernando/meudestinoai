@@ -279,7 +279,7 @@ export default function DetalhesHospedagem() {
       <PWALayout 
         showFooter={false}
         title="Detalhes da Hospedagem"
-        subtitle={accommodation.name}
+        subtitle={accommodation.hotel_name}
         onBack={() => navigate(`/viagem/${tripId}/hospedagem`)}
       >
         <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
