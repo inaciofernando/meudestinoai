@@ -204,57 +204,6 @@ export default function Concierge() {
             </p>
           </div>
 
-          {/* Card da Viagem */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    ✈️
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">{tripData.destination}</CardTitle>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {tripData.durationDays} dias
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {tripData.travelerCount} pessoa(s)
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
-                    {tripData.status}
-                  </div>
-                </div>
-              </div>
-              
-              {tripData.destinations && tripData.destinations.length > 0 && (
-                <div className="flex gap-2 mt-4 flex-wrap">
-                  {tripData.destinations.slice(0, 3).map((dest, index) => (
-                    <span key={index} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {dest}
-                    </span>
-                  ))}
-                  {tripData.destinations.length > 3 && (
-                    <span className="text-muted-foreground text-sm px-3 py-1">
-                      +{tripData.destinations.length - 3} mais
-                    </span>
-                  )}
-                </div>
-              )}
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Escolha uma categoria abaixo para começar a conversar com seu concierge pessoal
-              </p>
-            </CardContent>
-          </Card>
 
           {/* Categorias */}
           <div className="grid grid-cols-2 gap-4">
