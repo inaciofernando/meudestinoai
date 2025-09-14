@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, User, Settings, LogOut, Moon, Sun, ChevronRight, Bell, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -223,6 +223,7 @@ export default function Perfil() {
           <div className="p-6 pb-4">
             <div className="flex items-center gap-4">
               <Avatar className="w-16 h-16">
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-xl font-semibold">
                   {getInitials(profile?.full_name || 'Usuario')}
                 </AvatarFallback>
