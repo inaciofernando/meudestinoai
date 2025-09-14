@@ -279,117 +279,153 @@ export default function DetalhesHospedagem() {
       <PWALayout 
         showFooter={false}
         title="Detalhes da Hospedagem"
-        subtitle={accommodation.hotel_name}
         onBack={() => navigate(`/viagem/${tripId}/hospedagem`)}
       >
-        <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
-          <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
-        {/* Seção de ações */}
-        <div className="space-y-3">
-          {/* Botões de ação */}
-          <div className="flex justify-end gap-2">
+        <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+          {/* Hero Section */}
+          <div className="relative">
+            {accommodation.hotel_image_url ? (
+              <div className="relative h-64 sm:h-80 overflow-hidden">
+                <img
+                  src={accommodation.hotel_image_url}
+                  alt={accommodation.hotel_name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                    {accommodation.hotel_name}
+                  </h1>
+                  <div className="flex items-center gap-4 text-white/90">
+                    <div className="flex items-center gap-2">
+                      <CalendarIcon className="w-4 h-4" />
+                      <span className="text-sm">{format(parseISO(accommodation.check_in_date), "dd/MM")} - {format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</span>
+                    </div>
+                    {accommodation.reservation_amount && (
+                      <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                        <span className="text-sm font-medium">{formatCurrency(accommodation.reservation_amount)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+                  {accommodation.hotel_name}
+                </h1>
+                <div className="flex items-center gap-4 text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4" />
+                    <span className="text-sm">{format(parseISO(accommodation.check_in_date), "dd/MM")} - {format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</span>
+                  </div>
+                  {accommodation.reservation_amount && (
+                    <div className="flex items-center gap-2 bg-primary/10 px-3 py-1 rounded-full">
+                      <span className="text-sm font-medium">{formatCurrency(accommodation.reservation_amount)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Action Buttons */}
+            <div className="absolute top-4 right-4 flex gap-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={handleEdit}
-                className="flex items-center gap-1"
+                className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg"
               >
                 <Edit className="w-4 h-4" />
-                <span className="hidden sm:inline">Editar</span>
+                <span className="hidden sm:inline ml-1">Editar</span>
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => setShowDeleteDialog(true)}
-                className="text-destructive hover:text-destructive flex items-center gap-1"
+                className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg text-destructive hover:text-destructive"
               >
                 <Trash2 className="w-4 h-4" />
-                <span className="hidden sm:inline">Excluir</span>
+                <span className="hidden sm:inline ml-1">Excluir</span>
               </Button>
             </div>
           </div>
-          
-          {/* Linha 2: Título */}
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold leading-tight break-words">
-              {accommodation.hotel_name}
-            </h1>
-          </div>
-        </div>
-      </div>
 
-        <div className="flex-1 overflow-auto p-4">
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Imagem do Hotel */}
-            {accommodation.hotel_image_url && (
-              <Card>
-                <CardContent className="p-6">
-                  <img
-                    src={accommodation.hotel_image_url}
-                    alt={accommodation.hotel_name}
-                    className="w-full h-64 md:h-96 object-cover rounded-lg"
-                  />
+          {/* Content */}
+          <div className="p-4 pb-8">
+            <div className="max-w-4xl mx-auto space-y-4">
+
+            {/* Quick Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Período da Estadia */}
+              <Card className="h-fit">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4" />
+                    Estadia
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Check-in</p>
+                    <p className="font-medium">{format(parseISO(accommodation.check_in_date), "dd/MM/yyyy")}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Check-out</p>
+                    <p className="font-medium">{format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</p>
+                  </div>
                 </CardContent>
               </Card>
-            )}
 
-            {/* Informações Básicas */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Coffee className="w-5 h-5" />
-                  Informações Básicas
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <strong>Tipo de Hospedagem:</strong>
-                    <p className="text-muted-foreground mt-1 capitalize">
-                      {accommodation.accommodation_type || 'Hotel'}
+              {/* Financial Info */}
+              {accommodation.reservation_amount && (
+                <Card className="h-fit">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Heart className="w-4 h-4" />
+                      Valor
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-2xl font-bold text-primary">
+                      {formatCurrency(accommodation.reservation_amount)}
                     </p>
-                  </div>
-                  {accommodation.confirmation_number && (
-                    <div>
-                      <strong>Número da Reserva:</strong>
-                      <p className="text-muted-foreground mt-1 font-mono">
-                        {accommodation.confirmation_number}
-                      </p>
-                    </div>
-                  )}
-                  {accommodation.room_type && (
-                    <div>
-                      <strong>Tipo de Quarto:</strong>
-                      <p className="text-muted-foreground mt-1 capitalize">
-                        {accommodation.room_type}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    <p className="text-xs text-muted-foreground">Valor da reserva</p>
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Período da Estadia */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon className="w-5 h-5" />
-                  Período da Estadia
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <strong>Check-in:</strong>
-                    <p className="text-lg mt-1">{format(parseISO(accommodation.check_in_date), "dd/MM/yyyy")}</p>
-                  </div>
-                  <div>
-                    <strong>Check-out:</strong>
-                    <p className="text-lg mt-1">{format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              {/* Quick Actions */}
+              <Card className="h-fit">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Links Rápidos</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {accommodation.hotel_link && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(accommodation.hotel_link, "_blank")}
+                      className="w-full justify-start"
+                    >
+                      <ExternalLink className="w-3 h-3 mr-2" />
+                      Site do Hotel
+                    </Button>
+                  )}
+                  {accommodation.waze_link && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(accommodation.waze_link, "_blank")}
+                      className="w-full justify-start"
+                    >
+                      <Navigation className="w-3 h-3 mr-2" />
+                      Abrir no Waze
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Localização */}
             {(accommodation.address || accommodation.city || accommodation.country) && (
@@ -575,6 +611,7 @@ export default function DetalhesHospedagem() {
                 </CardContent>
               </Card>
             )}
+            </div>
           </div>
         </div>
 
