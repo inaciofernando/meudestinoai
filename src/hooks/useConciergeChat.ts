@@ -123,26 +123,38 @@ export const useConciergeChat = (
   }, [category, tripData, userData, conversationId, tripLocations]);
 
   const sendToWebhook = useCallback(async (payload: ChatPayload) => {
-    // URL específica do webhook fornecida pelo usuário
-    const webhookUrl = 'https://n8n-n8n-start.43ir9u.easypanel.host/webhook-test/109fc0fc-06dc-4758-aab0-3c3bdb695d69';
+    // URL de teste fornecida
+    const testUrl = 'https://n8n-n8n-start.43ir9u.easypanel.host/webhook-test/109fc0fc-06dc-4758-aab0-3c3bdb695d69';
 
-    console.log('Enviando payload para webhook:', JSON.stringify(payload, null, 2));
+    const postTo = async (url: string) => {
+      console.log('Postando no webhook:', url);
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthToken()}`,
+        },
+        body: JSON.stringify(payload)
+      });
+      return response;
+    };
 
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getAuthToken()}`,
-      },
-      body: JSON.stringify(payload)
-    });
+    // 1) Tenta a URL de teste
+    let response = await postTo(testUrl);
+
+    // 2) Se 404, tenta automaticamente a URL permanente
+    if (response.status === 404) {
+      const prodUrl = testUrl.replace('/webhook-test/', '/webhook/');
+      console.warn('Webhook de teste retornou 404. Tentando URL permanente:', prodUrl);
+      response = await postTo(prodUrl);
+    }
     
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Erro na resposta do webhook:', response.status, response.statusText, errorText);
       throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
     }
-    
+
     const result = await response.json();
     console.log('Resposta do webhook:', result);
     return result;
