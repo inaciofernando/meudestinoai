@@ -1,6 +1,5 @@
 import { ConciergeChatProps } from "@/types/concierge";
 import { useConciergeChat } from "@/hooks/useConciergeChat";
-import { ChatHeader } from "./ChatHeader";
 import { ChatArea } from "./ChatArea";
 import { ChatInput } from "./ChatInput";
 import { Card } from "@/components/ui/card";
@@ -40,13 +39,7 @@ export const ConciergeChat = ({
   };
 
   return (
-    <Card className="concierge-chat w-full max-w-4xl mx-auto flex flex-col h-[600px] shadow-lg">
-      {/* Header fixo no topo */}
-      <ChatHeader 
-        category={category}
-        onClose={onClose}
-      />
-      
+    <Card className="concierge-chat w-full max-w-4xl mx-auto flex flex-col h-[600px] shadow-lg">      
       {/* Área de mensagens scrollável */}
       <ChatArea
         messages={messages}
