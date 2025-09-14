@@ -82,43 +82,51 @@ export const useConciergeChat = (
     setMessages(prev => [...prev, message]);
   }, []);
 
-  const buildPayload = useCallback((userMessage: string): ChatPayload => ({
-    user_data: {
-      user_id: userData.id,
-      session_id: generateSessionId(),
-      authenticated: true,
-      preferences: userData.preferences,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-    },
-    trip_data: {
-      trip_id: tripData.id,
-      destination: tripData.destination,
-      start_date: tripData.startDate,
-      end_date: tripData.endDate,
-      duration_days: tripData.durationDays,
-      destinations: tripData.destinations,
-      budget_range: tripData.budgetRange,
-      traveler_count: tripData.travelerCount,
-      status: tripData.status,
-      roteiro_destinos: tripLocations.map(location => ({
-        location_name: location.location_name,
-        location_type: location.location_type,
-        order_index: location.order_index,
-        notes: location.notes
-      }))
-    },
-    request_data: {
-      category,
-      user_message: userMessage,
-      conversation_id: conversationId,
-      timestamp: new Date().toISOString(),
-      language: 'pt-BR'
-    }
-  }), [category, tripData, userData, conversationId, tripLocations]);
+  const buildPayload = useCallback((userMessage: string): ChatPayload => {
+    console.log('Dados da viagem:', tripData);
+    console.log('Dados do usuário:', userData);
+    console.log('Locations do roteiro:', tripLocations);
+    
+    return {
+      user_data: {
+        user_id: userData.id,
+        session_id: generateSessionId(),
+        authenticated: true,
+        preferences: userData.preferences || {},
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      },
+      trip_data: {
+        trip_id: tripData.id,
+        destination: tripData.destination,
+        start_date: tripData.startDate,
+        end_date: tripData.endDate,
+        duration_days: tripData.durationDays,
+        destinations: tripData.destinations || [],
+        budget_range: tripData.budgetRange,
+        traveler_count: tripData.travelerCount,
+        status: tripData.status,
+        roteiro_destinos: tripLocations.map(location => ({
+          location_name: location.location_name,
+          location_type: location.location_type,
+          order_index: location.order_index,
+          notes: location.notes || ''
+        }))
+      },
+      request_data: {
+        category,
+        user_message: userMessage,
+        conversation_id: conversationId,
+        timestamp: new Date().toISOString(),
+        language: 'pt-BR'
+      }
+    };
+  }, [category, tripData, userData, conversationId, tripLocations]);
 
   const sendToWebhook = useCallback(async (payload: ChatPayload) => {
     // URL específica do webhook fornecida pelo usuário
     const webhookUrl = 'https://n8n-n8n-start.43ir9u.easypanel.host/webhook-test/109fc0fc-06dc-4758-aab0-3c3bdb695d69';
+
+    console.log('Enviando payload para webhook:', JSON.stringify(payload, null, 2));
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -130,10 +138,14 @@ export const useConciergeChat = (
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('Erro na resposta do webhook:', response.status, response.statusText, errorText);
+      throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
     }
     
-    return response.json();
+    const result = await response.json();
+    console.log('Resposta do webhook:', result);
+    return result;
   }, []);
 
   const sendMessage = useCallback(async (userMessage: string) => {
@@ -162,7 +174,8 @@ export const useConciergeChat = (
       
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
-      addErrorMessage('Erro de comunicação. Tente novamente.');
+      console.error('Stack trace:', error instanceof Error ? error.stack : error);
+      addErrorMessage(`Erro de comunicação: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setIsLoading(false);
       setProcessingMessage('');
