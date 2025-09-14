@@ -5,7 +5,6 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import TripSectionHeader from "@/components/TripSectionHeader";
 import { AddTransportDialog } from "@/components/transport/AddTransportDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -175,7 +174,11 @@ export default function Transporte() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <PWALayout showHeader={true}>
+        <PWALayout 
+          showHeader={true}
+          title="Transporte"
+          subtitle="Carregando..."
+        >
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
@@ -189,15 +192,24 @@ export default function Transporte() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={true}>
+      <PWALayout 
+        showHeader={true}
+        title="Transporte"
+        subtitle="Gerencie seus tickets e reservas de transporte"
+        onBack={() => navigate(`/viagem/${id}`)}
+      >
         <div className="container mx-auto p-4 space-y-6">
-          <TripSectionHeader
-            title="Transporte"
-            subtitle="Gerencie seus tickets e reservas de transporte"
-            onBack={() => navigate(`/viagem/${id}`)}
-            onAdd={() => setIsAddDialogOpen(true)}
-            addAriaLabel="Adicionar transporte"
-          />
+          {/* Botão de adicionar no topo */}
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setIsAddDialogOpen(true)}
+              size="sm"
+              className="gap-2"
+            >
+              <Plane className="w-4 h-4" />
+              Adicionar
+            </Button>
+          </div>
 
           {bookings.length === 0 ? (
             <Card>

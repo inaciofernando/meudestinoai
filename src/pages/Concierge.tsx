@@ -90,7 +90,7 @@ export default function Concierge() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout title="Concierge AI" subtitle="Carregando...">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <Bot className="w-12 h-12 text-primary mx-auto mb-4 animate-pulse" />
@@ -105,7 +105,7 @@ export default function Concierge() {
   if (!tripData) {
     return (
       <ProtectedRoute>
-        <PWALayout>
+        <PWALayout title="Concierge AI" subtitle="Viagem não encontrada">
           <div className="text-center space-y-4">
             <Bot className="w-12 h-12 text-muted-foreground mx-auto" />
             <div>
@@ -128,7 +128,11 @@ export default function Concierge() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout 
+        title="Concierge AI"
+        subtitle={tripData.destination}
+        onBack={() => window.history.back()}
+      >
         <div className="p-4">
           <ConciergeChat
             category={'diversos'} // Default category, o AI identificará automaticamente o tipo
