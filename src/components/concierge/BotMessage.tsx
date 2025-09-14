@@ -3,6 +3,7 @@ import { Message } from "@/types/concierge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { MessageContent } from "./MessageContent";
 import { ActionButtons } from "./ActionButtons";
+import { Bot } from "lucide-react";
 
 interface BotMessageProps {
   message: Message;
@@ -31,7 +32,9 @@ export const BotMessage = ({ message, onSave }: BotMessageProps) => {
     <div className="message-bot mb-4">
       <div className="flex items-start gap-3">
         <Avatar className="w-8 h-8">
-          <AvatarFallback className="text-sm">🧑‍💼</AvatarFallback>
+          <AvatarFallback className="text-sm bg-primary/10">
+            <Bot className="w-4 h-4 text-primary" />
+          </AvatarFallback>
         </Avatar>
         <div className="max-w-[80%]">
           <div className="bg-muted rounded-lg p-4">

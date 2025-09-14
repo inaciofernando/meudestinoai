@@ -5,6 +5,7 @@ import { ConciergeChat } from "@/components/concierge/ConciergeChat";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TripData, UserData, ConciergeCategory } from "@/types/concierge";
+import { Bot } from "lucide-react";
 
 export default function ConciergeChatExample() {
   const [showChat, setShowChat] = useState(false);
@@ -65,10 +66,15 @@ export default function ConciergeChatExample() {
     <ProtectedRoute>
       <PWALayout>
         <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Concierge de Viagem</h1>
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+              <Bot className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              Concierge AI
+            </h1>
             <p className="text-muted-foreground">
-              Escolha uma categoria para começar a conversar com seu concierge pessoal
+              Assistente inteligente para sua viagem - Escolha uma categoria para começar
             </p>
           </div>
 
