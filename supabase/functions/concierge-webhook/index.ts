@@ -61,9 +61,93 @@ serve(async (req) => {
     }
 
     const n8nResult = await n8nResponse.json();
-    console.log('Resposta do N8N:', n8nResult);
+    console.log('Resposta do N8N:', JSON.stringify(n8nResult, null, 2));
 
-    // Normalizar mensagem do N8N (pode vir como string ou objeto)
+    // Verificar se temos a estrutura esperada do nó "saida"
+    if (n8nResult?.success && n8nResult?.message && n8nResult?.interactive_options) {
+      // Processar quick_replies se existir
+      let saveOptions = null;
+      
+      if (n8nResult.interactive_options?.quick_replies?.length > 0) {
+        // Filtrar quick_replies para encontrar ações de salvar
+        const saveActions = n8nResult.interactive_options.quick_replies
+          .filter((reply: any) => 
+            reply.action?.includes('confirmar_save_yes') || 
+            reply.label?.includes('Incluir no planejamento') ||
+            reply.action === 'save'
+          );
+        
+        if (saveActions.length > 0) {
+          const saveAction = saveActions[0];
+          saveOptions = {
+            data: saveAction.data || {},
+            actions: n8nResult.interactive_options.quick_replies
+              .filter((reply: any) => !reply.action?.includes('confirmar_save_yes'))
+              .map((reply: any) => ({
+                label: reply.label,
+                action: reply.action,
+                variant: 'secondary' as const,
+              }))
+          };
+        }
+      }
+      
+      // Também verificar save_button se não houver quick_replies de save
+      if (!saveOptions && n8nResult.interactive_options?.save_button?.visible) {
+        const saveData = n8nResult.interactive_options.save_button.data;
+        
+        // Verificar se há dados estruturados válidos para salvar
+        const hasValidSaveData = saveData && (
+          saveData.accommodation_data || 
+          saveData.restaurant_data || 
+          saveData.itinerary_data ||
+          (saveData.category && (
+            saveData.accommodation_data || 
+            saveData.restaurant_data || 
+            saveData.itinerary_data ||
+            saveData.recommendations ||
+            saveData.structured_data
+          ))
+        );
+        
+        if (hasValidSaveData) {
+          // Filtrar actions removendo "Mais Detalhes" e "Nova Pergunta"
+          const filteredActions = Array.isArray(n8nResult.interactive_options.additional_actions)
+            ? n8nResult.interactive_options.additional_actions
+                .filter((a: any) => 
+                  !a.label?.includes('Mais Detalhes') && 
+                  !a.label?.includes('Nova Pergunta') &&
+                  !a.action?.includes('get_more_details') &&
+                  !a.action?.includes('new_question')
+                )
+                .map((a: any) => ({
+                  label: a.label,
+                  action: a.action,
+                  variant: 'secondary' as const,
+                }))
+            : undefined;
+          
+          saveOptions = {
+            data: saveData,
+            actions: filteredActions?.length > 0 ? filteredActions : undefined,
+          };
+        }
+      }
+
+      // Retornar na estrutura esperada pelo front-end
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: n8nResult.message.content,
+          saveOptions
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+    
+    // Fallback para estrutura antiga (caso ainda receba formato antigo)
     const rawMessage = n8nResult?.message ?? n8nResult?.status ?? 'Mensagem processada com sucesso!';
     let responseMessage: string;
     if (typeof rawMessage === 'string') {
@@ -74,75 +158,12 @@ serve(async (req) => {
       responseMessage = 'Mensagem processada com sucesso!';
     }
 
-    // Traduções comuns EN -> PT-BR
-    const translations: Record<string, string> = {
-      'workflow was started': 'Processando sua solicitação...',
-      'workflow started': 'Processando sua solicitação...',
-      'processing': 'Processando...',
-      'success': 'Sucesso',
-      'error': 'Erro',
-      'failed': 'Falhou'
-    };
-
-    const lower = responseMessage.toLowerCase();
-    for (const [en, pt] of Object.entries(translations)) {
-      if (lower.includes(en)) {
-        responseMessage = pt;
-        break;
-      }
-    }
-
-    // Normalizar opções interativas do N8N para o app (quando existir)
-    let saveOptions = n8nResult.saveOptions || null;
-    
-    // Só criar saveOptions se o botão de salvar estiver visível E houver dados estruturados
-    if (!saveOptions && n8nResult?.interactive_options?.save_button?.visible) {
-      const saveData = n8nResult.interactive_options.save_button.data;
-      
-      // Verificar se há dados estruturados válidos para salvar
-      const hasValidSaveData = saveData && (
-        saveData.accommodation_data || 
-        saveData.restaurant_data || 
-        saveData.itinerary_data ||
-        (saveData.category && (
-          saveData.accommodation_data || 
-          saveData.restaurant_data || 
-          saveData.itinerary_data ||
-          saveData.recommendations ||
-          saveData.structured_data
-        ))
-      );
-      
-      if (hasValidSaveData) {
-        // Filtrar actions removendo "Mais Detalhes" e "Nova Pergunta"
-        const filteredActions = Array.isArray(n8nResult.interactive_options.additional_actions)
-          ? n8nResult.interactive_options.additional_actions
-              .filter((a: any) => 
-                !a.label?.includes('Mais Detalhes') && 
-                !a.label?.includes('Nova Pergunta') &&
-                !a.action?.includes('get_more_details') &&
-                !a.action?.includes('new_question')
-              )
-              .map((a: any) => ({
-                label: a.label,
-                action: a.action,
-                variant: 'secondary' as const,
-              }))
-          : undefined;
-        
-        saveOptions = {
-          data: saveData,
-          actions: filteredActions?.length > 0 ? filteredActions : undefined,
-        };
-      }
-    }
-
-    // Retornar resposta traduzida e normalizada
+    // Retornar resposta simples para fallback
     return new Response(
       JSON.stringify({
         success: true,
         message: responseMessage,
-        saveOptions
+        saveOptions: null
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
