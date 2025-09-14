@@ -452,59 +452,37 @@ export default function DetalhesHospedagem() {
 
             {/* Comodidades */}
             {(accommodation.includes_breakfast || accommodation.wifi_available || accommodation.parking_available || accommodation.pet_friendly) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Coffee className="w-5 h-5" />
-                    Comodidades
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-3">
+              <div className="mb-6">
+                <div className="bg-card border rounded-xl p-6">
+                  <h3 className="font-semibold mb-4">Comodidades</h3>
+                  <div className="grid grid-cols-2 gap-4">
                     {accommodation.includes_breakfast && (
-                      <div className="flex items-center gap-2 text-green-600">
-                        <Coffee className="w-4 h-4" />
-                        <span className="text-sm">Café da manhã</span>
+                      <div className="flex items-center gap-2">
+                        <Coffee className="w-4 h-4 text-primary" />
+                        <span className="text-sm">Café da manhã incluído</span>
                       </div>
                     )}
                     {accommodation.wifi_available && (
-                      <div className="flex items-center gap-2 text-green-600">
-                        <Wifi className="w-4 h-4" />
-                        <span className="text-sm">Wi-Fi gratuito</span>
+                      <div className="flex items-center gap-2">
+                        <Wifi className="w-4 h-4 text-primary" />
+                        <span className="text-sm">Wi-Fi disponível</span>
                       </div>
                     )}
                     {accommodation.parking_available && (
-                      <div className="flex items-center gap-2 text-green-600">
-                        <Car className="w-4 h-4" />
+                      <div className="flex items-center gap-2">
+                        <Car className="w-4 h-4 text-primary" />
                         <span className="text-sm">Estacionamento</span>
                       </div>
                     )}
                     {accommodation.pet_friendly && (
-                      <div className="flex items-center gap-2 text-green-600">
-                        <Heart className="w-4 h-4" />
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-primary" />
                         <span className="text-sm">Pet friendly</span>
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Informações Financeiras */}
-            {accommodation.reservation_amount && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Informações Financeiras</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div>
-                    <strong>Valor Total da Reserva:</strong>
-                    <p className="text-2xl font-bold text-primary mt-1">
-                      {formatCurrency(accommodation.reservation_amount, "R$")}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Links e Navegação */}
