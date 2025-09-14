@@ -1,15 +1,16 @@
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Dashboard from "./Dashboard";
+import MinhasViagens from "./MinhasViagens";
 
 export default function Viagens() {
   return (
     <ProtectedRoute>
       <PWALayout 
         showHeader={true}
-        title="Dashboard"
+        title="Minhas Viagens"
+        subtitle="Gerencie todas as suas aventuras"
       >
-        <Dashboard />
+        <MinhasViagens />
       </PWALayout>
     </ProtectedRoute>
   );

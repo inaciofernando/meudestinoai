@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { PWALayout } from "@/components/layout/PWALayout";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -140,58 +138,42 @@ export default function MinhasViagens() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <PWALayout>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Minhas Viagens</h1>
-                <p className="text-muted-foreground text-sm">Gerencie todas as suas aventuras</p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="ghost" size="icon">
-                  <Filter className="w-4 h-4" />
-                </Button>
-                <Button variant="travel" size="sm" className="gap-2" onClick={handleNewTrip}>
-                  <Plus className="w-4 h-4" />
-                  Nova
-                </Button>
-              </div>
-            </div>
+      <div className="space-y-4">
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" size="icon">
+            <Filter className="w-4 h-4" />
+          </Button>
+          <Button variant="travel" size="sm" className="gap-2" onClick={handleNewTrip}>
+            <Plus className="w-4 h-4" />
+            Nova
+          </Button>
+        </div>
 
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <Card key={i}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex gap-3 flex-1">
-                        <Skeleton className="w-8 h-8 rounded" />
-                        <div className="flex-1 space-y-2">
-                          <Skeleton className="h-5 w-3/4" />
-                          <Skeleton className="h-4 w-1/2" />
-                          <Skeleton className="h-4 w-1/3" />
-                        </div>
-                      </div>
-                      <Skeleton className="h-6 w-16" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex gap-3 flex-1">
+                    <Skeleton className="w-8 h-8 rounded" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-4 w-1/3" />
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </PWALayout>
-      </ProtectedRoute>
+                  </div>
+                  <Skeleton className="h-6 w-16" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
-    <ProtectedRoute>
-      <PWALayout 
-        showHeader={true}
-        title="Minhas Viagens"
-        subtitle={trips.length === 0 ? 'Nenhuma viagem encontrada' : `${trips.length} ${trips.length === 1 ? 'viagem' : 'viagens'}`}
-      >
-        <div className="space-y-4">
+    <div className="space-y-4">
           {/* Botões de ação no topo */}
           <div className="flex justify-end gap-2">
             <Button variant="ghost" size="icon">
@@ -317,7 +299,5 @@ export default function MinhasViagens() {
             </div>
           )}
         </div>
-      </PWALayout>
-    </ProtectedRoute>
   );
 }
