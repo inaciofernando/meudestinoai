@@ -20,7 +20,8 @@ import {
   Eye,
   Trash2,
   Calendar,
-  Hash
+  Hash,
+  Plus
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -197,19 +198,17 @@ export default function Transporte() {
         title="Transporte"
         subtitle="Gerencie seus tickets e reservas de transporte"
         onBack={() => navigate(`/viagem/${id}`)}
+        actions={
+          <Button
+            onClick={() => setIsAddDialogOpen(true)}
+            size="icon"
+            className="bg-primary hover:bg-primary/90 text-white"
+          >
+            <Plus className="w-5 h-5" />
+          </Button>
+        }
       >
         <div className="container mx-auto p-4 space-y-6">
-          {/* Botão de adicionar no topo */}
-          <div className="flex justify-end">
-            <Button
-              onClick={() => setIsAddDialogOpen(true)}
-              size="sm"
-              className="gap-2"
-            >
-              <Plane className="w-4 h-4" />
-              Adicionar
-            </Button>
-          </div>
 
           {bookings.length === 0 ? (
             <Card>
