@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { PWALayout } from "@/components/layout/PWALayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -282,22 +284,24 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground text-sm">Bem-vindo de volta! Aqui está o resumo das suas viagens</p>
-        </div>
-        <Button 
-          variant="outline" 
-          size="icon"
-          className="text-primary border-primary hover:bg-primary hover:text-primary-foreground transition-smooth"
-          onClick={() => navigate("/nova-viagem")}
-        >
-          <Plus className="w-5 h-5" />
-        </Button>
-      </div>
+    <ProtectedRoute>
+      <PWALayout 
+        showHeader={true}
+        title="Dashboard"
+        subtitle="Bem-vindo de volta! Aqui está o resumo das suas viagens"
+      >
+        <div className="space-y-6">
+          {/* Header Actions */}
+          <div className="flex justify-end">
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="text-primary border-primary hover:bg-primary hover:text-primary-foreground transition-smooth"
+              onClick={() => navigate("/nova-viagem")}
+            >
+              <Plus className="w-5 h-5" />
+            </Button>
+          </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-3 md:gap-4">
@@ -642,6 +646,8 @@ export default function Dashboard() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+        </div>
+      </PWALayout>
+    </ProtectedRoute>
   );
 }
