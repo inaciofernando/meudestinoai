@@ -8,8 +8,7 @@ import {
   MoreHorizontal,
   Settings,
   LogOut,
-  ArrowLeft,
-  Plane
+  ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,10 +79,7 @@ export const PWAHeader = ({ title, subtitle, onBack }: PWAHeaderProps) => {
            ) : (
              // Logo padrão
              <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/viagens")}>
-               <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center transition-transform hover:scale-105">
-                 <Plane className="w-4 h-4 text-primary-foreground" />
-               </div>
-               <h1 className="text-xl font-bold text-primary hidden sm:block">Meu Destino AI</h1>
+               <h1 className="text-xl font-bold text-primary">Meu Destino AI</h1>
              </div>
            )}
         </div>
