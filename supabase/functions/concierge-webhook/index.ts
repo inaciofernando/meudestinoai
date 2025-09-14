@@ -63,32 +63,56 @@ serve(async (req) => {
     const n8nResult = await n8nResponse.json();
     console.log('Resposta do N8N:', n8nResult);
 
-    // Traduzir mensagens em inglês para português
-    let responseMessage = n8nResult.message || 'Mensagem processada com sucesso!';
-    
-    // Mapear mensagens comuns em inglês para português
-    const translations: { [key: string]: string } = {
-      'Workflow was started': 'Processando sua solicitação...',
-      'Workflow started': 'Processando sua solicitação...',
-      'Processing': 'Processando...',
-      'Success': 'Sucesso',
-      'Error': 'Erro',
-      'Failed': 'Falhou'
-    };
-    
-    // Aplicar tradução se encontrada
-    Object.keys(translations).forEach(englishText => {
-      if (responseMessage.includes(englishText)) {
-        responseMessage = responseMessage.replace(englishText, translations[englishText]);
-      }
-    });
+    // Normalizar mensagem do N8N (pode vir como string ou objeto)
+    const rawMessage = n8nResult?.message ?? n8nResult?.status ?? 'Mensagem processada com sucesso!';
+    let responseMessage: string;
+    if (typeof rawMessage === 'string') {
+      responseMessage = rawMessage;
+    } else if (rawMessage && typeof rawMessage === 'object') {
+      responseMessage = (rawMessage.content ?? rawMessage.text ?? JSON.stringify(rawMessage));
+    } else {
+      responseMessage = 'Mensagem processada com sucesso!';
+    }
 
-    // Retornar resposta traduzida
+    // Traduções comuns EN -> PT-BR
+    const translations: Record<string, string> = {
+      'workflow was started': 'Processando sua solicitação...',
+      'workflow started': 'Processando sua solicitação...',
+      'processing': 'Processando...',
+      'success': 'Sucesso',
+      'error': 'Erro',
+      'failed': 'Falhou'
+    };
+
+    const lower = responseMessage.toLowerCase();
+    for (const [en, pt] of Object.entries(translations)) {
+      if (lower.includes(en)) {
+        responseMessage = pt;
+        break;
+      }
+    }
+
+    // Normalizar opções interativas do N8N para o app (quando existir)
+    let saveOptions = n8nResult.saveOptions || null;
+    if (!saveOptions && n8nResult?.interactive_options?.save_button?.visible) {
+      saveOptions = {
+        data: n8nResult.interactive_options.save_button.data ?? {},
+        actions: Array.isArray(n8nResult.interactive_options.additional_actions)
+          ? n8nResult.interactive_options.additional_actions.map((a: any) => ({
+              label: a.label,
+              action: a.action,
+              variant: 'secondary' as const,
+            }))
+          : undefined,
+      };
+    }
+
+    // Retornar resposta traduzida e normalizada
     return new Response(
       JSON.stringify({
         success: true,
         message: responseMessage,
-        saveOptions: n8nResult.saveOptions || null
+        saveOptions
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
