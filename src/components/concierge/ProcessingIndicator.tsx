@@ -12,13 +12,7 @@ export const ProcessingIndicator = ({ message }: ProcessingIndicatorProps) => (
         <Bot className="w-4 h-4 text-primary" />
       </div>
       <div className="bg-muted rounded-lg p-4 max-w-[80%]">
-        <div className="flex items-center gap-2">
-          <TypingIndicator />
-          <span className="text-primary font-medium">{message}</span>
-        </div>
-        <p className="text-sm text-muted-foreground mt-2">
-          Analisando as melhores opções para você...
-        </p>
+        <TypingIndicator />
       </div>
     </div>
   </div>
