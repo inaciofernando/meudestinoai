@@ -383,26 +383,15 @@ export default function Hospedagem() {
   }
 
   return (
-    <PWALayout showFooter={false}>
+    <PWALayout 
+      showFooter={false}
+      title="Hospedagem"
+      subtitle="Encontre e gerencie suas acomodações"
+      onBack={() => navigate(`/viagem/${tripId}`)}
+    >
       <div className="space-y-6">
-        {/* Header integrado */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/viagem/${tripId}`)}
-              className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
-              aria-label="Voltar"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Hospedagem</h1>
-              <p className="text-muted-foreground text-sm">Encontre e gerencie suas acomodações</p>
-            </div>
-          </div>
-
+        {/* Botão adicionar hospedagem */}
+        <div className="flex justify-end mb-6">
           <Button
             onClick={() => setShowAddForm(true)}
             variant="outline"

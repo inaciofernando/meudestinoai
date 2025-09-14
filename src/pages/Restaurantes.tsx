@@ -307,26 +307,15 @@ export default function Restaurantes() {
   }
 
   return (
-    <PWALayout showFooter={false}>
+    <PWALayout 
+      showFooter={false}
+      title="Restaurantes"
+      subtitle="Descubra e salve os melhores lugares para comer"
+      onBack={() => navigate(`/viagem/${tripId}`)}
+    >
       <div className="space-y-6">
-        {/* Header integrado */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/viagem/${tripId}`)}
-              className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
-              aria-label="Voltar"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Restaurantes</h1>
-              <p className="text-muted-foreground text-sm">Descubra e salve os melhores lugares para comer</p>
-            </div>
-          </div>
-
+        {/* Botão adicionar restaurante */}
+        <div className="flex justify-end mb-6">
           <Button
             onClick={() => navigate(`/viagem/${tripId}/restaurantes/novo`)}
             className="w-10 h-10 p-0 rounded-full bg-gradient-ocean hover:shadow-travel transition-all duration-300"

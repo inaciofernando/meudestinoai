@@ -4,17 +4,27 @@ import { PWAFooter } from "./PWAFooter";
 
 interface PWALayoutProps {
   children: ReactNode;
-  showHeader?: boolean; // Prop opcional para controlar se mostra o header
-  showFooter?: boolean; // Prop opcional para controlar se mostra o footer
+  showHeader?: boolean;
+  showFooter?: boolean;
+  title?: string;
+  subtitle?: string;
+  onBack?: () => void;
 }
 
-export const PWALayout = ({ children, showHeader = true, showFooter = true }: PWALayoutProps) => {
+export const PWALayout = ({ 
+  children, 
+  showHeader = true, 
+  showFooter = true,
+  title,
+  subtitle,
+  onBack
+}: PWALayoutProps) => {
   return (
     <div className="min-h-screen-mobile w-full flex flex-col bg-gradient-sky">
       {/* Header fixo no topo */}
       {showHeader && (
         <header className="flex-shrink-0 sticky top-0 z-50">
-          <PWAHeader />
+          <PWAHeader title={title} subtitle={subtitle} onBack={onBack} />
         </header>
       )}
       

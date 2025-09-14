@@ -9,6 +9,7 @@ import {
   MoreHorizontal,
   Settings,
   LogOut,
+  ArrowLeft,
   Plane
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
-export const PWAHeader = () => {
+interface PWAHeaderProps {
+  title?: string;
+  subtitle?: string;
+  onBack?: () => void;
+}
+
+export const PWAHeader = ({ title, subtitle, onBack }: PWAHeaderProps) => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const navigate = useNavigate();
 
@@ -75,13 +82,33 @@ export const PWAHeader = () => {
             </SheetContent>
           </Sheet>
 
-          {/* Logo */}
-           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/viagens")}>
-             <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center transition-transform hover:scale-105">
-               <Plane className="w-4 h-4 text-primary-foreground" />
+          {/* Logo ou Navegação */}
+           {title && onBack ? (
+             // Navegação com título
+             <div className="flex items-center gap-3">
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={onBack}
+                 className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
+                 aria-label="Voltar"
+               >
+                 <ArrowLeft className="h-4 w-4" />
+               </Button>
+               <div>
+                 <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+                 {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+               </div>
              </div>
-             <h1 className="text-xl font-bold text-primary hidden sm:block">Meu Destino AI</h1>
-           </div>
+           ) : (
+             // Logo padrão
+             <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/viagens")}>
+               <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center transition-transform hover:scale-105">
+                 <Plane className="w-4 h-4 text-primary-foreground" />
+               </div>
+               <h1 className="text-xl font-bold text-primary hidden sm:block">Meu Destino AI</h1>
+             </div>
+           )}
         </div>
 
         {/* Center - Search (hidden on mobile) */}
