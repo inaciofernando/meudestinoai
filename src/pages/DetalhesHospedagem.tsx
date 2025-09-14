@@ -293,172 +293,149 @@ export default function DetalhesHospedagem() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">
                     {accommodation.hotel_name}
                   </h1>
-                  <div className="flex items-center gap-4 text-white/90">
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4" />
-                      <span className="text-sm">{format(parseISO(accommodation.check_in_date), "dd/MM")} - {format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</span>
-                    </div>
-                    {accommodation.reservation_amount && (
-                      <div className="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                        <span className="text-sm font-medium">{formatCurrency(accommodation.reservation_amount)}</span>
-                      </div>
-                    )}
+                  <div className="flex items-center gap-2 text-white/90 bg-black/30 px-3 py-2 rounded-lg backdrop-blur-sm w-fit">
+                    <CalendarIcon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{format(parseISO(accommodation.check_in_date), "dd/MM")} - {format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</span>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-3">
                   {accommodation.hotel_name}
                 </h1>
-                <div className="flex items-center gap-4 text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon className="w-4 h-4" />
-                    <span className="text-sm">{format(parseISO(accommodation.check_in_date), "dd/MM")} - {format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</span>
-                  </div>
-                  {accommodation.reservation_amount && (
-                    <div className="flex items-center gap-2 bg-primary/10 px-3 py-1 rounded-full">
-                      <span className="text-sm font-medium">{formatCurrency(accommodation.reservation_amount)}</span>
-                    </div>
-                  )}
+                <div className="flex items-center gap-2 text-muted-foreground bg-background/50 px-3 py-2 rounded-lg w-fit">
+                  <CalendarIcon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{format(parseISO(accommodation.check_in_date), "dd/MM")} - {format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</span>
                 </div>
               </div>
             )}
-            
-            {/* Action Buttons */}
-            <div className="absolute top-4 right-4 flex gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleEdit}
-                className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg"
-              >
-                <Edit className="w-4 h-4" />
-                <span className="hidden sm:inline ml-1">Editar</span>
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowDeleteDialog(true)}
-                className="bg-white/90 hover:bg-white backdrop-blur-sm shadow-lg text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span className="hidden sm:inline ml-1">Excluir</span>
-              </Button>
-            </div>
           </div>
 
           {/* Content */}
-          <div className="p-4 pb-8">
-            <div className="max-w-4xl mx-auto space-y-4">
+          <div className="p-4 pb-24">
 
-            {/* Quick Info Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Período da Estadia */}
-              <Card className="h-fit">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarIcon className="w-4 h-4" />
-                    Estadia
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
+            {/* Check-in/Check-out Section */}
+            <div className="mb-6">
+              <div className="bg-card border rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <CalendarIcon className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold">Estadia</h2>
+                </div>
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <p className="text-xs text-muted-foreground">Check-in</p>
-                    <p className="font-medium">{format(parseISO(accommodation.check_in_date), "dd/MM/yyyy")}</p>
+                    <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">CHECK-IN</p>
+                    <p className="text-xl font-bold">{format(parseISO(accommodation.check_in_date), "dd MMM yyyy")}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Check-out</p>
-                    <p className="font-medium">{format(parseISO(accommodation.check_out_date), "dd/MM/yyyy")}</p>
+                    <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">CHECK-OUT</p>
+                    <p className="text-xl font-bold">{format(parseISO(accommodation.check_out_date), "dd MMM yyyy")}</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+            </div>
 
-              {/* Financial Info */}
+            {/* Info Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {/* Valor da Reserva */}
               {accommodation.reservation_amount && (
-                <Card className="h-fit">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Heart className="w-4 h-4" />
-                      Valor
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-bold text-primary">
-                      {formatCurrency(accommodation.reservation_amount)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Valor da reserva</p>
-                  </CardContent>
-                </Card>
+                <div className="bg-card border rounded-xl p-6">
+                  <h3 className="font-semibold mb-2">Valor da Reserva</h3>
+                  <p className="text-3xl font-bold text-primary mb-1">
+                    {formatCurrency(accommodation.reservation_amount)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Total pago</p>
+                </div>
               )}
 
-              {/* Quick Actions */}
-              <Card className="h-fit">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Links Rápidos</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {accommodation.hotel_link && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(accommodation.hotel_link, "_blank")}
-                      className="w-full justify-start"
-                    >
-                      <ExternalLink className="w-3 h-3 mr-2" />
-                      Site do Hotel
-                    </Button>
-                  )}
-                  {accommodation.waze_link && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(accommodation.waze_link, "_blank")}
-                      className="w-full justify-start"
-                    >
-                      <Navigation className="w-3 h-3 mr-2" />
-                      Abrir no Waze
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
+              {/* Informações Adicionais */}
+              {(accommodation.confirmation_number || accommodation.room_type) && (
+                <div className="bg-card border rounded-xl p-6">
+                  <h3 className="font-semibold mb-3">Detalhes da Reserva</h3>
+                  <div className="space-y-2">
+                    {accommodation.confirmation_number && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Código da reserva</p>
+                        <p className="font-medium">{accommodation.confirmation_number}</p>
+                      </div>
+                    )}
+                    {accommodation.room_type && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Tipo de quarto</p>
+                        <p className="font-medium">{accommodation.room_type}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Links Rápidos */}
+            {(accommodation.hotel_link || accommodation.waze_link) && (
+              <div className="mb-6">
+                <div className="bg-card border rounded-xl p-6">
+                  <h3 className="font-semibold mb-4">Links Rápidos</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {accommodation.hotel_link && (
+                      <Button
+                        variant="outline"
+                        onClick={() => window.open(accommodation.hotel_link, "_blank")}
+                        className="justify-start h-12"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-3" />
+                        Site do Hotel
+                      </Button>
+                    )}
+                    {accommodation.waze_link && (
+                      <Button
+                        variant="outline"
+                        onClick={() => window.open(accommodation.waze_link, "_blank")}
+                        className="justify-start h-12"
+                      >
+                        <Navigation className="w-4 h-4 mr-3" />
+                        Navegar no Waze
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Localização */}
             {(accommodation.address || accommodation.city || accommodation.country) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5" />
-                    Localização
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {accommodation.address && (
-                    <div>
-                      <strong>Endereço:</strong>
-                      <p className="text-muted-foreground mt-1">{accommodation.address}</p>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {accommodation.city && (
-                      <div>
-                        <strong>Cidade:</strong>
-                        <p className="text-muted-foreground mt-1">{accommodation.city}</p>
-                      </div>
-                    )}
-                    {accommodation.country && (
-                      <div>
-                        <strong>País:</strong>
-                        <p className="text-muted-foreground mt-1">{accommodation.country}</p>
-                      </div>
-                    )}
+              <div className="mb-6">
+                <div className="bg-card border rounded-xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    <h3 className="font-semibold">Localização</h3>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="space-y-4">
+                    {accommodation.address && (
+                      <div>
+                        <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">ENDEREÇO</p>
+                        <p className="font-medium">{accommodation.address}</p>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {accommodation.city && (
+                        <div>
+                          <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">CIDADE</p>
+                          <p className="font-medium">{accommodation.city}</p>
+                        </div>
+                      )}
+                      {accommodation.country && (
+                        <div>
+                          <p className="text-sm text-muted-foreground uppercase tracking-wide mb-1">PAÍS</p>
+                          <p className="font-medium">{accommodation.country}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
 
             {/* Contato */}
@@ -600,19 +577,120 @@ export default function DetalhesHospedagem() {
               </Card>
             )}
 
+            {/* Voucher */}
+            {accommodation.voucher_file_url && (
+              <div className="mb-6">
+                <div className="bg-card border rounded-xl p-6">
+                  <h3 className="font-semibold mb-4">Voucher</h3>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDownloadVoucher(accommodation.voucher_file_url!, accommodation.voucher_file_name || "voucher")}
+                    className="w-full justify-start h-12"
+                  >
+                    <Download className="w-4 h-4 mr-3" />
+                    Baixar Voucher ({accommodation.voucher_file_name || "arquivo"})
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Comodidades */}
+            {(accommodation.includes_breakfast || accommodation.wifi_available || accommodation.parking_available || accommodation.pet_friendly) && (
+              <div className="mb-6">
+                <div className="bg-card border rounded-xl p-6">
+                  <h3 className="font-semibold mb-4">Comodidades</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {accommodation.includes_breakfast && (
+                      <div className="flex items-center gap-2">
+                        <Coffee className="w-4 h-4 text-primary" />
+                        <span className="text-sm">Café da manhã incluído</span>
+                      </div>
+                    )}
+                    {accommodation.wifi_available && (
+                      <div className="flex items-center gap-2">
+                        <Wifi className="w-4 h-4 text-primary" />
+                        <span className="text-sm">Wi-Fi disponível</span>
+                      </div>
+                    )}
+                    {accommodation.parking_available && (
+                      <div className="flex items-center gap-2">
+                        <Car className="w-4 h-4 text-primary" />
+                        <span className="text-sm">Estacionamento</span>
+                      </div>
+                    )}
+                    {accommodation.pet_friendly && (
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-primary" />
+                        <span className="text-sm">Pet friendly</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Contato */}
+            {(accommodation.phone || accommodation.email) && (
+              <div className="mb-6">
+                <div className="bg-card border rounded-xl p-6">
+                  <h3 className="font-semibold mb-4">Contato</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {accommodation.phone && (
+                      <div className="flex items-center gap-3">
+                        <Phone className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Telefone</p>
+                          <p className="font-medium">{accommodation.phone}</p>
+                        </div>
+                      </div>
+                    )}
+                    {accommodation.email && (
+                      <div className="flex items-center gap-3">
+                        <Mail className="w-4 h-4 text-primary" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">E-mail</p>
+                          <p className="font-medium">{accommodation.email}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Observações */}
             {accommodation.notes && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Observações</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground whitespace-pre-wrap">{accommodation.notes}</p>
-                </CardContent>
-              </Card>
+              <div className="mb-6">
+                <div className="bg-card border rounded-xl p-6">
+                  <h3 className="font-semibold mb-4">Observações</h3>
+                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{accommodation.notes}</p>
+                </div>
+              </div>
             )}
+
+            {/* Action Buttons at Bottom */}
+            <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-4 z-10">
+              <div className="max-w-md mx-auto flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleEdit}
+                  className="flex-1 h-12"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Editar
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="flex-1 h-12"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Excluir
+                </Button>
+              </div>
             </div>
           </div>
+
         </div>
 
         {/* Modal de Edição */}
