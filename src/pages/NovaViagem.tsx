@@ -181,22 +181,12 @@ export default function NovaViagem() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout
+        title="Nova Viagem"
+        subtitle="Planeje sua próxima aventura"
+        onBack={() => navigate(-1)}
+      >
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(-1)}
-              className="h-8 w-8 p-0"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Nova Viagem</h1>
-              <p className="text-muted-foreground">Planeje sua próxima aventura</p>
-            </div>
-          </div>
 
           <div className="bg-card rounded-lg p-6 shadow-card">
             <Form {...form}>

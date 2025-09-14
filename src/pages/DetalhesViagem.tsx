@@ -544,25 +544,14 @@ export default function DetalhesViagem() {
 
   return (
     <ProtectedRoute>
-      <PWALayout>
+      <PWALayout
+        title="Detalhes da Viagem"
+        subtitle="Gerencie informações e documentos da sua viagem"
+        onBack={() => navigate("/viagens")}
+      >
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/viagens")}
-                className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground">Detalhes da Viagem</h1>
-                <p className="text-muted-foreground text-sm">Gerencie informações e documentos da sua viagem</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
+          {/* Botões de ação no topo */}
+          <div className="flex justify-end gap-2">
               {isEditing ? (
                 <>
                   <Button 

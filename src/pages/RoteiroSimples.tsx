@@ -610,26 +610,15 @@ export default function RoteiroSimples() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showFooter={false}>
+      <PWALayout 
+        showFooter={false}
+        title="Roteiro de Viagem"
+        subtitle="Organize seu itinerário por dias"
+        onBack={() => navigate(`/viagem/${currentId}`)}
+      >
         <div className="space-y-6">
-          {/* Header integrado */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(`/viagem/${currentId}`)}
-                className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
-                aria-label="Voltar"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground">Roteiro de Viagem</h1>
-                <p className="text-muted-foreground text-sm">Organize seu itinerário por dias</p>
-              </div>
-            </div>
-
+          {/* Botão adicionar no topo */}
+          <div className="flex justify-end">
             <Button
               onClick={() => setIsAddingPonto(true)}
               className="w-10 h-10 p-0 rounded-full bg-gradient-ocean hover:shadow-travel transition-all duration-300"

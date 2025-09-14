@@ -190,15 +190,24 @@ export default function Documentos() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={true}>
+      <PWALayout 
+        showHeader={true}
+        title="Documentos"
+        subtitle="Gerencie seus documentos de viagem"
+        onBack={() => navigate(`/viagem/${id}`)}
+      >
         <div className="container mx-auto p-4 space-y-6">
-          <TripSectionHeader
-            title="Documentos"
-            subtitle="Gerencie seus documentos de viagem"
-            onBack={() => navigate(`/viagem/${id}`)}
-            onAdd={() => setIsAddDialogOpen(true)}
-            addAriaLabel="Adicionar documento"
-          />
+          {/* Botão de adicionar no topo */}
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setIsAddDialogOpen(true)}
+              size="sm"
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Adicionar
+            </Button>
+          </div>
 
           {documents.length === 0 ? (
             <Card>

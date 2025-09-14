@@ -270,24 +270,18 @@ export default function DetalhesHospedagem() {
   }
 
   return (
-    <PWALayout showFooter={false}>
+    <PWALayout 
+      showFooter={false}
+      title="Detalhes da Hospedagem"
+      subtitle={accommodation.name}
+      onBack={() => navigate(`/viagem/${tripId}/hospedagem`)}
+    >
       <div className="flex flex-col h-[calc(100vh-120px)] overflow-hidden">
       <div className="flex-shrink-0 p-4 bg-background/95 backdrop-blur-sm border-b">
-        {/* Header mobile otimizado */}
+        {/* Seção de ações */}
         <div className="space-y-3">
-          {/* Linha 1: Navegação */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate(`/viagem/${tripId}/hospedagem`)}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Voltar
-            </Button>
-            
-            <div className="flex gap-2">
+          {/* Botões de ação */}
+          <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
                 size="sm"

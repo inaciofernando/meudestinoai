@@ -186,25 +186,21 @@ export default function MinhasViagens() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={true}>
+      <PWALayout 
+        showHeader={true}
+        title="Minhas Viagens"
+        subtitle={trips.length === 0 ? 'Nenhuma viagem encontrada' : `${trips.length} ${trips.length === 1 ? 'viagem' : 'viagens'}`}
+      >
         <div className="space-y-4">
-          {/* Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Minhas Viagens</h1>
-              <p className="text-muted-foreground text-sm">
-                {trips.length === 0 ? 'Nenhuma viagem encontrada' : `${trips.length} ${trips.length === 1 ? 'viagem' : 'viagens'}`}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="icon">
-                <Filter className="w-4 h-4" />
-              </Button>
-              <Button variant="travel" size="sm" className="gap-2" onClick={handleNewTrip}>
-                <Plus className="w-4 h-4" />
-                Nova
-              </Button>
-            </div>
+          {/* Botões de ação no topo */}
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" size="icon">
+              <Filter className="w-4 h-4" />
+            </Button>
+            <Button variant="travel" size="sm" className="gap-2" onClick={handleNewTrip}>
+              <Plus className="w-4 h-4" />
+              Nova
+            </Button>
           </div>
 
           {/* Lista de Viagens */}

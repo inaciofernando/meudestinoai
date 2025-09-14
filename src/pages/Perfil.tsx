@@ -215,21 +215,14 @@ export default function Perfil() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={true}>
+      <PWALayout 
+        showHeader={true}
+        title="Perfil"
+        onBack={() => navigate("/viagens")}
+      >
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 md:p-6 border-b">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/viagens")}
-                className="h-8 w-8 p-0"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <h1 className="text-xl font-semibold">Perfil</h1>
-            </div>
+          {/* Botão de notificações no topo */}
+          <div className="flex justify-end p-4 md:p-6 border-b">
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
               <Bell className="h-4 w-4" />
             </Button>

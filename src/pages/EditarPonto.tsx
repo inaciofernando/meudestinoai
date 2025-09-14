@@ -354,20 +354,12 @@ export default function EditarPonto() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showFooter={false}>
+      <PWALayout 
+        showFooter={false}
+        title="Editar Ponto"
+        onBack={() => navigate(`/roteiro/${tripId}/ponto/${pontoId}`)}
+      >
         <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(`/roteiro/${tripId}/ponto/${pontoId}`)}
-              className="rounded-full"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-2xl font-bold">Editar Ponto</h1>
-          </div>
 
           <Card>
             <CardHeader>

@@ -154,25 +154,13 @@ export default function DetalhesTransporte() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={true}>
+      <PWALayout 
+        showHeader={true}
+        title="Detalhes do Transporte"
+        subtitle={booking.title}
+        onBack={() => navigate(`/viagem/${tripId}/transporte`)}
+      >
         <div className="container mx-auto p-4 space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(`/viagem/${tripId}/transporte`)}
-                className="h-9 w-9 p-0 hover:bg-muted rounded-lg"
-                aria-label="Voltar"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-semibold text-foreground">Detalhes do Transporte</h1>
-                <p className="text-muted-foreground text-sm">{booking.title}</p>
-              </div>
-            </div>
             
             <Button
               onClick={() => setIsEditDialogOpen(true)}

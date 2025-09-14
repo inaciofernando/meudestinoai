@@ -797,27 +797,16 @@ export default function GastosViagem() {
 
   return (
     <ProtectedRoute>
-      <PWALayout showHeader={true}>
+      <PWALayout 
+        showHeader={true}
+        title="Gastos de Viagem"
+        subtitle={trip.destination}
+        onBack={() => navigate("/viagens")}
+      >
         <div className="pb-20">
-          {/* Professional Header with Balance Focus */}
+          {/* Seção de orçamento e estatísticas rápidas */}
           <div className="bg-background border-b">
             <div className="px-4 py-6">
-              <div className="flex items-center justify-between mb-6">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => navigate("/viagens")}
-                  className="p-2 h-auto"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-                
-                <div className="text-center">
-                  <div className="bg-primary/10 text-primary px-4 py-2 rounded-full border border-primary/20 mb-2">
-                    <span className="text-sm font-medium">Gastos de Viagem</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{trip.destination}</p>
-                </div>
 
                 <Button 
                   onClick={() => setIsAddingExpense(true)}
