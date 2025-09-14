@@ -17,6 +17,10 @@ export const useConciergeChat = (
   const [processingMessage, setProcessingMessage] = useState('');
   const [conversationId] = useState(() => generateId());
 
+  const setInitialMessages = useCallback((initialMessages: Message[]) => {
+    setMessages(initialMessages);
+  }, []);
+
   const addUserMessage = useCallback((content: string) => {
     const message: Message = {
       id: generateId(),
@@ -169,6 +173,7 @@ export const useConciergeChat = (
     isLoading,
     processingMessage,
     sendMessage,
-    saveToTrip
+    saveToTrip,
+    setInitialMessages
   };
 };

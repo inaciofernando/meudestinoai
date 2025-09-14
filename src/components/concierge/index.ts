@@ -1,5 +1,6 @@
 // Export all concierge components
 export { ConciergeChat } from './ConciergeChat';
+export { ConversationHistory } from './ConversationHistory';
 export { ChatHeader } from './ChatHeader';
 export { ChatArea } from './ChatArea';
 export { ChatInput } from './ChatInput';

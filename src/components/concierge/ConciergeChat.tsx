@@ -4,9 +4,12 @@ import { ChatArea } from "./ChatArea";
 import { ChatInput } from "./ChatInput";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface ExtendedConciergeChatProps extends ConciergeChatProps {
   fullscreen?: boolean;
+  conversation?: any;
+  onUpdateConversation?: (conversationId: string, messages: any[], title?: string) => void;
 }
 
 export const ConciergeChat = ({ 
@@ -15,7 +18,9 @@ export const ConciergeChat = ({
   userData, 
   onClose, 
   onSaveToTrip,
-  fullscreen = false
+  fullscreen = false,
+  conversation,
+  onUpdateConversation
 }: ExtendedConciergeChatProps) => {
   const { toast } = useToast();
   const { 
@@ -23,8 +28,28 @@ export const ConciergeChat = ({
     isLoading, 
     processingMessage, 
     sendMessage, 
-    saveToTrip 
+    saveToTrip,
+    setInitialMessages 
   } = useConciergeChat(category, tripData, userData);
+
+  // Carregar mensagens da conversa quando necessário
+  useEffect(() => {
+    if (conversation && conversation.messages) {
+      const messagesArray = Array.isArray(conversation.messages) 
+        ? conversation.messages as any[]
+        : [];
+      setInitialMessages(messagesArray);
+    } else {
+      setInitialMessages([]);
+    }
+  }, [conversation, setInitialMessages]);
+
+  // Salvar mensagens quando mudarem
+  useEffect(() => {
+    if (conversation && messages.length > 0 && onUpdateConversation) {
+      onUpdateConversation(conversation.id, messages);
+    }
+  }, [messages, conversation, onUpdateConversation]);
 
   const handleSave = async (saveOptions: any) => {
     try {

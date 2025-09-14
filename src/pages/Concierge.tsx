@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { PWALayout } from "@/components/layout/PWALayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ConciergeChat } from "@/components/concierge/ConciergeChat";
+import { ConversationHistory } from "@/components/concierge/ConversationHistory";
 import { Button } from "@/components/ui/button";
 import { TripData, UserData, ConciergeCategory } from "@/types/concierge";
-import { Bot, ArrowLeft } from "lucide-react";
+import { Bot, ArrowLeft, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { useConciergeConversations } from "@/hooks/useConciergeConversations";
 
 export default function Concierge() {
   const { id: tripId } = useParams<{ id: string }>();
@@ -18,17 +20,70 @@ export default function Concierge() {
   
   const [tripData, setTripData] = useState<TripData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentConversation, setCurrentConversation] = useState<any>(null);
+
+  const {
+    conversations,
+    loading: conversationsLoading,
+    currentConversationId,
+    createNewConversation,
+    updateConversation,
+    loadConversation,
+    deleteConversation
+  } = useConciergeConversations(tripId || '');
 
   const userData: UserData = {
     id: user?.id || "",
     preferences: {}
   };
 
+  const handleNewConversation = useCallback(async () => {
+    if (!tripData) return;
+    
+    const conversation = await createNewConversation(`Conversa - ${tripData.destination}`);
+    if (conversation) {
+      setCurrentConversation(conversation);
+      toast({
+        title: "Nova conversa criada",
+        description: "Você pode começar a conversar com o concierge.",
+      });
+    }
+  }, [tripData, createNewConversation, toast]);
+
+  const handleLoadConversation = useCallback(async (conversationId: string) => {
+    const conversation = await loadConversation(conversationId);
+    if (conversation) {
+      setCurrentConversation(conversation);
+      toast({
+        title: "Conversa carregada",
+        description: "Continuando a conversa anterior.",
+      });
+    }
+  }, [loadConversation, toast]);
+
+  const handleDeleteConversation = useCallback(async (conversationId: string) => {
+    await deleteConversation(conversationId);
+    if (currentConversationId === conversationId) {
+      setCurrentConversation(null);
+    }
+    toast({
+      title: "Conversa excluída",
+      description: "A conversa foi removida permanentemente.",
+    });
+  }, [deleteConversation, currentConversationId, toast]);
+
   useEffect(() => {
     if (tripId && user) {
       fetchTripData();
     }
   }, [tripId, user]);
+
+  // Auto-criar primeira conversa se não existir nenhuma
+  useEffect(() => {
+    if (tripData && conversations.length === 0 && !conversationsLoading && !currentConversation) {
+      handleNewConversation();
+    }
+  }, [tripData, conversations.length, conversationsLoading, currentConversation, handleNewConversation]);
 
   const fetchTripData = async () => {
     try {
@@ -80,7 +135,6 @@ export default function Concierge() {
 
 
   const handleSaveToTrip = (data: any) => {
-    console.log('Item salvo na programação:', data);
     toast({
       title: "Sucesso!",
       description: "Sugestão salva na sua programação de viagem.",
@@ -130,9 +184,30 @@ export default function Concierge() {
     <ProtectedRoute>
       <PWALayout 
         title="Concierge AI"
-        subtitle={tripData.destination}
+        subtitle={tripData?.destination}
         onBack={() => window.history.back()}
         showFooter={false}
+        actions={
+          <div className="flex items-center gap-2">
+            <ConversationHistory
+              conversations={conversations}
+              currentConversationId={currentConversationId}
+              onNewConversation={handleNewConversation}
+              onLoadConversation={handleLoadConversation}
+              onDeleteConversation={handleDeleteConversation}
+              loading={conversationsLoading}
+            />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleNewConversation}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nova
+            </Button>
+          </div>
+        }
       >
         <div className="fixed inset-0 top-16 bg-background">
           {/* Background luggage icon */}
@@ -154,6 +229,8 @@ export default function Concierge() {
             onClose={() => window.history.back()}
             onSaveToTrip={handleSaveToTrip}
             fullscreen={true}
+            conversation={currentConversation}
+            onUpdateConversation={updateConversation}
           />
         </div>
       </PWALayout>
