@@ -94,17 +94,41 @@ serve(async (req) => {
 
     // Normalizar opções interativas do N8N para o app (quando existir)
     let saveOptions = n8nResult.saveOptions || null;
+    
+    // Só criar saveOptions se o botão de salvar estiver visível E houver dados estruturados
     if (!saveOptions && n8nResult?.interactive_options?.save_button?.visible) {
-      saveOptions = {
-        data: n8nResult.interactive_options.save_button.data ?? {},
-        actions: Array.isArray(n8nResult.interactive_options.additional_actions)
-          ? n8nResult.interactive_options.additional_actions.map((a: any) => ({
-              label: a.label,
-              action: a.action,
-              variant: 'secondary' as const,
-            }))
-          : undefined,
-      };
+      const saveData = n8nResult.interactive_options.save_button.data;
+      
+      // Verificar se há dados estruturados válidos para salvar
+      const hasValidSaveData = saveData && (
+        saveData.accommodation_data || 
+        saveData.restaurant_data || 
+        saveData.itinerary_data ||
+        saveData.category // Para outros tipos de dados estruturados
+      );
+      
+      if (hasValidSaveData) {
+        // Filtrar actions removendo "Mais Detalhes" e "Nova Pergunta"
+        const filteredActions = Array.isArray(n8nResult.interactive_options.additional_actions)
+          ? n8nResult.interactive_options.additional_actions
+              .filter((a: any) => 
+                !a.label?.includes('Mais Detalhes') && 
+                !a.label?.includes('Nova Pergunta') &&
+                !a.action?.includes('get_more_details') &&
+                !a.action?.includes('new_question')
+              )
+              .map((a: any) => ({
+                label: a.label,
+                action: a.action,
+                variant: 'secondary' as const,
+              }))
+          : undefined;
+        
+        saveOptions = {
+          data: saveData,
+          actions: filteredActions?.length > 0 ? filteredActions : undefined,
+        };
+      }
     }
 
     // Retornar resposta traduzida e normalizada
