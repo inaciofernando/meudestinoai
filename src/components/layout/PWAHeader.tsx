@@ -55,17 +55,11 @@ export const PWAHeader = ({ title, subtitle, onBack }: PWAHeaderProps) => {
   return (
     <header className="w-full border-b border-border bg-background" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <div className="container flex h-16 items-center justify-between px-4">
-        {/* Left side - Logo e Navegação */}
+        {/* Left side - Navegação */}
         <div className="flex items-center gap-4">
-          {/* Logo sempre visível */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/viagens")}>
-            <h1 className="text-xl font-bold text-primary">Meu Destino AI</h1>
-          </div>
-          
-          {/* Navegação com título (quando houver) */}
-          {title && onBack && (
+          {title && onBack ? (
+            // Navegação com título
             <div className="flex items-center gap-3">
-              <div className="w-px h-6 bg-border" />
               <Button
                 variant="ghost"
                 size="sm"
@@ -76,10 +70,13 @@ export const PWAHeader = ({ title, subtitle, onBack }: PWAHeaderProps) => {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+                <h1 className="text-lg font-semibold text-foreground">{title}</h1>
                 {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
               </div>
             </div>
+          ) : (
+            // Espaço vazio quando não há título
+            <div></div>
           )}
         </div>
 
