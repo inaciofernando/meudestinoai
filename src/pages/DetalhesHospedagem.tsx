@@ -993,13 +993,76 @@ export default function DetalhesHospedagem() {
                 
                 <div>
                   <Label>Imagem do Hotel</Label>
-                  <ImageUploadArea
-                    images={editForm.hotel_image_url ? [{ url: editForm.hotel_image_url, name: "Imagem do Hotel" }] : []}
-                    onImagesChange={(images) => setEditForm({ ...editForm, hotel_image_url: images[0]?.url || "" })}
-                    maxFiles={1}
-                    disabled={false}
-                    label="Adicionar Imagens"
-                  />
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                    <input
+                      type="file"
+                      id="hotel-image-upload"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const uploadImage = async () => {
+                            try {
+                              const fileExt = file.name.split('.').pop();
+                              const fileName = `hotel_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                              const { data: { user } } = await supabase.auth.getUser();
+                              if (!user) throw new Error('Usuário não autenticado');
+                              
+                              const filePath = `${user.id}/${fileName}`;
+                              const { error: uploadError } = await supabase.storage
+                                .from('trip-images')
+                                .upload(filePath, file);
+
+                              if (uploadError) throw uploadError;
+
+                              const { data } = supabase.storage.from('trip-images').getPublicUrl(filePath);
+                              setEditForm({ ...editForm, hotel_image_url: data.publicUrl });
+                              toast.success('Imagem do hotel adicionada com sucesso!');
+                            } catch (error) {
+                              console.error('Erro no upload:', error);
+                              toast.error('Erro ao fazer upload da imagem');
+                            }
+                          };
+                          uploadImage();
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="hotel-image-upload"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <Upload className="w-8 h-8 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          Clique para selecionar ou arraste o arquivo
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          JPG, PNG (máx. 10MB)
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                  {editForm.hotel_image_url && (
+                    <div className="mt-3">
+                      <div className="relative group">
+                        <img
+                          src={editForm.hotel_image_url}
+                          alt="Imagem do Hotel"
+                          className="w-full h-32 object-cover rounded-lg border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 p-0"
+                          onClick={() => setEditForm({ ...editForm, hotel_image_url: "" })}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
