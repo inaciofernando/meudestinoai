@@ -190,87 +190,28 @@ export default function Concierge() {
             </Link>
           </div>
 
-          {/* Header do Concierge */}
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-primary/70 rounded-full mb-6 shadow-lg">
-              <Bot className="w-10 h-10 text-white" />
+          {/* Interface do Concierge */}
+          <div className="text-center space-y-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-full shadow-lg">
+              <Bot className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Concierge AI
-            </h1>
-            <p className="text-muted-foreground max-w-md mx-auto mb-6">
-              Seu assistente inteligente para qualquer dúvida sobre sua viagem - roteiros, restaurantes, hospedagem e muito mais!
-            </p>
+            
+            <div>
+              <h1 className="text-2xl font-bold mb-2">Concierge AI</h1>
+              <p className="text-muted-foreground">
+                Seu assistente de viagem inteligente
+              </p>
+            </div>
+            
             <Button 
               size="lg" 
               onClick={() => setShowChat(true)}
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white px-8 py-3"
+              className="px-8 py-3"
             >
               <Bot className="w-5 h-5 mr-2" />
-              Começar Conversa
+              Iniciar Conversa
             </Button>
           </div>
-
-          {/* Como funciona - Melhorado */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                💡 Como funciona o Concierge AI
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                       <div className="flex gap-3">
-                     <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                       1
-                     </div>
-                     <div>
-                        <h4 className="font-semibold mb-1">Inicie uma conversa</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Clique em "Começar Conversa" para falar com seu concierge
-                        </p>
-                     </div>
-                   </div>
-                   <div className="flex gap-3">
-                     <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                       2
-                     </div>
-                     <div>
-                       <h4 className="font-semibold mb-1">Faça qualquer pergunta</h4>
-                       <p className="text-sm text-muted-foreground">
-                         Roteiros, restaurantes, hospedagem - o concierge entende tudo!
-                       </p>
-                     </div>
-                   </div>
-                </div>
-                <div className="space-y-4">
-                     <div className="flex gap-3">
-                     <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                       3
-                     </div>
-                     <div>
-                       <h4 className="font-semibold mb-1">Receba sugestões inteligentes</h4>
-                       <p className="text-sm text-muted-foreground">
-                         Baseadas no seu destino, datas e tipo de viagem
-                       </p>
-                     </div>
-                   </div>
-                   <div className="flex gap-3">
-                     <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                       4
-                     </div>
-                     <div>
-                       <h4 className="font-semibold mb-1">Salve o que mais gostar</h4>
-                       <p className="text-sm text-muted-foreground">
-                         Adicione sugestões diretamente à sua programação
-                       </p>
-                     </div>
-                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </PWALayout>
     </ProtectedRoute>
