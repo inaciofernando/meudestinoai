@@ -1,5 +1,4 @@
 import { Message } from "@/types/concierge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface UserMessageProps {
   message: Message;
@@ -13,11 +12,6 @@ export const UserMessage = ({ message }: UserMessageProps) => (
           <p className="text-sm">{message.content}</p>
         </div>
       </div>
-      <Avatar className="w-8 h-8">
-        <AvatarFallback className="text-sm bg-primary text-primary-foreground">
-          👤
-        </AvatarFallback>
-      </Avatar>
     </div>
   </div>
 );

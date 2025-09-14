@@ -291,13 +291,16 @@ async function getUserAIConfig(userId: string) {
 
 // Função simplificada para construir system prompt baseado na categoria
 function buildSystemForCategory(category: string, style?: { tone?: 'casual' | 'neutro' | 'formal'; emojis?: boolean }) {
-  const basePrompt = 'Você é um concierge de viagens em português do Brasil.';
+  const basePrompt = `Você é um concierge de viagens especializado em português do Brasil. 
+IMPORTANTE: SEMPRE responda APENAS em português brasileiro, nunca em inglês ou outros idiomas.
+Você deve ser um assistente de viagem amigável, conhecedor e prestativo.`;
 
   const styleInstr = [
     `TOM: ${style?.tone || 'casual'};`,
     style?.emojis ? '- Use emojis de forma moderada e contextual (no máximo 1 por parágrafo).' : '- Não use emojis.',
     '- Frases e parágrafos curtos. Evite listas formais; prefira texto natural.',
-    '- Seja direto e focado na categoria escolhida pelo usuário.'
+    '- Seja direto e focado na categoria escolhida pelo usuário.',
+    '- NUNCA responda em inglês. Sempre use português brasileiro.'
   ].join('\n');
 
   const base = [basePrompt, styleInstr].join('\n');
