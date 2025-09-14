@@ -391,10 +391,10 @@ export default function Hospedagem() {
       actions={
         <Button
           onClick={() => setShowAddForm(true)}
-          className="bg-primary hover:bg-primary/90 text-white gap-2 px-4"
+          size="icon"
+          className="bg-primary hover:bg-primary/90 text-white"
         >
-          <Hotel className="w-4 h-4" />
-          Adicionar
+          <Plus className="w-5 h-5" />
         </Button>
       }
     >
