@@ -18,7 +18,6 @@ export default function Concierge() {
   const { toast } = useToast();
   
   const [showChat, setShowChat] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<ConciergeCategory>('roteiro');
   const [tripData, setTripData] = useState<TripData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -165,7 +164,7 @@ export default function Concierge() {
         <PWALayout>
           <div className="p-4">
             <ConciergeChat
-              category={selectedCategory}
+              category={'roteiro'} // Default category, o AI identificará automaticamente o tipo
               tripData={tripData}
               userData={userData}
               onClose={() => setShowChat(false)}
@@ -199,39 +198,53 @@ export default function Concierge() {
             <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Concierge AI
             </h1>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Seu assistente inteligente para descobrir os melhores lugares e experiências da sua viagem
+            <p className="text-muted-foreground max-w-md mx-auto mb-6">
+              Seu assistente inteligente para qualquer dúvida sobre sua viagem - roteiros, restaurantes, hospedagem e muito mais!
             </p>
+            <Button 
+              size="lg" 
+              onClick={() => setShowChat(true)}
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white px-8 py-3"
+            >
+              <Bot className="w-5 h-5 mr-2" />
+              Começar Conversa
+            </Button>
           </div>
 
-
-          {/* Categorias */}
-          <div className="grid grid-cols-2 gap-4">
-            {categories.map((category) => (
-              <Card
-                key={category.id}
-                className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 hover:border-primary/30"
-                onClick={() => {
-                  setSelectedCategory(category.id as ConciergeCategory);
-                  setShowChat(true);
-                }}
-              >
-                <CardContent className="p-6 text-center">
-                  <div className={`w-16 h-16 bg-gradient-to-br ${category.color} rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                    {typeof category.icon === 'string' ? (
-                      <span className="text-2xl">{category.icon}</span>
-                    ) : (
-                      <category.icon className="w-8 h-8 text-white" />
-                    )}
-                  </div>
-                  <h3 className="font-semibold text-lg mb-2">{category.name}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {category.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {/* Sugestões rápidas */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                ⚡ Sugestões para começar
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                {categories.map((category) => (
+                  <Button
+                    key={category.id}
+                    variant="outline"
+                    className="h-auto p-4 justify-start"
+                    onClick={() => setShowChat(true)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 bg-gradient-to-br ${category.color} rounded-full flex items-center justify-center`}>
+                        {typeof category.icon === 'string' ? (
+                          <span className="text-sm">{category.icon}</span>
+                        ) : (
+                          <category.icon className="w-5 h-5 text-white" />
+                        )}
+                      </div>
+                      <div className="text-left">
+                        <div className="font-medium">{category.name}</div>
+                        <div className="text-xs text-muted-foreground">{category.description}</div>
+                      </div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Como funciona - Melhorado */}
           <Card>
@@ -243,52 +256,52 @@ export default function Concierge() {
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                      1
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">Escolha uma categoria</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Selecione entre roteiro, restaurante, hospedagem ou diversos
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                      2
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">Converse naturalmente</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Faça perguntas como se fosse para um especialista local
-                      </p>
-                    </div>
-                  </div>
+                       <div className="flex gap-3">
+                     <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                       1
+                     </div>
+                     <div>
+                       <h4 className="font-semibold mb-1">Inicie uma conversa</h4>
+                       <p className="text-sm text-muted-foreground">
+                         Clique em "Começar Conversa" ou use as sugestões rápidas
+                       </p>
+                     </div>
+                   </div>
+                   <div className="flex gap-3">
+                     <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                       2
+                     </div>
+                     <div>
+                       <h4 className="font-semibold mb-1">Faça qualquer pergunta</h4>
+                       <p className="text-sm text-muted-foreground">
+                         Roteiros, restaurantes, hospedagem - o concierge entende tudo!
+                       </p>
+                     </div>
+                   </div>
                 </div>
                 <div className="space-y-4">
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                      3
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">Receba sugestões personalizadas</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Baseadas no seu destino, datas e preferências
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                      4
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-1">Salve na sua programação</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Adicione as melhores sugestões diretamente ao seu roteiro
-                      </p>
-                    </div>
-                  </div>
+                     <div className="flex gap-3">
+                     <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                       3
+                     </div>
+                     <div>
+                       <h4 className="font-semibold mb-1">Receba sugestões inteligentes</h4>
+                       <p className="text-sm text-muted-foreground">
+                         Baseadas no seu destino, datas e tipo de viagem
+                       </p>
+                     </div>
+                   </div>
+                   <div className="flex gap-3">
+                     <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                       4
+                     </div>
+                     <div>
+                       <h4 className="font-semibold mb-1">Salve o que mais gostar</h4>
+                       <p className="text-sm text-muted-foreground">
+                         Adicione sugestões diretamente à sua programação
+                       </p>
+                     </div>
+                   </div>
                 </div>
               </div>
             </CardContent>

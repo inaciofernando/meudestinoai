@@ -1,6 +1,5 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Bot } from "lucide-react";
 import { ConciergeCategory } from "@/types/concierge";
-import { getCategoryData } from "@/utils/conciergeHelpers";
 import { Button } from "@/components/ui/button";
 
 interface ChatHeaderProps {
@@ -9,7 +8,6 @@ interface ChatHeaderProps {
 }
 
 export const ChatHeader = ({ category, onClose }: ChatHeaderProps) => {
-  const categoryData = getCategoryData(category);
   
   return (
     <div className="chat-header bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-4 rounded-t-lg">
@@ -24,8 +22,8 @@ export const ChatHeader = ({ category, onClose }: ChatHeaderProps) => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <h2 className="text-lg font-bold flex items-center gap-2">
-            <span className="text-xl">{categoryData.icon}</span>
-            Concierge de {categoryData.name}
+            <Bot className="w-6 h-6" />
+            Concierge de Viagem
           </h2>
         </div>
       </div>
