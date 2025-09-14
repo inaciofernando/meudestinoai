@@ -164,7 +164,7 @@ export default function Concierge() {
         <PWALayout>
           <div className="p-4">
             <ConciergeChat
-              category={'roteiro'} // Default category, o AI identificará automaticamente o tipo
+              category={'diversos'} // Default category, o AI identificará automaticamente o tipo
               tripData={tripData}
               userData={userData}
               onClose={() => setShowChat(false)}

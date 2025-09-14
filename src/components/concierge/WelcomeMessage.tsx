@@ -1,14 +1,6 @@
-import { ConciergeCategory } from "@/types/concierge";
-import { getCategoryData } from "@/utils/conciergeHelpers";
 import { Bot } from "lucide-react";
 
-interface WelcomeMessageProps {
-  category: ConciergeCategory;
-}
-
-export const WelcomeMessage = ({ category }: WelcomeMessageProps) => {
-  const categoryData = getCategoryData(category);
-  
+export const WelcomeMessage = () => {
   return (
     <div className="message-bot mb-4">
       <div className="flex items-start gap-3">
@@ -17,14 +9,12 @@ export const WelcomeMessage = ({ category }: WelcomeMessageProps) => {
         </div>
         <div className="bg-muted rounded-lg p-4 max-w-[80%]">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xl">{categoryData.icon}</span>
             <span className="font-semibold text-foreground">
-              Concierge de {categoryData.name}
+              Concierge de Viagem
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            Olá! Sou seu concierge pessoal e estou aqui para ajudar com {categoryData.type}s 
-            para sua viagem. Como posso te auxiliar hoje?
+            Olá! Sou seu concierge pessoal para qualquer assunto da viagem. Como posso te ajudar hoje?
           </p>
         </div>
       </div>

@@ -1,26 +1,22 @@
-import { useState, KeyboardEvent } from "react";
+import { KeyboardEvent } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
-import { ConciergeCategory } from "@/types/concierge";
-import { getCategoryData } from "@/utils/conciergeHelpers";
 
 interface MessageInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: (message: string) => void;
   disabled: boolean;
-  category: ConciergeCategory;
 }
 
 export const MessageInput = ({ 
   value, 
   onChange, 
   onSubmit, 
-  disabled, 
-  category 
+  disabled 
 }: MessageInputProps) => {
-  const categoryData = getCategoryData(category);
+  
   
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -42,7 +38,7 @@ export const MessageInput = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={`Faça sua pergunta sobre ${categoryData.type}s...`}
+        placeholder={`Faça sua pergunta...`}
         disabled={disabled}
         className="min-h-[44px] max-h-32 resize-none"
         rows={1}

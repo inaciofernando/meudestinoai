@@ -52,7 +52,6 @@ export const ConciergeChat = ({
         messages={messages}
         isLoading={isLoading}
         processingMessage={processingMessage}
-        category={category}
         onSave={handleSave}
       />
       
@@ -60,7 +59,6 @@ export const ConciergeChat = ({
       <ChatInput
         onSendMessage={sendMessage}
         disabled={isLoading}
-        category={category}
       />
     </Card>
   );

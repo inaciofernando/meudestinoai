@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Message, ConciergeCategory } from "@/types/concierge";
+import { Message } from "@/types/concierge";
 import { WelcomeMessage } from "./WelcomeMessage";
 import { BotMessage } from "./BotMessage";
 import { UserMessage } from "./UserMessage";
@@ -9,7 +9,6 @@ interface ChatAreaProps {
   messages: Message[];
   isLoading: boolean;
   processingMessage: string;
-  category: ConciergeCategory;
   onSave: (saveOptions: any) => Promise<void>;
 }
 
@@ -17,7 +16,6 @@ export const ChatArea = ({
   messages, 
   isLoading, 
   processingMessage, 
-  category, 
   onSave 
 }: ChatAreaProps) => {
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -30,7 +28,7 @@ export const ChatArea = ({
   return (
     <div className="chat-area flex-1 p-4 overflow-y-auto max-h-96 scroll-smooth">
       {/* Mensagem de boas-vindas automática */}
-      <WelcomeMessage category={category} />
+      <WelcomeMessage />
       
       {/* Mensagens da conversa */}
       {messages.map((message) => {
