@@ -94,7 +94,7 @@ export const ConciergeChat = ({
   }
 
   return (
-    <Card className="concierge-chat w-full max-w-4xl mx-auto flex flex-col h-[600px] shadow-lg">      
+    <Card className="concierge-chat w-full max-w-4xl mx-auto flex flex-col min-h-[400px] shadow-lg">      
       {/* Área de mensagens scrollável */}
       <ChatArea
         messages={messages}
