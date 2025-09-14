@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
-import { useAuth } from "@/hooks/useAuth"
-import { supabase } from "@/integrations/supabase/client"
+// import { useAuth } from "@/hooks/useAuth"
+// import { supabase } from "@/integrations/supabase/client"
 
 type Theme = "dark" | "light" | "system"
 
@@ -31,7 +31,6 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   )
-  const { user } = useAuth()
 
   useEffect(() => {
     const root = window.document.documentElement
@@ -51,45 +50,10 @@ export function ThemeProvider({
     root.classList.add(theme)
   }, [theme])
 
-  // Load user's theme preference from database
-  useEffect(() => {
-    if (user) {
-      loadUserTheme()
-    }
-  }, [user])
-
-  const loadUserTheme = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('theme_mode')
-        .eq('user_id', user?.id)
-        .maybeSingle()
-
-      if (data?.theme_mode) {
-        setTheme(data.theme_mode as Theme)
-        localStorage.setItem(storageKey, data.theme_mode)
-      }
-    } catch (error) {
-      console.error('Erro ao carregar tema do usuário:', error)
-    }
-  }
-
-  const updateTheme = async (newTheme: Theme) => {
+  // Atualiza o tema e persiste apenas no localStorage
+  const updateTheme = (newTheme: Theme) => {
     setTheme(newTheme)
     localStorage.setItem(storageKey, newTheme)
-
-    // Update user's theme preference in database
-    if (user && newTheme !== "system") {
-      try {
-        await supabase
-          .from('profiles')
-          .update({ theme_mode: newTheme })
-          .eq('user_id', user.id)
-      } catch (error) {
-        console.error('Erro ao salvar tema:', error)
-      }
-    }
   }
 
   const value = {
