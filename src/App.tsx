@@ -66,6 +66,7 @@ const App: React.FC = () => (
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/configuracoes" element={<Perfil />} />
           <Route path="/viagem/:id/concierge" element={<Concierge />} />
+          <Route path="/concierge" element={<Concierge />} />
           <Route path="/share/:slug" element={<ViagemPublica />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
