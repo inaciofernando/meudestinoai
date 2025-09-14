@@ -28,8 +28,8 @@ export const ChatArea = ({
   }, [messages, isLoading]);
 
   const containerClass = fullscreen 
-    ? "flex-1 overflow-y-auto px-4 py-6 scroll-smooth" 
-    : "chat-area flex-1 p-4 overflow-y-auto scroll-smooth";
+    ? "flex-1 h-full overflow-y-auto px-4 py-6 scroll-smooth" 
+    : "chat-area flex-1 h-full p-4 overflow-y-auto scroll-smooth";
 
   return (
     <div className={containerClass}>
