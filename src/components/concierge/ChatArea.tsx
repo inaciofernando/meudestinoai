@@ -10,13 +10,15 @@ interface ChatAreaProps {
   isLoading: boolean;
   processingMessage: string;
   onSave: (saveOptions: any) => Promise<void>;
+  fullscreen?: boolean;
 }
 
 export const ChatArea = ({ 
   messages, 
   isLoading, 
   processingMessage, 
-  onSave 
+  onSave,
+  fullscreen = false
 }: ChatAreaProps) => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -25,33 +27,39 @@ export const ChatArea = ({
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  return (
-    <div className="chat-area flex-1 p-4 overflow-y-auto max-h-96 scroll-smooth">
-      {/* Mensagem de boas-vindas automática */}
-      <WelcomeMessage />
-      
-      {/* Mensagens da conversa */}
-      {messages.map((message) => {
-        if (message.type === 'user') {
-          return <UserMessage key={message.id} message={message} />;
-        } else if (message.type === 'bot') {
-          return <BotMessage key={message.id} message={message} onSave={onSave} />;
-        } else {
-          // Mensagem do sistema (erro)
-          return (
-            <div key={message.id} className="text-center text-sm text-destructive mb-4">
-              {message.content}
-            </div>
-          );
-        }
-      })}
+  const containerClass = fullscreen 
+    ? "flex-1 overflow-y-auto px-4 py-6 scroll-smooth" 
+    : "chat-area flex-1 p-4 overflow-y-auto max-h-96 scroll-smooth";
 
-      {/* Indicador de processamento */}
-      {isLoading && (
-        <ProcessingIndicator message={processingMessage} />
-      )}
-      
-      <div ref={chatEndRef} />
+  return (
+    <div className={containerClass}>
+      {/* Mensagem de boas-vindas automática */}
+      <div className="max-w-4xl mx-auto">
+        <WelcomeMessage />
+        
+        {/* Mensagens da conversa */}
+        {messages.map((message) => {
+          if (message.type === 'user') {
+            return <UserMessage key={message.id} message={message} />;
+          } else if (message.type === 'bot') {
+            return <BotMessage key={message.id} message={message} onSave={onSave} />;
+          } else {
+            // Mensagem do sistema (erro)
+            return (
+              <div key={message.id} className="text-center text-sm text-destructive mb-4">
+                {message.content}
+              </div>
+            );
+          }
+        })}
+
+        {/* Indicador de processamento */}
+        {isLoading && (
+          <ProcessingIndicator message={processingMessage} />
+        )}
+        
+        <div ref={chatEndRef} />
+      </div>
     </div>
   );
 };

@@ -11,9 +11,7 @@ export const ChatInput = ({ onSendMessage, disabled }: ChatInputProps) => {
   
   
   return (
-    <div className="chat-input border-t bg-background p-4">
-      {/* Sugestões rápidas */}
-      
+    <div className="p-4 max-w-4xl mx-auto w-full">
       {/* Input principal */}
       <MessageInput 
         value={message}
