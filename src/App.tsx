@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Viagens from "./pages/Viagens";
 import MinhasViagens from "./pages/MinhasViagens";
+import MinhasViagensWrapper from "./pages/MinhasViagensWrapper";
 import NovaViagem from "./pages/NovaViagem";
 import DetalhesViagem from "./pages/DetalhesViagem";
 import GastosViagem from "./pages/GastosViagem";
@@ -44,7 +45,7 @@ const App: React.FC = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/viagens" element={<Viagens />} />
-          <Route path="/minhas-viagens" element={<Viagens />} />
+          <Route path="/minhas-viagens" element={<MinhasViagensWrapper />} />
           <Route path="/nova-viagem" element={<NovaViagem />} />
           <Route path="/viagem/:id" element={<DetalhesViagem />} />
           <Route path="/viagem/:id/gastos" element={<GastosViagem />} />
