@@ -1,9 +1,7 @@
 import { 
-  Search, 
   ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 interface PWAHeaderProps {
   title?: string;
@@ -42,21 +40,8 @@ export const PWAHeader = ({ title, subtitle, onBack }: PWAHeaderProps) => {
           )}
         </div>
 
-        {/* Center - Search (hidden on mobile) */}
-        <div className="relative max-w-md hidden md:block">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input 
-            placeholder="Buscar viagens, destinos..." 
-            className="pl-10 bg-background/50 w-64"
-          />
-        </div>
-
-        {/* Right side - Search on mobile */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-9 w-9 p-0 md:hidden">
-            <Search className="h-4 w-4" />
-          </Button>
-        </div>
+        {/* Right side - Empty */}
+        <div></div>
       </div>
     </header>
   );
