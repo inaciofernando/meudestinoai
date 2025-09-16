@@ -213,7 +213,7 @@ export default function Concierge() {
           </div>
         }
       >
-        <div className="fixed inset-0 top-16 bg-background">
+        <div className="relative min-h-full bg-background">
           {/* Background luggage icon */}
           <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
             <div className="w-64 h-64 bg-current opacity-20 rounded-lg flex items-center justify-center">
