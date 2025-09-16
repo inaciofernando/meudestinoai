@@ -29,7 +29,8 @@ export default function Concierge() {
     createNewConversation,
     updateConversation,
     loadConversation,
-    deleteConversation
+    deleteConversation,
+    deleteAllConversations
   } = useConciergeConversations(tripId || '');
 
   const userData: UserData = {
@@ -71,6 +72,15 @@ export default function Concierge() {
       description: "A conversa foi removida permanentemente.",
     });
   }, [deleteConversation, currentConversationId, toast]);
+
+  const handleDeleteAllConversations = useCallback(async () => {
+    await deleteAllConversations();
+    setCurrentConversation(null);
+    toast({
+      title: "Conversas excluídas",
+      description: "Todas as conversas foram removidas permanentemente.",
+    });
+  }, [deleteAllConversations, toast]);
 
   useEffect(() => {
     if (tripId && user) {
@@ -195,6 +205,7 @@ export default function Concierge() {
               onNewConversation={handleNewConversation}
               onLoadConversation={handleLoadConversation}
               onDeleteConversation={handleDeleteConversation}
+              onDeleteAllConversations={handleDeleteAllConversations}
               loading={conversationsLoading}
             />
             {/* Só mostra o botão + se tem mensagens na conversa atual */}

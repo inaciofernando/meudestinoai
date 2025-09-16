@@ -23,6 +23,7 @@ interface ConversationHistoryProps {
   onNewConversation: () => void;
   onLoadConversation: (conversationId: string) => void;
   onDeleteConversation: (conversationId: string) => void;
+  onDeleteAllConversations: () => void;
   loading?: boolean;
 }
 
@@ -32,10 +33,12 @@ export const ConversationHistory = ({
   onNewConversation,
   onLoadConversation,
   onDeleteConversation,
+  onDeleteAllConversations,
   loading = false
 }: ConversationHistoryProps) => {
   const [open, setOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
 
   const handleDeleteClick = (conversationId: string, e: React.MouseEvent) => {
@@ -62,6 +65,16 @@ export const ConversationHistory = ({
     setOpen(false);
   };
 
+  const handleDeleteAllClick = () => {
+    setDeleteAllDialogOpen(true);
+  };
+
+  const handleConfirmDeleteAll = () => {
+    onDeleteAllConversations();
+    setDeleteAllDialogOpen(false);
+    setOpen(false);
+  };
+
   return (
     <>
       <Sheet open={open} onOpenChange={setOpen}>
@@ -85,15 +98,29 @@ export const ConversationHistory = ({
           </SheetHeader>
           
           <div className="mt-6 space-y-4">
-            {/* Botão Nova Conversa */}
-            <Button 
-              onClick={handleNewConversation}
-              className="w-full gap-2"
-              variant="outline"
-            >
-              <Plus className="w-4 h-4" />
-              Nova Conversa
-            </Button>
+            {/* Botões de Ação */}
+            <div className="space-y-2">
+              <Button 
+                onClick={handleNewConversation}
+                className="w-full gap-2"
+                variant="outline"
+              >
+                <Plus className="w-4 h-4" />
+                Nova Conversa
+              </Button>
+              
+              {conversations.length > 0 && (
+                <Button 
+                  onClick={handleDeleteAllClick}
+                  className="w-full gap-2"
+                  variant="outline"
+                  size="sm"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Excluir Todas ({conversations.length})
+                </Button>
+              )}
+            </div>
 
             {/* Lista de Conversas */}
             <ScrollArea className="flex-1 h-[calc(100vh-200px)]">
@@ -158,7 +185,7 @@ export const ConversationHistory = ({
         </SheetContent>
       </Sheet>
 
-      {/* Dialog de Confirmação de Exclusão */}
+      {/* Dialog de Confirmação de Exclusão Individual */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -171,6 +198,24 @@ export const ConversationHistory = ({
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
               Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog de Confirmação de Exclusão de Todas */}
+      <AlertDialog open={deleteAllDialogOpen} onOpenChange={setDeleteAllDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Todas as Conversas</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir todas as {conversations.length} conversas desta viagem? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDeleteAll} className="bg-destructive hover:bg-destructive/90">
+              Excluir Todas
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
