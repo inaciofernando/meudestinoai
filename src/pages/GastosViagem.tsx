@@ -812,7 +812,7 @@ export default function GastosViagem() {
           </Button>
         }
       >
-        <div className="pb-20">
+        <div>
           <div className="bg-background border-b">
             <div className="px-4 py-6">
               {/* Current Balance - Hero Section */}
